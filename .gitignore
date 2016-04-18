@@ -1,0 +1,8 @@
+*/*work_dir*/*
+!*.xpr
+!*.xise
+*/bd/*
+!*/bd/*.bd
+*.swp
+*.~
+
