@@ -19,7 +19,7 @@ library UNISIM;
 use UNISIM.vcomponents.all;
 
 library work;
-use work.gem_ctp7_v7_build_cfg.all;
+use work.system_package.all;
 
 use work.ctp7_utils_pkg.all;
 use work.capture_playback_pkg.all;

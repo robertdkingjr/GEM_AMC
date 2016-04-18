@@ -1,7 +1,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 
-package ipbus_pkg is
+package ipbus is
 
 -- The signals going from master to slaves
 	type ipb_wbus is
@@ -29,4 +29,4 @@ package ipbus_pkg is
   
   type ipb_state_t is (IDLE, WRITE, READ, WAIT_FOR_WRITE_ACK, WAIT_FOR_READ_ACK, AXI_READ_HANDSHAKE, AXI_WRITE_HANDSHAKE);
 
-end ipbus_pkg;
+end ipbus;

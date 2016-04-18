@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.ipbus_pkg.all;
+use work.ipbus.all;
 use work.ipb_addr_decode.all;
 
 entity axi_ipbus_bridge is
@@ -218,7 +218,7 @@ begin
               axi_arready <= '0';
               ipb_mosi(ipb_slv_select).ipb_addr(C_S_AXI_ADDR_WIDTH-3 downto 0) <= S_AXI_ARADDR(C_S_AXI_ADDR_WIDTH-1 downto 2);
               ipb_mosi(ipb_slv_select).ipb_strobe <= '1';
-              ipb_mosi(ipb_slv_select).ipb_write <= '1';
+              ipb_mosi(ipb_slv_select).ipb_write <= '0';
               ipb_state <= WAIT_FOR_READ_ACK;
               
             -- addressing error - no IPBus slave at this address
@@ -270,7 +270,7 @@ begin
               axi_wready <= '0';
               ipb_mosi(ipb_slv_select).ipb_addr(C_S_AXI_ADDR_WIDTH-3 downto 0) <= S_AXI_AWADDR(C_S_AXI_ADDR_WIDTH-1 downto 2);
               ipb_mosi(ipb_slv_select).ipb_strobe <= '1';
-              ipb_mosi(ipb_slv_select).ipb_write <= '0';
+              ipb_mosi(ipb_slv_select).ipb_write <= '1';
               ipb_state <= WAIT_FOR_WRITE_ACK;
 
             -- addressing error - no IPBus slave at this address              

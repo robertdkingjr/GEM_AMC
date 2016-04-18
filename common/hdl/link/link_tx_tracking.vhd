@@ -19,7 +19,7 @@ library unisim;
 use unisim.vcomponents.all;
 
 library work;
-use work.user_package.all;
+use work.gem_pkg.all;
 
 entity link_tx_tracking is
 port(

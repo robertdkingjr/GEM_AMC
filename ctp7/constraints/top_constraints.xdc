@@ -394,104 +394,70 @@ set_clock_groups -asynchronous -group [get_clocks {system_inst/i_gth_wrapper/gen
 
 set_clock_groups -asynchronous -group [get_clocks clk_out2_v7_bd_clk_wiz_0_0] -group [get_clocks clkout0]
 
+############# ############# ############# ############# ############# ############# #############
+############# ############# ############# DEBUG CORES ############# ############# #############
 
-connect_debug_port u_ila_0/clk [get_nets [list {system_inst/i_gth_wrapper/i_gth_clk_bufs/clk_gth_tx_arr_o[0]}]]
-
-create_debug_core u_ila_0_0 ila
-set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0_0]
-set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0_0]
-set_property C_ADV_TRIGGER false [get_debug_cores u_ila_0_0]
-set_property C_DATA_DEPTH 1024 [get_debug_cores u_ila_0_0]
-set_property C_EN_STRG_QUAL false [get_debug_cores u_ila_0_0]
-set_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_0_0]
-set_property C_TRIGIN_EN false [get_debug_cores u_ila_0_0]
-set_property C_TRIGOUT_EN false [get_debug_cores u_ila_0_0]
-set_property port_width 1 [get_debug_ports u_ila_0_0/clk]
-connect_debug_port u_ila_0_0/clk [get_nets [list {system_inst/i_gth_wrapper/i_gth_clk_bufs/clk_gth_tx_usrclk_arr_o[0]}]]
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0_0/probe0]
-set_property port_width 32 [get_debug_ports u_ila_0_0/probe0]
-connect_debug_port u_ila_0_0/probe0 [get_nets [list {debug_gth_tx_data[txdata][0]} {debug_gth_tx_data[txdata][1]} {debug_gth_tx_data[txdata][2]} {debug_gth_tx_data[txdata][3]} {debug_gth_tx_data[txdata][4]} {debug_gth_tx_data[txdata][5]} {debug_gth_tx_data[txdata][6]} {debug_gth_tx_data[txdata][7]} {debug_gth_tx_data[txdata][8]} {debug_gth_tx_data[txdata][9]} {debug_gth_tx_data[txdata][10]} {debug_gth_tx_data[txdata][11]} {debug_gth_tx_data[txdata][12]} {debug_gth_tx_data[txdata][13]} {debug_gth_tx_data[txdata][14]} {debug_gth_tx_data[txdata][15]} {debug_gth_tx_data[txdata][16]} {debug_gth_tx_data[txdata][17]} {debug_gth_tx_data[txdata][18]} {debug_gth_tx_data[txdata][19]} {debug_gth_tx_data[txdata][20]} {debug_gth_tx_data[txdata][21]} {debug_gth_tx_data[txdata][22]} {debug_gth_tx_data[txdata][23]} {debug_gth_tx_data[txdata][24]} {debug_gth_tx_data[txdata][25]} {debug_gth_tx_data[txdata][26]} {debug_gth_tx_data[txdata][27]} {debug_gth_tx_data[txdata][28]} {debug_gth_tx_data[txdata][29]} {debug_gth_tx_data[txdata][30]} {debug_gth_tx_data[txdata][31]}]]
-create_debug_core u_ila_1_0 ila
-set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_1_0]
-set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_1_0]
-set_property C_ADV_TRIGGER false [get_debug_cores u_ila_1_0]
-set_property C_DATA_DEPTH 1024 [get_debug_cores u_ila_1_0]
-set_property C_EN_STRG_QUAL false [get_debug_cores u_ila_1_0]
-set_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_1_0]
-set_property C_TRIGIN_EN false [get_debug_cores u_ila_1_0]
-set_property C_TRIGOUT_EN false [get_debug_cores u_ila_1_0]
-set_property port_width 1 [get_debug_ports u_ila_1_0/clk]
-connect_debug_port u_ila_1_0/clk [get_nets [list {system_inst/i_gth_wrapper/i_gth_clk_bufs/clk_gth_rx_arr_o[6]}]]
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1_0/probe0]
-set_property port_width 4 [get_debug_ports u_ila_1_0/probe0]
-connect_debug_port u_ila_1_0/probe0 [get_nets [list {debug_gth_rx_data[rxdisperr][0]} {debug_gth_rx_data[rxdisperr][1]} {debug_gth_rx_data[rxdisperr][2]} {debug_gth_rx_data[rxdisperr][3]}]]
-create_debug_core u_ila_2_0 ila
-set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_2_0]
-set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_2_0]
-set_property C_ADV_TRIGGER false [get_debug_cores u_ila_2_0]
-set_property C_DATA_DEPTH 1024 [get_debug_cores u_ila_2_0]
-set_property C_EN_STRG_QUAL false [get_debug_cores u_ila_2_0]
-set_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_2_0]
-set_property C_TRIGIN_EN false [get_debug_cores u_ila_2_0]
-set_property C_TRIGOUT_EN false [get_debug_cores u_ila_2_0]
-set_property port_width 1 [get_debug_ports u_ila_2_0/clk]
-connect_debug_port u_ila_2_0/clk [get_nets [list system_inst/i_v7_bd/clk_wiz_0/inst/clk_out2]]
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_2_0/probe0]
-set_property port_width 32 [get_debug_ports u_ila_2_0/probe0]
-connect_debug_port u_ila_2_0/probe0 [get_nets [list {debug_oh_reg_response[data][0]} {debug_oh_reg_response[data][1]} {debug_oh_reg_response[data][2]} {debug_oh_reg_response[data][3]} {debug_oh_reg_response[data][4]} {debug_oh_reg_response[data][5]} {debug_oh_reg_response[data][6]} {debug_oh_reg_response[data][7]} {debug_oh_reg_response[data][8]} {debug_oh_reg_response[data][9]} {debug_oh_reg_response[data][10]} {debug_oh_reg_response[data][11]} {debug_oh_reg_response[data][12]} {debug_oh_reg_response[data][13]} {debug_oh_reg_response[data][14]} {debug_oh_reg_response[data][15]} {debug_oh_reg_response[data][16]} {debug_oh_reg_response[data][17]} {debug_oh_reg_response[data][18]} {debug_oh_reg_response[data][19]} {debug_oh_reg_response[data][20]} {debug_oh_reg_response[data][21]} {debug_oh_reg_response[data][22]} {debug_oh_reg_response[data][23]} {debug_oh_reg_response[data][24]} {debug_oh_reg_response[data][25]} {debug_oh_reg_response[data][26]} {debug_oh_reg_response[data][27]} {debug_oh_reg_response[data][28]} {debug_oh_reg_response[data][29]} {debug_oh_reg_response[data][30]} {debug_oh_reg_response[data][31]}]]
-create_debug_port u_ila_0_0 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0_0/probe1]
-set_property port_width 4 [get_debug_ports u_ila_0_0/probe1]
-connect_debug_port u_ila_0_0/probe1 [get_nets [list {debug_gth_tx_data[txcharisk][0]} {debug_gth_tx_data[txcharisk][1]} {debug_gth_tx_data[txcharisk][2]} {debug_gth_tx_data[txcharisk][3]}]]
-create_debug_port u_ila_1_0 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1_0/probe1]
-set_property port_width 32 [get_debug_ports u_ila_1_0/probe1]
-connect_debug_port u_ila_1_0/probe1 [get_nets [list {debug_gth_rx_data[rxdata][0]} {debug_gth_rx_data[rxdata][1]} {debug_gth_rx_data[rxdata][2]} {debug_gth_rx_data[rxdata][3]} {debug_gth_rx_data[rxdata][4]} {debug_gth_rx_data[rxdata][5]} {debug_gth_rx_data[rxdata][6]} {debug_gth_rx_data[rxdata][7]} {debug_gth_rx_data[rxdata][8]} {debug_gth_rx_data[rxdata][9]} {debug_gth_rx_data[rxdata][10]} {debug_gth_rx_data[rxdata][11]} {debug_gth_rx_data[rxdata][12]} {debug_gth_rx_data[rxdata][13]} {debug_gth_rx_data[rxdata][14]} {debug_gth_rx_data[rxdata][15]} {debug_gth_rx_data[rxdata][16]} {debug_gth_rx_data[rxdata][17]} {debug_gth_rx_data[rxdata][18]} {debug_gth_rx_data[rxdata][19]} {debug_gth_rx_data[rxdata][20]} {debug_gth_rx_data[rxdata][21]} {debug_gth_rx_data[rxdata][22]} {debug_gth_rx_data[rxdata][23]} {debug_gth_rx_data[rxdata][24]} {debug_gth_rx_data[rxdata][25]} {debug_gth_rx_data[rxdata][26]} {debug_gth_rx_data[rxdata][27]} {debug_gth_rx_data[rxdata][28]} {debug_gth_rx_data[rxdata][29]} {debug_gth_rx_data[rxdata][30]} {debug_gth_rx_data[rxdata][31]}]]
-create_debug_port u_ila_1_0 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1_0/probe2]
-set_property port_width 4 [get_debug_ports u_ila_1_0/probe2]
-connect_debug_port u_ila_1_0/probe2 [get_nets [list {debug_gth_rx_data[rxnotintable][0]} {debug_gth_rx_data[rxnotintable][1]} {debug_gth_rx_data[rxnotintable][2]} {debug_gth_rx_data[rxnotintable][3]}]]
-create_debug_port u_ila_1_0 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1_0/probe3]
-set_property port_width 4 [get_debug_ports u_ila_1_0/probe3]
-connect_debug_port u_ila_1_0/probe3 [get_nets [list {debug_gth_rx_data[rxcharisk][0]} {debug_gth_rx_data[rxcharisk][1]} {debug_gth_rx_data[rxcharisk][2]} {debug_gth_rx_data[rxcharisk][3]}]]
-create_debug_port u_ila_1_0 probe
-set_property PROBE_TYPE DATA [get_debug_ports u_ila_1_0/probe4]
-set_property port_width 4 [get_debug_ports u_ila_1_0/probe4]
-connect_debug_port u_ila_1_0/probe4 [get_nets [list {debug_gth_rx_data[rxchariscomma][0]} {debug_gth_rx_data[rxchariscomma][1]} {debug_gth_rx_data[rxchariscomma][2]} {debug_gth_rx_data[rxchariscomma][3]}]]
-create_debug_port u_ila_1_0 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1_0/probe5]
-set_property port_width 1 [get_debug_ports u_ila_1_0/probe5]
-connect_debug_port u_ila_1_0/probe5 [get_nets [list {debug_gth_rx_data[rxbyteisaligned]}]]
-create_debug_port u_ila_1_0 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1_0/probe6]
-set_property port_width 1 [get_debug_ports u_ila_1_0/probe6]
-connect_debug_port u_ila_1_0/probe6 [get_nets [list {debug_gth_rx_data[rxbyterealign]}]]
-create_debug_port u_ila_1_0 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1_0/probe7]
-set_property port_width 1 [get_debug_ports u_ila_1_0/probe7]
-connect_debug_port u_ila_1_0/probe7 [get_nets [list {debug_gth_rx_data[rxcommadet]}]]
-create_debug_port u_ila_2_0 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_2_0/probe1]
-set_property port_width 32 [get_debug_ports u_ila_2_0/probe1]
-connect_debug_port u_ila_2_0/probe1 [get_nets [list {debug_oh_reg_request[data][0]} {debug_oh_reg_request[data][1]} {debug_oh_reg_request[data][2]} {debug_oh_reg_request[data][3]} {debug_oh_reg_request[data][4]} {debug_oh_reg_request[data][5]} {debug_oh_reg_request[data][6]} {debug_oh_reg_request[data][7]} {debug_oh_reg_request[data][8]} {debug_oh_reg_request[data][9]} {debug_oh_reg_request[data][10]} {debug_oh_reg_request[data][11]} {debug_oh_reg_request[data][12]} {debug_oh_reg_request[data][13]} {debug_oh_reg_request[data][14]} {debug_oh_reg_request[data][15]} {debug_oh_reg_request[data][16]} {debug_oh_reg_request[data][17]} {debug_oh_reg_request[data][18]} {debug_oh_reg_request[data][19]} {debug_oh_reg_request[data][20]} {debug_oh_reg_request[data][21]} {debug_oh_reg_request[data][22]} {debug_oh_reg_request[data][23]} {debug_oh_reg_request[data][24]} {debug_oh_reg_request[data][25]} {debug_oh_reg_request[data][26]} {debug_oh_reg_request[data][27]} {debug_oh_reg_request[data][28]} {debug_oh_reg_request[data][29]} {debug_oh_reg_request[data][30]} {debug_oh_reg_request[data][31]}]]
-create_debug_port u_ila_2_0 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_2_0/probe2]
-set_property port_width 32 [get_debug_ports u_ila_2_0/probe2]
-connect_debug_port u_ila_2_0/probe2 [get_nets [list {debug_oh_reg_request[addr][0]} {debug_oh_reg_request[addr][1]} {debug_oh_reg_request[addr][2]} {debug_oh_reg_request[addr][3]} {debug_oh_reg_request[addr][4]} {debug_oh_reg_request[addr][5]} {debug_oh_reg_request[addr][6]} {debug_oh_reg_request[addr][7]} {debug_oh_reg_request[addr][8]} {debug_oh_reg_request[addr][9]} {debug_oh_reg_request[addr][10]} {debug_oh_reg_request[addr][11]} {debug_oh_reg_request[addr][12]} {debug_oh_reg_request[addr][13]} {debug_oh_reg_request[addr][14]} {debug_oh_reg_request[addr][15]} {debug_oh_reg_request[addr][16]} {debug_oh_reg_request[addr][17]} {debug_oh_reg_request[addr][18]} {debug_oh_reg_request[addr][19]} {debug_oh_reg_request[addr][20]} {debug_oh_reg_request[addr][21]} {debug_oh_reg_request[addr][22]} {debug_oh_reg_request[addr][23]} {debug_oh_reg_request[addr][24]} {debug_oh_reg_request[addr][25]} {debug_oh_reg_request[addr][26]} {debug_oh_reg_request[addr][27]} {debug_oh_reg_request[addr][28]} {debug_oh_reg_request[addr][29]} {debug_oh_reg_request[addr][30]} {debug_oh_reg_request[addr][31]}]]
-create_debug_port u_ila_2_0 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_2_0/probe3]
-set_property port_width 1 [get_debug_ports u_ila_2_0/probe3]
-connect_debug_port u_ila_2_0/probe3 [get_nets [list {debug_oh_reg_request[en]}]]
-create_debug_port u_ila_2_0 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_2_0/probe4]
-set_property port_width 1 [get_debug_ports u_ila_2_0/probe4]
-connect_debug_port u_ila_2_0/probe4 [get_nets [list {debug_oh_reg_request[we]}]]
-create_debug_port u_ila_2_0 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_2_0/probe5]
-set_property port_width 1 [get_debug_ports u_ila_2_0/probe5]
-connect_debug_port u_ila_2_0/probe5 [get_nets [list {debug_oh_reg_response[en]}]]
+create_debug_core u_ila_0 ila
+set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0]
+set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0]
+set_property C_ADV_TRIGGER false [get_debug_cores u_ila_0]
+set_property C_DATA_DEPTH 1024 [get_debug_cores u_ila_0]
+set_property C_EN_STRG_QUAL false [get_debug_cores u_ila_0]
+set_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_0]
+set_property C_TRIGIN_EN false [get_debug_cores u_ila_0]
+set_property C_TRIGOUT_EN false [get_debug_cores u_ila_0]
+set_property port_width 1 [get_debug_ports u_ila_0/clk]
+connect_debug_port u_ila_0/clk [get_nets [list {system_inst/i_gth_wrapper/i_gth_clk_bufs/clk_gth_rx_arr_o[6]}]]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe0]
+set_property port_width 4 [get_debug_ports u_ila_0/probe0]
+connect_debug_port u_ila_0/probe0 [get_nets [list {debug_gth_rx_data[rxdisperr][0]} {debug_gth_rx_data[rxdisperr][1]} {debug_gth_rx_data[rxdisperr][2]} {debug_gth_rx_data[rxdisperr][3]}]]
+create_debug_core u_ila_1 ila
+set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_1]
+set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_1]
+set_property C_ADV_TRIGGER false [get_debug_cores u_ila_1]
+set_property C_DATA_DEPTH 1024 [get_debug_cores u_ila_1]
+set_property C_EN_STRG_QUAL false [get_debug_cores u_ila_1]
+set_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_1]
+set_property C_TRIGIN_EN false [get_debug_cores u_ila_1]
+set_property C_TRIGOUT_EN false [get_debug_cores u_ila_1]
+set_property port_width 1 [get_debug_ports u_ila_1/clk]
+connect_debug_port u_ila_1/clk [get_nets [list {system_inst/i_gth_wrapper/i_gth_clk_bufs/clk_gth_tx_usrclk_arr_o[0]}]]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1/probe0]
+set_property port_width 32 [get_debug_ports u_ila_1/probe0]
+connect_debug_port u_ila_1/probe0 [get_nets [list {debug_gth_tx_data[txdata][0]} {debug_gth_tx_data[txdata][1]} {debug_gth_tx_data[txdata][2]} {debug_gth_tx_data[txdata][3]} {debug_gth_tx_data[txdata][4]} {debug_gth_tx_data[txdata][5]} {debug_gth_tx_data[txdata][6]} {debug_gth_tx_data[txdata][7]} {debug_gth_tx_data[txdata][8]} {debug_gth_tx_data[txdata][9]} {debug_gth_tx_data[txdata][10]} {debug_gth_tx_data[txdata][11]} {debug_gth_tx_data[txdata][12]} {debug_gth_tx_data[txdata][13]} {debug_gth_tx_data[txdata][14]} {debug_gth_tx_data[txdata][15]} {debug_gth_tx_data[txdata][16]} {debug_gth_tx_data[txdata][17]} {debug_gth_tx_data[txdata][18]} {debug_gth_tx_data[txdata][19]} {debug_gth_tx_data[txdata][20]} {debug_gth_tx_data[txdata][21]} {debug_gth_tx_data[txdata][22]} {debug_gth_tx_data[txdata][23]} {debug_gth_tx_data[txdata][24]} {debug_gth_tx_data[txdata][25]} {debug_gth_tx_data[txdata][26]} {debug_gth_tx_data[txdata][27]} {debug_gth_tx_data[txdata][28]} {debug_gth_tx_data[txdata][29]} {debug_gth_tx_data[txdata][30]} {debug_gth_tx_data[txdata][31]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe1]
+set_property port_width 32 [get_debug_ports u_ila_0/probe1]
+connect_debug_port u_ila_0/probe1 [get_nets [list {debug_gth_rx_data[rxdata][0]} {debug_gth_rx_data[rxdata][1]} {debug_gth_rx_data[rxdata][2]} {debug_gth_rx_data[rxdata][3]} {debug_gth_rx_data[rxdata][4]} {debug_gth_rx_data[rxdata][5]} {debug_gth_rx_data[rxdata][6]} {debug_gth_rx_data[rxdata][7]} {debug_gth_rx_data[rxdata][8]} {debug_gth_rx_data[rxdata][9]} {debug_gth_rx_data[rxdata][10]} {debug_gth_rx_data[rxdata][11]} {debug_gth_rx_data[rxdata][12]} {debug_gth_rx_data[rxdata][13]} {debug_gth_rx_data[rxdata][14]} {debug_gth_rx_data[rxdata][15]} {debug_gth_rx_data[rxdata][16]} {debug_gth_rx_data[rxdata][17]} {debug_gth_rx_data[rxdata][18]} {debug_gth_rx_data[rxdata][19]} {debug_gth_rx_data[rxdata][20]} {debug_gth_rx_data[rxdata][21]} {debug_gth_rx_data[rxdata][22]} {debug_gth_rx_data[rxdata][23]} {debug_gth_rx_data[rxdata][24]} {debug_gth_rx_data[rxdata][25]} {debug_gth_rx_data[rxdata][26]} {debug_gth_rx_data[rxdata][27]} {debug_gth_rx_data[rxdata][28]} {debug_gth_rx_data[rxdata][29]} {debug_gth_rx_data[rxdata][30]} {debug_gth_rx_data[rxdata][31]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe2]
+set_property port_width 4 [get_debug_ports u_ila_0/probe2]
+connect_debug_port u_ila_0/probe2 [get_nets [list {debug_gth_rx_data[rxnotintable][0]} {debug_gth_rx_data[rxnotintable][1]} {debug_gth_rx_data[rxnotintable][2]} {debug_gth_rx_data[rxnotintable][3]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe3]
+set_property port_width 4 [get_debug_ports u_ila_0/probe3]
+connect_debug_port u_ila_0/probe3 [get_nets [list {debug_gth_rx_data[rxcharisk][0]} {debug_gth_rx_data[rxcharisk][1]} {debug_gth_rx_data[rxcharisk][2]} {debug_gth_rx_data[rxcharisk][3]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe4]
+set_property port_width 4 [get_debug_ports u_ila_0/probe4]
+connect_debug_port u_ila_0/probe4 [get_nets [list {debug_gth_rx_data[rxchariscomma][0]} {debug_gth_rx_data[rxchariscomma][1]} {debug_gth_rx_data[rxchariscomma][2]} {debug_gth_rx_data[rxchariscomma][3]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe5]
+set_property port_width 1 [get_debug_ports u_ila_0/probe5]
+connect_debug_port u_ila_0/probe5 [get_nets [list {debug_gth_rx_data[rxbyteisaligned]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe6]
+set_property port_width 1 [get_debug_ports u_ila_0/probe6]
+connect_debug_port u_ila_0/probe6 [get_nets [list {debug_gth_rx_data[rxbyterealign]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe7]
+set_property port_width 1 [get_debug_ports u_ila_0/probe7]
+connect_debug_port u_ila_0/probe7 [get_nets [list {debug_gth_rx_data[rxcommadet]}]]
+create_debug_port u_ila_1 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1/probe1]
+set_property port_width 4 [get_debug_ports u_ila_1/probe1]
+connect_debug_port u_ila_1/probe1 [get_nets [list {debug_gth_tx_data[txcharisk][0]} {debug_gth_tx_data[txcharisk][1]} {debug_gth_tx_data[txcharisk][2]} {debug_gth_tx_data[txcharisk][3]}]]
 set_property C_CLK_INPUT_FREQ_HZ 300000000 [get_debug_cores dbg_hub]
 set_property C_ENABLE_CLK_DIVIDER false [get_debug_cores dbg_hub]
 set_property C_USER_SCAN_CHAIN 1 [get_debug_cores dbg_hub]
-connect_debug_port dbg_hub/clk [get_nets clk_gth_tx_arr[6]]
+connect_debug_port dbg_hub/clk [get_nets axi_clk]

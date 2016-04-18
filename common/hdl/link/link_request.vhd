@@ -16,19 +16,18 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 library work;
+use work.gem_pkg.all;
 use work.ipbus.all;
-use work.system_package.all;
-use work.user_package.all;
 
 entity link_request is
 port(
 
-	ipb_clk_i   : in std_logic;
-	gtx_clk_i   : in std_logic;
-	reset_i     : in std_logic;
+  	ipb_clk_i   : in std_logic;
+  	gtx_clk_i   : in std_logic;
+    reset_i     : in std_logic;
     
-	ipb_mosi_i  : in ipb_wbus;
-	ipb_miso_o  : out ipb_rbus;
+    ipb_mosi_i  : in ipb_wbus;
+    ipb_miso_o  : out ipb_rbus;
     
     tx_en_i     : in std_logic;
     tx_valid_o  : out std_logic;
@@ -69,7 +68,7 @@ begin
                     when IDLE =>    
                         if (ipb_mosi_i.ipb_strobe = '1') then
                             wr_en <= '1';
-                            wr_data <= ipb_mosi_i.ipb_write & ipb_mosi_i.ipb_addr(31 downto 24) & "0000" & ipb_mosi_i.ipb_addr(19 downto 0) & ipb_mosi_i.ipb_wdata;
+                            wr_data <= not ipb_mosi_i.ipb_write & ipb_mosi_i.ipb_addr(23 downto 20) & ipb_mosi_i.ipb_addr(15 downto 12) & x"000" & ipb_mosi_i.ipb_addr(11 downto 0) & ipb_mosi_i.ipb_wdata; -- see ipb_addr_decode for info on addressing
                             state <= RSPD;
                         end if;
                     when RSPD =>

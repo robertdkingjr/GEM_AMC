@@ -22,7 +22,7 @@ use UNISIM.VCOMPONENTS.all;
 library work;
 use work.gth_pkg.all;
 
-use work.gem_ctp7_v7_build_cfg.all;
+use work.system_package.all;
 
 --============================================================================
 --                                                          Entity declaration

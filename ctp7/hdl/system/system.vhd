@@ -25,7 +25,7 @@ use work.gth_pkg.all;
 use work.ctp7_utils_pkg.all;
 use work.ttc_pkg.all;
 use work.capture_playback_pkg.all;
-use work.gem_ctp7_v7_build_cfg.all;
+use work.system_package.all;
 use work.axi_pkg.all;
 
 --============================================================================
