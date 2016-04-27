@@ -27,6 +27,6 @@ package ipbus is
 	constant IPB_RBUS_NULL: ipb_rbus := ((others => '0'), '0', '0');
 	constant IPB_WBUS_NULL: ipb_wbus := ((others => '0'), (others => '0'), '0', '0');
   
-  type ipb_state_t is (IDLE, WRITE, READ, WAIT_FOR_WRITE_ACK, WAIT_FOR_READ_ACK, AXI_READ_HANDSHAKE, AXI_WRITE_HANDSHAKE);
+  type t_axi_ipb_state is (IDLE, WRITE, READ, WAIT_FOR_WRITE_ACK, WAIT_FOR_READ_ACK, AXI_READ_HANDSHAKE, AXI_WRITE_HANDSHAKE);
 
 end ipbus;

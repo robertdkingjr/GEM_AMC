@@ -81,7 +81,7 @@ begin
       s  => '0'
       );
 
-  i_ttc_decoder : entity work.ttc_decoder
+  i_ttc_decoder : entity work.ttc_decoder_ctp7
     port map(
       ttc_clk   => clk_40_i,
       ttc_data  => s_ttc_data,

@@ -6,4 +6,12 @@
 *.swp
 *.~
 .Xil
+
+/ctp7/ip/*
+/glib/ip/*
+!*.xcix
+
 zamiacad
+sigasi
+
+.idea

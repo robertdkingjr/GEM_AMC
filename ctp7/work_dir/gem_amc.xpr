@@ -17,6 +17,7 @@
     <Option Name="CompiledLibDirActivehdl" Val="$PCACHEDIR/compile_simlib/activehdl"/>
     <Option Name="TargetLanguage" Val="VHDL"/>
     <Option Name="BoardPart" Val=""/>
+    <Option Name="SourceMgmtMode" Val="DisplayOnly"/>
     <Option Name="ActiveSimSet" Val="sim_1"/>
     <Option Name="DefaultLib" Val="xil_defaultlib"/>
     <Option Name="IPRepoPath" Val="$PCACHEDIR/ip"/>
@@ -33,7 +34,19 @@
   <FileSets Version="1" Minor="31">
     <FileSet Name="sources_1" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1">
       <Filter Type="Srcs"/>
-      <File Path="$PPRDIR/../hdl/system/TTC_decoder.vhd">
+      <File Path="$PPRDIR/../hdl/system/pkg/system_pkg.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/daq/daqlink/release-1.9/RAM32x6Db.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/daq/daqlink/release-1.9/Hamming.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -51,51 +64,43 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../hdl/system/gth_4p8_raw_CLOCK_MODULE.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../hdl/system/pkg/gth_pkg.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../hdl/system/pkg/system_pkg.vhd">
+      <File Path="$PPRDIR/../hdl/system/gth_4p8_raw_CLOCK_MODULE.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip/fifo_gtx_rx.xcix">
+      <File Path="$PPRDIR/../../common/hdl/pkg/gem_pkg.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip/fifo_gtx_rx/fifo_gtx_rx.xci">
+      <File Path="$PPRDIR/../hdl/pkg/gem_board_config_pkg.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/daq/daqlink/release-1.9/TTS_TRIG_if.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/pkg/ttc_pkg.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
       <File Path="$PPRDIR/../hdl/ipbus/pkg/ipbus_pkg.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../hdl/system/ttc_cmd.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../hdl/system/pulse_extend.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -143,19 +148,20 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../hdl/system/ctp7_ttc_clocks.vhd">
+      <File Path="$PPRDIR/../ip/fifo_gtx_rx/fifo_gtx_rx.xci">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/daq/daqlink/release-1.9/fifo66X512.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../hdl/system/pkg/capture_playback_pkg.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../hdl/system/pkg/ttc_pkg.vhd">
+      <File Path="$PPRDIR/../../common/hdl/daq/daqlink/release-1.9/EthernetCRCD32.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -167,29 +173,15 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../common/hdl/pkg/gem_pkg.vhd">
+      <File Path="$PPRDIR/../../common/hdl/daq/daqlink/release-1.9/crc16D16.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../hdl/ipbus/pkg/ipb_addr_decode.vhd">
+      <File Path="$PPRDIR/../hdl/system/pkg/capture_playback_pkg.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../ip/ila_axi_ipbus_bridge.xcix">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../ip/ila_axi_ipbus_bridge/ila_axi_ipbus_bridge.xci">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
@@ -199,57 +191,8 @@
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_proc_sys_reset_0_0/v7_bd_proc_sys_reset_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="hdl/v7_bd.vhd"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="v7_bd_ooc.xdc"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_auto_pc_0/v7_bd_auto_pc_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_clk_wiz_0_0/v7_bd_clk_wiz_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="hdl/v7_bd.hwdef"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="hw_handoff/v7_bd_bd.tcl"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="hw_handoff/v7_bd.hwh"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_bram_ctrl_gth_reg_file_0/v7_bd_axi_bram_ctrl_gth_reg_file_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_bram_ctrl_reg_file_0/v7_bd_axi_bram_ctrl_reg_file_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_bram_ctrl_rx_ram_0/v7_bd_axi_bram_ctrl_rx_ram_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_bram_ctrl_tx_ram_0/v7_bd_axi_bram_ctrl_tx_ram_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_xadc_wiz_0_0/v7_bd_xadc_wiz_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_bram_ctrl_0_0/v7_bd_axi_bram_ctrl_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_bram_ctrl_drp_0/v7_bd_axi_bram_ctrl_drp_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_chip2chip_0_0/v7_bd_axi_chip2chip_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_interconnect_0_0/v7_bd_axi_interconnect_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_blk_mem_gen_0_0/v7_bd_blk_mem_gen_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_xbar_0/v7_bd_xbar_0.xci"/>
       </File>
       <File Path="$PPRDIR/../hdl/system/register_file.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../hdl/system/gth_wrapper.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../hdl/system/gth_register_file.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../hdl/system/drp_controller.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../hdl/system/ctp7_ttc.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../hdl/system/pkg/axi_pkg.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -273,7 +216,74 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../hdl/ipbus/axi_ipbus_bridge.vhd">
+      <File Path="$PPRDIR/../hdl/ipbus/pkg/ipb_addr_decode.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../ip/ila_axi_ipbus_bridge/ila_axi_ipbus_bridge.xci">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../hdl/system/gth_wrapper.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../hdl/system/gth_register_file.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../hdl/system/drp_controller.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/daq/daqlink/release-1.9/DAQ_Link_V6.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/daq/daqlink/release-1.9/DAQLINK_gtx.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../hdl/system/pkg/axi_pkg.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/ttc/ttc_decoder.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/ttc/ttc_cmd.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/ttc/ttc_clocks.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/daq/track_input_processor.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -291,6 +301,84 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PPRDIR/../../common/hdl/misc/fifo.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/daq/daqlink/daq_clocks.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/daq/daqlink/daqlink_wrapper.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/misc/counter.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../hdl/ipbus/axi_ipbus_bridge.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/ttc/ttc_wrapper.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/ttc/ttc.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/trigger/trigger_input_processor.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/trigger/trigger.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/oh/link/link_tx_trigger.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/oh/link/link_tkdata.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/oh/link/link_rx_trigger.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/misc/ipbus_counters.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <File Path="$PPRDIR/../hdl/gem_ctp7.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -299,7 +387,36 @@
       </File>
       <File Path="$PPRDIR/../../common/hdl/gem_amc.vhd">
         <FileInfo>
-          <Attr Name="AutoDisabled" Val="1"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/daq/daq.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/utils/pulse_extend.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/utils/synchronizer.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/utils/ipbus_slave.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/pkg/registers.vhd">
+        <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
@@ -307,7 +424,6 @@
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
         <Option Name="TopModule" Val="gem_ctp7"/>
-        <Option Name="TopAutoSet" Val="TRUE"/>
       </Config>
     </FileSet>
     <FileSet Name="constrs_1" Type="Constrs" RelSrcDir="$PSRCDIR/constrs_1">
@@ -324,6 +440,7 @@
       </Config>
     </FileSet>
     <FileSet Name="sim_1" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/sim_1">
+      <Filter Type="Srcs"/>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
         <Option Name="TopModule" Val="gem_ctp7"/>
@@ -333,13 +450,6 @@
       </Config>
     </FileSet>
     <FileSet Name="fifo_gtx_tx" Type="BlockSrcs" RelSrcDir="$PSRCDIR/fifo_gtx_tx">
-      <File Path="$PPRDIR/../ip/fifo_gtx_tx.xcix">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../ip/fifo_gtx_tx/fifo_gtx_tx.xci">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -377,27 +487,21 @@
   <Runs Version="1" Minor="10">
     <Run Id="synth_1" Type="Ft3:Synth" SrcSet="sources_1" Part="xc7vx690tffg1927-2" ConstrsSet="constrs_1" Description="Vivado Synthesis Defaults" State="current" Dir="$PRUNDIR/synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2015">
-          <Desc>Vivado Synthesis Defaults</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2015"/>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
     </Run>
     <Run Id="fifo_gtx_tx_synth_1" Type="Ft3:Synth" SrcSet="fifo_gtx_tx" Part="xc7vx690tffg1927-2" ConstrsSet="fifo_gtx_tx" Description="Vivado Synthesis Defaults" Dir="$PRUNDIR/fifo_gtx_tx_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2015">
-          <Desc>Vivado Synthesis Defaults</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2015"/>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
     </Run>
-    <Run Id="impl_1" Type="Ft2:EntireDesign" Part="xc7vx690tffg1927-2" ConstrsSet="constrs_1" Description="Vivado Implementation Defaults" State="current" Dir="$PRUNDIR/impl_1" SynthRun="synth_1" IncludeInArchive="true">
+    <Run Id="impl_1" Type="Ft2:EntireDesign" Part="xc7vx690tffg1927-2" ConstrsSet="constrs_1" Description="Vivado Implementation Defaults" State="current" SynthRun="synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2015">
-          <Desc>Vivado Implementation Defaults</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2015"/>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>
@@ -408,13 +512,10 @@
         <Step Id="post_route_phys_opt_design"/>
         <Step Id="write_bitstream"/>
       </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
     </Run>
     <Run Id="fifo_gtx_tx_impl_1" Type="Ft2:EntireDesign" Part="xc7vx690tffg1927-2" ConstrsSet="fifo_gtx_tx" Description="Vivado Implementation Defaults" SynthRun="fifo_gtx_tx_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2015">
-          <Desc>Vivado Implementation Defaults</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2015"/>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>

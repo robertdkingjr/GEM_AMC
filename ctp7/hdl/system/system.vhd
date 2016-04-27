@@ -341,23 +341,23 @@ architecture system_arch of system is
   signal axi_reset         : std_logic_vector(0 downto 0);
   signal ipb_axi_araddr    : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal ipb_axi_arprot    : STD_LOGIC_VECTOR ( 2 downto 0 );
-  signal ipb_axi_arvalid   : STD_LOGIC_VECTOR ( 0 to 0 );
-  signal ipb_axi_rready    : STD_LOGIC_VECTOR ( 0 to 0 );
+  signal ipb_axi_arvalid   : STD_LOGIC_VECTOR ( 0 downto 0 );
+  signal ipb_axi_rready    : STD_LOGIC_VECTOR ( 0 downto 0 );
   signal ipb_axi_awaddr    : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal ipb_axi_awprot    : STD_LOGIC_VECTOR ( 2 downto 0 );
-  signal ipb_axi_awvalid   : STD_LOGIC_VECTOR ( 0 to 0 );
+  signal ipb_axi_awvalid   : STD_LOGIC_VECTOR ( 0 downto 0 );
   signal ipb_axi_wdata     : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal ipb_axi_wstrb     : STD_LOGIC_VECTOR ( 3 downto 0 );
-  signal ipb_axi_wvalid    : STD_LOGIC_VECTOR ( 0 to 0 );      
-  signal ipb_axi_bready    : STD_LOGIC_VECTOR ( 0 to 0 );
-  signal ipb_axi_arready   : STD_LOGIC_VECTOR ( 0 to 0 );
+  signal ipb_axi_wvalid    : STD_LOGIC_VECTOR ( 0 downto 0 );      
+  signal ipb_axi_bready    : STD_LOGIC_VECTOR ( 0 downto 0 );
+  signal ipb_axi_arready   : STD_LOGIC_VECTOR ( 0 downto 0 );
   signal ipb_axi_rdata     : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal ipb_axi_rresp     : STD_LOGIC_VECTOR ( 1 downto 0 );
-  signal ipb_axi_rvalid    : STD_LOGIC_VECTOR ( 0 to 0 );
-  signal ipb_axi_awready   : STD_LOGIC_VECTOR ( 0 to 0 );
-  signal ipb_axi_wready    : STD_LOGIC_VECTOR ( 0 to 0 );
+  signal ipb_axi_rvalid    : STD_LOGIC_VECTOR ( 0 downto 0 );
+  signal ipb_axi_awready   : STD_LOGIC_VECTOR ( 0 downto 0 );
+  signal ipb_axi_wready    : STD_LOGIC_VECTOR ( 0 downto 0 );
   signal ipb_axi_bresp     : STD_LOGIC_VECTOR ( 1 downto 0 );
-  signal ipb_axi_bvalid    : STD_LOGIC_VECTOR ( 0 to 0 );  
+  signal ipb_axi_bvalid    : STD_LOGIC_VECTOR ( 0 downto 0 );  
   
   -------------------------- DEBUG ----------------------------------
 --  attribute mark_debug : string;

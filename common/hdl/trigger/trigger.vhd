@@ -28,7 +28,7 @@ port(
     reset_i                     : in std_logic;
 
     -- inputs
-    trig_data_links_i           : in trig_link_array_t(0 to number_of_optohybrids - 1);
+    trig_data_links_i           : in t_trig_link_array(0 to number_of_optohybrids - 1);
 
     -- TTC
     ttc_clk_i                   : in std_logic;

@@ -9,7 +9,7 @@
 --
 -- Create Date:    14:53:20 05/24/2010
 -- Design Name:
--- Module Name:    TTC_decoder - Behavioral
+-- Module Name:    ttc_decoder - Behavioral
 -- Project Name:
 -- Target Devices:
 -- Tool versions:
@@ -53,7 +53,7 @@ entity ttc_decoder is
 
 end ttc_decoder;
 
-architecture Behavioral of TTC_decoder is
+architecture Behavioral of ttc_decoder is
 
   signal L1A        : std_logic                     := '0';
   signal sr         : std_logic_vector(12 downto 0) := (others => '0');

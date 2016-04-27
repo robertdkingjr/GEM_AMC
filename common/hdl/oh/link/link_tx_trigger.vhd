@@ -27,7 +27,7 @@ port(
     gtx_clk_i   : in std_logic;    
     reset_i     : in std_logic;
     
-    vfat2_t1_i  : in t1_t;
+    vfat2_t1_i  : in t_t1;
     
     tx_kchar_o  : out std_logic_vector(1 downto 0);
     tx_data_o   : out std_logic_vector(15 downto 0)

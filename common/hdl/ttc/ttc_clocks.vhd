@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 --                                                                            
---       Unit Name: ctp7_ttc_clocks                                            
+--       Unit Name: ttc_clocks                                            
 --                                                                            
 --     Description: 
 --
@@ -21,7 +21,7 @@ use UNISIM.VComponents.all;
 --============================================================================
 --                                                          Entity declaration
 --============================================================================
-entity ctp7_ttc_clocks is
+entity ttc_clocks is
   port(
     clk_40_ttc_p_i : in std_logic;      -- TTC backplane clock signals
     clk_40_ttc_n_i : in std_logic;
@@ -40,12 +40,12 @@ entity ctp7_ttc_clocks is
 
     );
 
-end ctp7_ttc_clocks;
+end ttc_clocks;
 
 --============================================================================
 --                                                        Architecture section
 --============================================================================
-architecture ctp7_ttc_clocks_arch of ctp7_ttc_clocks is
+architecture ttc_clocks_arch of ttc_clocks is
 
 --============================================================================
 --                                                         Signal declarations
@@ -207,7 +207,7 @@ begin
       I => s_clk_320
       );
 
-end ctp7_ttc_clocks_arch;
+end ttc_clocks_arch;
 --============================================================================
 --                                                            Architecture end
 --============================================================================

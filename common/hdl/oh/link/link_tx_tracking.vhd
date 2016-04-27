@@ -27,7 +27,7 @@ port(
     gtx_clk_i       : in std_logic;    
     reset_i         : in std_logic;    
     
-    vfat2_t1_i      : in t1_t;
+    vfat2_t1_i      : in t_t1;
     
     req_en_o        : out std_logic;
     req_valid_i     : in std_logic;

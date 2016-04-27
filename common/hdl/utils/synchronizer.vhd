@@ -18,12 +18,14 @@ use IEEE.NUMERIC_STD.all;
 library UNISIM;
 use UNISIM.VComponents.all;
 
+library work;
+
 --============================================================================
 --                                                          Entity declaration
 --============================================================================
 entity synchronizer is
   generic (
-    N_STAGES : integer := 2
+    N_STAGES : integer := 3
     );
   port (
     async_i : in  std_logic;

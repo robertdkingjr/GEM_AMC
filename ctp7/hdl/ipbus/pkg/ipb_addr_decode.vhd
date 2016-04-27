@@ -5,28 +5,45 @@ use work.ipbus.all;
 
 package ipb_addr_decode is
 
-  type t_integer_arr  is array(natural range <>) of integer;
-  type t_ipb_slv is record
-    oh_reg   : t_integer_arr(0 to 15);
-    oh_evt   : t_integer_arr(0 to 15);
-    counters : integer;
-    daq      : integer;
-    ttc      : integer;
-    trigger  : integer;
-  end record;
-  
-  constant C_NUM_IPB_SLAVES : integer := 36;
-  
-  -- IPbus slave index definition
-  constant C_IPB_SLV : t_ipb_slv := (oh_reg   => (0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30),
-                                     oh_evt   => (1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31),
-                                     ttc      => 32,
-                                     counters => 33,
-                                     daq      => 34,
-                                     trigger  => 35);
-  
-	function ipb_addr_sel(signal addr : in std_logic_vector(31 downto 0)) return integer;
+    type t_integer_arr is array (natural range <>) of integer;
+    type t_ipb_slv is record
+        oh_reg   : t_integer_arr(0 to 15);
+        oh_evt   : t_integer_arr(0 to 15);
+        counters : integer;
+        daq      : integer;
+        ttc      : integer;
+        trigger  : integer;
+    end record;
 
+    constant C_NUM_IPB_SLAVES : integer := 37;
+
+    -- IPbus slave index definition
+    constant C_IPB_SLV : t_ipb_slv := (oh_reg => (0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30),
+        oh_evt => (1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31),
+        ttc => 32,
+        counters => 33,
+        daq => 34,
+        trigger => 35,
+        system => 36);
+
+    function ipb_addr_sel(signal addr : in std_logic_vector(31 downto 0)) return integer;
+
+    -------------------------------------- TTC Module ----------------------------------------
+    constant IPB_TTC_NUM_REGS : integer := 10;
+    
+    constant IPB_TTC_ADDR_CTRL        : integer := 0; -- TTC control register (allows things like resets, l1a_enable, MMCM phase shift, counter clears)
+    constant IPB_TTC_ADDR_CTRL_CMD_0  : integer := 1; -- TTC command decoding config 0 -- codes for BC0, EC0, RESYNC, OC0
+    constant IPB_TTC_ADDR_CTRL_CMD_1  : integer := 2; -- TTC command decoding config 1 -- codes for HARD_RESET, CALPULSE, START, STOP
+    constant IPB_TTC_ADDR_CTRL_CMD_2  : integer := 3; -- TTC command decoding config 2 -- codes for future commands (right now includes TEST_SYNC, taken from the trigger guys, but not implemented)
+    
+    constant IPB_TTC_ADDR_STATUS      : integer := 1;
+    
+    constant C_ADDR_STAT        : integer := 0;
+    constant C_ADDR_MMCM_CTRL        : integer := 0;
+    constant C_ADDR_MMCM_STAT        : integer := 0;
+    constant C_ADDR_CNT        : integer := 0;
+    constant C_ADDR_L1A_ID        : integer := 0;
+    
 end ipb_addr_decode;
 
 package body ipb_addr_decode is
@@ -46,7 +63,7 @@ package body ipb_addr_decode is
     --   0x8: Trigger
 
     -- TTC
-    if    std_match(addr, "--------001100000000000000000---") then sel := C_IPB_SLV.ttc;
+    if    std_match(addr, "--------0011000000000000000-----") then sel := C_IPB_SLV.ttc;
 
 	  -- OH register access request forwarding (minimal change from GLIB, but limited to 16 OHs): [26:22] - OH number, [21:18] - OH module, [17:2] - address within module 
     elsif std_match(addr, "--------01000000----------------") then sel := C_IPB_SLV.oh_reg(0);
@@ -88,6 +105,7 @@ package body ipb_addr_decode is
     elsif std_match(addr, "--------0110000000000000--------") then sel := C_IPB_SLV.counters;
     elsif std_match(addr, "--------011100000000000---------") then sel := C_IPB_SLV.daq;
     elsif std_match(addr, "--------100000000000000---------") then sel := C_IPB_SLV.trigger;
+    elsif std_match(addr, "--------100100000000000---------") then sel := C_IPB_SLV.system;
     else sel := 999;
     end if;
 

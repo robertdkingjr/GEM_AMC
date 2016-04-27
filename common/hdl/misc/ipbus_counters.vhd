@@ -35,7 +35,7 @@ port(
     ipb_i           : in ipb_wbus_array(0 to number_of_ipb_slaves - 1);
     ipb_o           : in ipb_rbus_array(0 to number_of_ipb_slaves - 1);
     
-    vfat2_t1_i      : in t1_t;
+    vfat2_t1_i      : in t_t1;
     
     gtx_tk_error_i  : in std_logic_vector(1 downto 0);
     gtx_tr_error_i  : in std_logic_vector(1 downto 0);
@@ -52,7 +52,7 @@ architecture Behavioral of ipbus_counters is
     
     signal reg_sel          : integer range 0 to 31;    
     signal reg_reset        : std_logic_vector(31 downto 0);
-    signal reg_data         : std32_array_t(31 downto 0);
+    signal reg_data         : t_std32_array(31 downto 0);
     
 begin
 

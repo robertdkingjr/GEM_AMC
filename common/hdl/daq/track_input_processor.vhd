@@ -42,7 +42,7 @@ port(
     evtfifo_underflow_o         : out std_logic;
 
     -- Track data
-    tk_data_link_i              : in data_link_t;
+    tk_data_link_i              : in t_data_link;
     
     -- TTS
     tts_state_o                 : out std_logic_vector(3 downto 0);
@@ -57,8 +57,8 @@ port(
     err_vfat_block_too_big_o    : out std_logic; -- got more than 14 VFAT words for one block
     
     -- IPbus
-    ipb_read_reg_data_o         : out std32_array_t(0 to 15);
-    ipb_write_reg_data_i        : in std32_array_t(0 to 15)
+    ipb_read_reg_data_o         : out t_std32_array(0 to 15);
+    ipb_write_reg_data_i        : in t_std32_array(0 to 15)
 );
 
 end track_input_processor;

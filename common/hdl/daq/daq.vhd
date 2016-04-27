@@ -50,8 +50,8 @@ port(
     ttc_l1a_id_i                : in std_logic_vector(23 downto 0);
 
     -- Track data
-    tk_data_links_i             : in data_link_array_t(0 to number_of_optohybrids - 1);
-    trig_data_links_i           : in trig_link_array_t(0 to number_of_optohybrids - 1);
+    tk_data_links_i             : in t_data_link_array(0 to number_of_optohybrids - 1);
+    trig_data_links_i           : in t_trig_link_array(0 to number_of_optohybrids - 1);
     sbit_rate_i                 : in unsigned(31 downto 0);
     
     -- IPbus
@@ -121,8 +121,8 @@ architecture Behavioral of daq is
     type ipb_state_t is (IDLE, RSPD, RST);
     signal ipb_state                : ipb_state_t := IDLE;    
     signal ipb_reg_sel              : integer range 0 to (16 * (number_of_optohybrids + 10)) + 15; -- 16 regs for AMC evt builder and 16 regs for each chamber evt builder   
-    signal ipb_read_reg_data        : std32_array_t(0 to (16 * (number_of_optohybrids + 10)) + 15); -- 16 regs for AMC evt builder and 16 regs for each chamber evt builder
-    signal ipb_write_reg_data       : std32_array_t(0 to (16 * (number_of_optohybrids + 10)) + 15); -- 16 regs for AMC evt builder and 16 regs for each chamber evt builder
+    signal ipb_read_reg_data        : t_std32_array(0 to (16 * (number_of_optohybrids + 10)) + 15); -- 16 regs for AMC evt builder and 16 regs for each chamber evt builder
+    signal ipb_write_reg_data       : t_std32_array(0 to (16 * (number_of_optohybrids + 10)) + 15); -- 16 regs for AMC evt builder and 16 regs for each chamber evt builder
     
     -- L1A FIFO
     signal l1afifo_din          : std_logic_vector(51 downto 0) := (others => '0');
@@ -161,12 +161,12 @@ architecture Behavioral of daq is
            
     ---=== Chamber Event Builder signals ===---
     
-    signal chamber_infifos      : chamber_infifo_rd_array_t(0 to number_of_optohybrids - 1);
-    signal chamber_evtfifos     : chamber_evtfifo_rd_array_t(0 to number_of_optohybrids - 1);
-    signal chmb_evtfifos_empty  : std_logic_vector(number_of_optohybrids - 1 downto 0) := (others => '1'); -- you should probably just move this flag out of the chamber_evtfifo_rd_array_t struct 
-    signal chmb_evtfifos_rd_en  : std_logic_vector(number_of_optohybrids - 1 downto 0) := (others => '0'); -- you should probably just move this flag out of the chamber_evtfifo_rd_array_t struct 
-    signal chmb_infifos_rd_en   : std_logic_vector(number_of_optohybrids - 1 downto 0) := (others => '0'); -- you should probably just move this flag out of the chamber_evtfifo_rd_array_t struct 
-    signal chmb_tts_states      : std4_array_t(0 to number_of_optohybrids - 1);
+    signal chamber_infifos      : t_chamber_infifo_rd_array(0 to number_of_optohybrids - 1);
+    signal chamber_evtfifos     : t_chamber_evtfifo_rd_array(0 to number_of_optohybrids - 1);
+    signal chmb_evtfifos_empty  : std_logic_vector(number_of_optohybrids - 1 downto 0) := (others => '1'); -- you should probably just move this flag out of the t_chamber_evtfifo_rd_array struct 
+    signal chmb_evtfifos_rd_en  : std_logic_vector(number_of_optohybrids - 1 downto 0) := (others => '0'); -- you should probably just move this flag out of the t_chamber_evtfifo_rd_array struct 
+    signal chmb_infifos_rd_en   : std_logic_vector(number_of_optohybrids - 1 downto 0) := (others => '0'); -- you should probably just move this flag out of the t_chamber_evtfifo_rd_array struct 
+    signal chmb_tts_states      : t_std4_array(0 to number_of_optohybrids - 1);
     
     signal err_event_too_big    : std_logic;
     signal err_evtfifo_underflow: std_logic;

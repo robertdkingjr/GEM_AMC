@@ -47,7 +47,7 @@ end optohybrid_single;
 
 architecture Behavioral of optohybrid_single is
     
-    signal vfat2_t1         : t1_t;
+    signal vfat2_t1         : t_t1;
     
     --== GTX requests ==--
     

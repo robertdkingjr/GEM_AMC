@@ -142,7 +142,7 @@ architecture arch_imp of axi_ipbus_bridge is
 
   constant ipb_timeout      : unsigned(23 downto 0) := x"002710"; -- 10000 clock cycles (totally arbitrary.. if everything is fine, it takes about 60 clock cycles to complete the transaction)
   signal ipb_clk            : std_logic;
-  signal ipb_state          : ipb_state_t;
+  signal ipb_state          : t_axi_ipb_state;
   signal ipb_timer          : unsigned(23 downto 0) := (others => '0');
   signal ipb_mosi           : ipb_wbus_array(C_NUM_IPB_SLAVES-1 downto 0);-- := (others => (ipb_addr => (others => '0'), ipb_wdata => (others => '0'), ipb_strobe => '0', ipb_write => '0'));
   signal ipb_slv_select     : integer range 0 to C_NUM_IPB_SLAVES-1 := 0; -- ipbus slave select
@@ -191,7 +191,7 @@ begin
             
             -- axi read request
             if (S_AXI_ARVALID = '1') then
-	            axi_arready <= '1';
+              axi_arready <= '1';
               ipb_slv_select <= ipb_addr_sel(S_AXI_ARADDR(C_S_AXI_ADDR_WIDTH-1 downto 2));
               ipb_state <= READ;
             
