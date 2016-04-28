@@ -84,7 +84,7 @@ begin
                         if (g_USE_INDIVIDUAL_ADDRS = "TRUE") then
                             -- individual address matching
                             for i in 0 to g_NUM_REGS - 1 loop
-                                if (to_integer(unsigned(ipb_mosi_i.ipb_addr(g_ADDR_HIGH downto g_ADDR_LOW))) = individual_addrs_arr_i(g_ADDR_HIGH downto g_ADDR_LOW)) then
+                                if (ipb_mosi_i.ipb_addr(g_ADDR_HIGH downto g_ADDR_LOW) = individual_addrs_arr_i(g_ADDR_HIGH downto g_ADDR_LOW)) then
                                     ipb_reg_sel <= i;
                                     ipb_addr_valid <= '1';
                                 end if;

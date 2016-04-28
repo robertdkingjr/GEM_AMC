@@ -1,3 +1,12 @@
+------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Company: TAMU
+-- Engineer: Evaldas Juska (evaldas.juska@cern.ch, evka85@gmail.com)
+-- 
+-- Create Date:    23:45:21 2016-04-20
+-- Module Name:    GEM_AMC 
+-- Description:    This is the top module of all the common GEM AMC logic. It is board-agnostic and can be used in different FPGA / board designs 
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;

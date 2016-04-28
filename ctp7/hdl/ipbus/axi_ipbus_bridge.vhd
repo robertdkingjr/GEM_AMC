@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Company: TAMU
+-- Engineer: Evaldas Juska (evaldas.juska@cern.ch, evka85@gmail.com)
+-- 
+-- Create Date:    20:10:11 2016-04-20
+-- Module Name:    AXI_IPBUS_BRIDGE 
+-- Description:    This module is acting as an AXI4-lite slave and translates the read and write requests to an IPBus protocol effectively 
+--                 acting as IPbus master which can drive multiple IPbus slaves. It only adds 2 clocks of latency. 
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;

@@ -5,7 +5,7 @@
 
     <!--TTC module -->
     <node id="TTC"  address="0x00300000"  description="TTC control and monitoring. It takes care of locking to the TTC clock coming from the backplane as well as decoding TTC commands and forwarding that to all other modules in the design. It also provides several control and monitoring registers (resets, command decoding configuration, clock and data status, bc0 status, command counters and a small spy buffer)"
-          fw_is_module="true" fw_module_file="ttc/ttc.vhd" fw_user_clock_signal="clk_40" fw_bus_clock_signal="ipb_clk_i" fw_bus_reset_signal="ipb_reset_i" fw_master_bus_signal="ipb_mosi_i" fw_slave_bus_signal="ipb_miso_o" fw_reg_addr_msb="5" fw_reg_addr_lsb="0">
+          fw_is_module="true" fw_module_file="../common/hdl/ttc/ttc.vhd" fw_user_clock_signal="clk_40" fw_bus_clock_signal="ipb_clk_i" fw_bus_reset_signal="ipb_reset_i" fw_master_bus_signal="ipb_mosi_i" fw_slave_bus_signal="ipb_miso_o" fw_reg_addr_msb="5" fw_reg_addr_lsb="0">
         <node id="CTRL" address="0x0" description="TTC control">
             <node id="MODULE_RESET" address="0x0" mask="0x80000000" permission="w" description="TTC module reset"
                   fw_signal="ttc_ctrl.reset_local" fw_is_write_pulse="true" fw_write_pulse_length="1"/>

@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+library work;
 use work.gem_board_config_package.CFG_NUM_OF_OHs;
 
 package gem_pkg is
