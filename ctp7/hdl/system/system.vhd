@@ -27,6 +27,7 @@ use work.ttc_pkg.all;
 use work.capture_playback_pkg.all;
 use work.system_package.all;
 use work.axi_pkg.all;
+use work.gem_pkg.all;
 
 --============================================================================
 --                                                          Entity declaration
@@ -40,11 +41,6 @@ entity system is
   port (
     clk_200_diff_in_clk_p : in std_logic;
     clk_200_diff_in_clk_n : in std_logic;
-
-    clk_40_ttc_p_i : in std_logic;      -- TTC backplane clock signals
-    clk_40_ttc_n_i : in std_logic;
-    ttc_data_p_i   : in std_logic;
-    ttc_data_n_i   : in std_logic;
 
     axi_c2c_v7_to_zynq_data        : out std_logic_vector (14 downto 0);
     axi_c2c_v7_to_zynq_clk         : out std_logic;
@@ -70,14 +66,13 @@ entity system is
     ipb_axi_miso_i    : in t_axi_lite_miso;
 
     ----------------- TTC ------------------------
-    ttc_clks_o        : out t_ttc_clks;
-    ttc_cmds_o        : out t_ttc_cmds;
+    ttc_clks_i        : in t_ttc_clks;
     
     ----------------- GTH ------------------------
     clk_gth_tx_arr_o  : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0);
     clk_gth_rx_arr_o  : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0);
-    gth_tx_data_arr_i : in t_gth_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);  
-    gth_rx_data_arr_o : out t_gth_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+    gth_tx_data_arr_i : in  t_gt_8b10b_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);  
+    gth_rx_data_arr_o : out t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
     gth_rxreset_arr_o : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0); 
     gth_txreset_arr_o : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0)
     
@@ -93,71 +88,8 @@ architecture system_arch of system is
 --                                                      Component declarations
 --===========================================================================
 
---  component io_link_3p2g_demo_ctrl
---    port (
---      clk_160_bc_i : in std_logic;
---      ttc_cmds_i   : in t_ttc_cmds;
-
---      clk_gth_tx_usrclk_i : in std_logic_vector(11 downto 0);
---      clk_gth_rx_usrclk_i : in std_logic_vector(11 downto 0);
-
---      gth_tx_data_o : out t_gth_tx_data_arr(11 downto 0);
---      gth_rx_data_i : in  t_gth_rx_data_arr(11 downto 0);
-
---      enable_tx_cdc_fifo_i : std_logic_vector(11 downto 0);
---      enable_rx_cdc_fifo_i : std_logic_vector(11 downto 0);
-
---      rx_capture_ctrl_i   : in  t_capture_ctrl_arr(11 downto 0);
---      rx_capture_status_o : out t_capture_status_arr(11 downto 0);
-
---      BRAM_CTRL_RX_RAM_addr : in  std_logic_vector (16 downto 0);
---      BRAM_CTRL_RX_RAM_clk  : in  std_logic;
---      BRAM_CTRL_RX_RAM_din  : in  std_logic_vector (31 downto 0);
---      BRAM_CTRL_RX_RAM_dout : out std_logic_vector (31 downto 0);
---      BRAM_CTRL_RX_RAM_en   : in  std_logic;
---      BRAM_CTRL_RX_RAM_rst  : in  std_logic;
---      BRAM_CTRL_RX_RAM_we   : in  std_logic_vector (3 downto 0);
-
---      BRAM_CTRL_TX_RAM_addr : in  std_logic_vector (16 downto 0);
---      BRAM_CTRL_TX_RAM_clk  : in  std_logic;
---      BRAM_CTRL_TX_RAM_din  : in  std_logic_vector (31 downto 0);
---      BRAM_CTRL_TX_RAM_dout : out std_logic_vector (31 downto 0);
---      BRAM_CTRL_TX_RAM_en   : in  std_logic;
---      BRAM_CTRL_TX_RAM_rst  : in  std_logic;
---      BRAM_CTRL_TX_RAM_we   : in  std_logic_vector (3 downto 0)
---      );
---  end component io_link_3p2g_demo_ctrl;
-
---  component io_link_4p8g_demo_ctrl
---    port (
---      clk_gth_tx_usrclk_i : in std_logic_vector(23 downto 0);
---      clk_gth_rx_usrclk_i : in std_logic_vector(23 downto 0);
-
---      gth_tx_data_o       : out t_gth_tx_data_arr(23 downto 0);
---      gth_rx_data_i       : in  t_gth_rx_data_arr(23 downto 0);
---      gth_rx_ctrl_2_arr_i : out t_gth_rx_ctrl_2_arr(23 downto 0)
-
---      );
---  end component io_link_4p8g_demo_ctrl;
-
   component v7_bd is
     port (
-      BRAM_CTRL_RX_RAM_addr : out std_logic_vector (16 downto 0);
-      BRAM_CTRL_RX_RAM_clk  : out std_logic;
-      BRAM_CTRL_RX_RAM_din  : out std_logic_vector (31 downto 0);
-      BRAM_CTRL_RX_RAM_dout : in  std_logic_vector (31 downto 0);
-      BRAM_CTRL_RX_RAM_en   : out std_logic;
-      BRAM_CTRL_RX_RAM_rst  : out std_logic;
-      BRAM_CTRL_RX_RAM_we   : out std_logic_vector (3 downto 0);
-
-      BRAM_CTRL_TX_RAM_addr : out std_logic_vector (16 downto 0);
-      BRAM_CTRL_TX_RAM_clk  : out std_logic;
-      BRAM_CTRL_TX_RAM_din  : out std_logic_vector (31 downto 0);
-      BRAM_CTRL_TX_RAM_dout : in  std_logic_vector (31 downto 0);
-      BRAM_CTRL_TX_RAM_en   : out std_logic;
-      BRAM_CTRL_TX_RAM_rst  : out std_logic;
-      BRAM_CTRL_TX_RAM_we   : out std_logic_vector (3 downto 0);
-
       BRAM_CTRL_DRP_addr : out std_logic_vector (15 downto 0);
       BRAM_CTRL_DRP_clk  : out std_logic;
       BRAM_CTRL_DRP_din  : out std_logic_vector (31 downto 0);
@@ -165,14 +97,6 @@ architecture system_arch of system is
       BRAM_CTRL_DRP_en   : out std_logic;
       BRAM_CTRL_DRP_rst  : out std_logic;
       BRAM_CTRL_DRP_we   : out std_logic_vector (3 downto 0);
-
-      BRAM_CTRL_REG_FILE_addr : out std_logic_vector (16 downto 0);
-      BRAM_CTRL_REG_FILE_clk  : out std_logic;
-      BRAM_CTRL_REG_FILE_din  : out std_logic_vector (31 downto 0);
-      BRAM_CTRL_REG_FILE_dout : in  std_logic_vector (31 downto 0);
-      BRAM_CTRL_REG_FILE_en   : out std_logic;
-      BRAM_CTRL_REG_FILE_rst  : out std_logic;
-      BRAM_CTRL_REG_FILE_we   : out std_logic_vector (3 downto 0);
 
       BRAM_CTRL_GTH_REG_FILE_addr : out std_logic_vector (16 downto 0);
       BRAM_CTRL_GTH_REG_FILE_clk  : out std_logic;
@@ -228,8 +152,6 @@ architecture system_arch of system is
   signal s_clk_200 : std_logic;
   signal s_clk_50  : std_logic;
 
-  signal s_ttc_clks : t_ttc_clks;
-
   signal BRAM_CTRL_REG_FILE_en   : std_logic;
   signal BRAM_CTRL_REG_FILE_dout : std_logic_vector (31 downto 0) := x"00000000";
   signal BRAM_CTRL_REG_FILE_din  : std_logic_vector (31 downto 0);
@@ -253,23 +175,6 @@ architecture system_arch of system is
   signal BRAM_CTRL_DRP_en   : std_logic;
   signal BRAM_CTRL_DRP_rst  : std_logic;
   signal BRAM_CTRL_DRP_we   : std_logic_vector (3 downto 0);
-
-----
-  signal BRAM_CTRL_RX_RAM_addr : std_logic_vector (16 downto 0);
-  signal BRAM_CTRL_RX_RAM_clk  : std_logic;
-  signal BRAM_CTRL_RX_RAM_din  : std_logic_vector (31 downto 0);
-  signal BRAM_CTRL_RX_RAM_dout : std_logic_vector (31 downto 0);
-  signal BRAM_CTRL_RX_RAM_en   : std_logic;
-  signal BRAM_CTRL_RX_RAM_rst  : std_logic;
-  signal BRAM_CTRL_RX_RAM_we   : std_logic_vector (3 downto 0);
-
-  signal BRAM_CTRL_TX_RAM_addr : std_logic_vector (16 downto 0);
-  signal BRAM_CTRL_TX_RAM_clk  : std_logic;
-  signal BRAM_CTRL_TX_RAM_din  : std_logic_vector (31 downto 0);
-  signal BRAM_CTRL_TX_RAM_dout : std_logic_vector (31 downto 0);
-  signal BRAM_CTRL_TX_RAM_en   : std_logic;
-  signal BRAM_CTRL_TX_RAM_rst  : std_logic;
-  signal BRAM_CTRL_TX_RAM_we   : std_logic_vector (3 downto 0);
 
 ------
 
@@ -299,21 +204,15 @@ architecture system_arch of system is
   signal s_gth_rx_status_arr   : t_gth_rx_status_arr(g_NUM_OF_GTH_GTs-1 downto 0);
   signal s_gth_misc_ctrl_arr   : t_gth_misc_ctrl_arr(g_NUM_OF_GTH_GTs-1 downto 0);
   signal s_gth_misc_status_arr : t_gth_misc_status_arr(g_NUM_OF_GTH_GTs-1 downto 0);
-  signal s_gth_tx_data_arr     : t_gth_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+  signal s_gth_tx_data_arr     : t_gt_8b10b_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
 
-  signal s_gth_rx_data_arr    : t_gth_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
-  signal s_gth_rx_data_arr_d1 : t_gth_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+  signal s_gth_rx_data_arr     : t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
 
 
   signal s_clk_gth_tx_usrclk_arr : std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0);
   signal s_clk_gth_rx_usrclk_arr : std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0);
   signal s_gth_cpll_status_arr   : t_gth_cpll_status_arr(g_NUM_OF_GTH_GTs-1 downto 0);
 
-  signal s_ttc_mmcm_ps_clk_en : std_logic;
-  signal s_ttc_mmcm_ps_clk    : std_logic;
-
-  signal s_ttc_cmd        : std_logic_vector(3 downto 0);  -- TTC b command output
-  signal s_ttc_l1a        : std_logic;  -- L1A output
 ----
   signal s_DRP_MMCM_clk   : std_logic;
   signal s_DRP_MMCM_daddr : std_logic_vector (6 downto 0);
@@ -323,19 +222,6 @@ architecture system_arch of system is
   signal s_DRP_MMCM_drdy  : std_logic;
   signal s_DRP_MMCM_dwe   : std_logic;
 
-  signal s_ttc_mmcm_ctrl : t_ttc_mmcm_ctrl;
-  signal s_ttc_mmcm_stat : t_ttc_mmcm_stat;
-
-  signal s_ttc_ctrl : t_ttc_ctrl;
-  signal s_ttc_stat : t_ttc_stat;
-
-  signal s_ttc_diag_cntrs_o : t_ttc_diag_cntrs;
-  signal s_ttc_daq_cntrs    : t_ttc_daq_cntrs;
-  signal s_ttc_cmds         : t_ttc_cmds;
-
-  signal s_rx_capture_ctrl   : t_capture_ctrl_arr(11 downto 0);
-  signal s_rx_capture_status : t_capture_status_arr(11 downto 0);
-  
   -------------------------- IPbus AXI ------------------------------
   signal axi_clk           : std_logic;
   signal axi_reset         : std_logic_vector(0 downto 0);
@@ -371,8 +257,6 @@ architecture system_arch of system is
 begin
 
   -- I/O
-  ttc_clks_o        <= s_ttc_clks;
-  ttc_cmds_o        <= s_ttc_cmds;
   clk_gth_tx_arr_o  <= s_clk_gth_tx_usrclk_arr;
   clk_gth_rx_arr_o  <= s_clk_gth_rx_usrclk_arr;
   gth_rxreset_arr_o <= s_gth_gt_rxreset;
@@ -421,30 +305,6 @@ begin
       BRAM_CTRL_GTH_REG_FILE_rst               => BRAM_CTRL_GTH_REG_FILE_rst,
       BRAM_CTRL_GTH_REG_FILE_we(3 downto 0)    => BRAM_CTRL_GTH_REG_FILE_we(3 downto 0),
 
-      BRAM_CTRL_TX_RAM_addr(16 downto 0) => BRAM_CTRL_TX_RAM_addr(16 downto 0),
-      BRAM_CTRL_TX_RAM_clk               => BRAM_CTRL_TX_RAM_clk,
-      BRAM_CTRL_TX_RAM_din(31 downto 0)  => BRAM_CTRL_TX_RAM_din(31 downto 0),
-      BRAM_CTRL_TX_RAM_dout(31 downto 0) => BRAM_CTRL_TX_RAM_dout(31 downto 0),
-      BRAM_CTRL_TX_RAM_en                => BRAM_CTRL_TX_RAM_en,
-      BRAM_CTRL_TX_RAM_rst               => BRAM_CTRL_TX_RAM_rst,
-      BRAM_CTRL_TX_RAM_we(3 downto 0)    => BRAM_CTRL_TX_RAM_we(3 downto 0),
-
-      BRAM_CTRL_RX_RAM_addr(16 downto 0) => BRAM_CTRL_RX_RAM_addr(16 downto 0),
-      BRAM_CTRL_RX_RAM_clk               => BRAM_CTRL_RX_RAM_clk,
-      BRAM_CTRL_RX_RAM_din(31 downto 0)  => BRAM_CTRL_RX_RAM_din(31 downto 0),
-      BRAM_CTRL_RX_RAM_dout(31 downto 0) => BRAM_CTRL_RX_RAM_dout(31 downto 0),
-      BRAM_CTRL_RX_RAM_en                => BRAM_CTRL_RX_RAM_en,
-      BRAM_CTRL_RX_RAM_rst               => BRAM_CTRL_RX_RAM_rst,
-      BRAM_CTRL_RX_RAM_we(3 downto 0)    => BRAM_CTRL_RX_RAM_we(3 downto 0),
-
-      BRAM_CTRL_REG_FILE_addr(16 downto 0) => BRAM_CTRL_REG_FILE_addr(16 downto 0),
-      BRAM_CTRL_REG_FILE_clk               => BRAM_CTRL_REG_FILE_clk,
-      BRAM_CTRL_REG_FILE_din(31 downto 0)  => BRAM_CTRL_REG_FILE_din(31 downto 0),
-      BRAM_CTRL_REG_FILE_dout(31 downto 0) => BRAM_CTRL_REG_FILE_dout(31 downto 0),
-      BRAM_CTRL_REG_FILE_en                => BRAM_CTRL_REG_FILE_en,
-      BRAM_CTRL_REG_FILE_rst               => BRAM_CTRL_REG_FILE_rst,
-      BRAM_CTRL_REG_FILE_we(3 downto 0)    => BRAM_CTRL_REG_FILE_we(3 downto 0),
-
       axi_c2c_v7_to_zynq_clk               => axi_c2c_v7_to_zynq_clk,
       axi_c2c_v7_to_zynq_data(14 downto 0) => axi_c2c_v7_to_zynq_data(14 downto 0),
       axi_c2c_v7_to_zynq_link_status       => axi_c2c_v7_to_zynq_link_status,
@@ -457,15 +317,6 @@ begin
 
       clk_out1_200mhz => s_clk_200,
       clk_out2_50mhz  => s_clk_50,
-      
---      ipb_clk_o             => ipb_clk,
---      ipb_oh_miso_i_ack     => ipb_oh_miso(0).ipb_ack,
---      ipb_oh_miso_i_err     => ipb_oh_miso(0).ipb_err,
---      ipb_oh_miso_i_rdata   => ipb_oh_miso(0).ipb_rdata,
---      ipb_oh_mosi_o_addr    => ipb_oh_mosi(0).ipb_addr,
---      ipb_oh_mosi_o_strobe  => ipb_oh_mosi(0).ipb_strobe,
---      ipb_oh_mosi_o_wdata   => ipb_oh_mosi(0).ipb_wdata,
---      ipb_oh_mosi_o_write   => ipb_oh_mosi(0).ipb_write
 
       axi_clk_o         => axi_clk,
       axi_reset_o       => axi_reset,
@@ -490,31 +341,6 @@ begin
       ipb_axi_wstrb     => ipb_axi_wstrb,
       ipb_axi_wvalid    => ipb_axi_wvalid
     );
-      
-  i_ctp7_ttc : entity work.ctp7_ttc
-        port map(
-    
-          clk_40_ttc_p_i => clk_40_ttc_p_i,
-          clk_40_ttc_n_i => clk_40_ttc_n_i,
-    
-          ttc_data_p_i => ttc_data_p_i,
-          ttc_data_n_i => ttc_data_n_i,
-    
-          ttc_clks_o => s_ttc_clks,
-   
-          ttc_cmds_o => s_ttc_cmds,
-    
-          ttc_mmcm_ps_clk_i => s_ttc_mmcm_ps_clk,
-    
-          ttc_mmcm_ctrl_i => s_ttc_mmcm_ctrl,
-          ttc_mmcm_stat_o => s_ttc_mmcm_stat,
-    
-          ttc_ctrl_i => s_ttc_ctrl,
-          ttc_stat_o => s_ttc_stat,
-    
-          ttc_diag_cntrs_o => s_ttc_diag_cntrs_o,
-          ttc_daq_cntrs_o  => s_ttc_daq_cntrs
-          );
 
   i_gth_register_file : entity work.gth_register_file
     generic map
@@ -549,39 +375,6 @@ begin
       clk_gth_rx_usrclk_arr_i => s_clk_gth_rx_usrclk_arr
       );
 
-  i_register_file : entity work.register_file
-    generic map(
-      C_DATE_CODE      => C_DATE_CODE,
-      C_GITHASH_CODE   => C_GITHASH_CODE,
-      C_GIT_REPO_DIRTY => C_GIT_REPO_DIRTY
-      )
-    port map (
-      clk240_i => s_ttc_clks.clk_240,
-      clk40_i  => s_ttc_clks.clk_40,
-
-      ttc_mmcm_ctrl_o => s_ttc_mmcm_ctrl,
-      ttc_mmcm_stat_i => s_ttc_mmcm_stat,
-
-      ttc_ctrl_o => s_ttc_ctrl,
-      ttc_stat_i => s_ttc_stat,
-
-      ttc_diag_cntrs_i => s_ttc_diag_cntrs_o,
-      ttc_daq_cntrs_i  => s_ttc_daq_cntrs,
-
-      rx_capture_ctrl_o   => s_rx_capture_ctrl,
-      rx_capture_status_i => s_rx_capture_status,
-
-      BRAM_CTRL_REG_FILE_addr(16 downto 0) => BRAM_CTRL_REG_FILE_addr(16 downto 0),
-      BRAM_CTRL_REG_FILE_clk               => BRAM_CTRL_REG_FILE_clk,
-      BRAM_CTRL_REG_FILE_din(31 downto 0)  => BRAM_CTRL_REG_FILE_din(31 downto 0),
-      BRAM_CTRL_REG_FILE_dout(31 downto 0) => BRAM_CTRL_REG_FILE_dout(31 downto 0),
-      BRAM_CTRL_REG_FILE_en                => BRAM_CTRL_REG_FILE_en,
-      BRAM_CTRL_REG_FILE_rst               => BRAM_CTRL_REG_FILE_rst,
-      BRAM_CTRL_REG_FILE_we(3 downto 0)    => BRAM_CTRL_REG_FILE_we(3 downto 0)
-      );
-
-  s_ttc_mmcm_ps_clk <= s_clk_50;
-
   i_drp_controller : entity work.drp_controller
 
     generic map
@@ -602,40 +395,6 @@ begin
       gth_gt_drp_arr_o     => s_gth_gt_drp_in_arr,
       gth_gt_drp_arr_i     => s_gth_gt_drp_out_arr
       );
-
---  i_io_link_3p2g_demo_ctrl : io_link_3p2g_demo_ctrl
---    port map(
---      clk_160_bc_i => s_ttc_clks.clk_160,
---      ttc_cmds_i   => s_ttc_cmds,
-
---      clk_gth_tx_usrclk_i => s_clk_gth_tx_usrclk_arr(11 downto 0),
---      clk_gth_rx_usrclk_i => s_clk_gth_rx_usrclk_arr(11 downto 0),
-
---      gth_tx_data_o => s_gth_tx_data_arr(11 downto 0),
---      gth_rx_data_i => s_gth_rx_data_arr(11 downto 0),
-
---      enable_tx_cdc_fifo_i => s_gth_gt_txreset_done(11 downto 0),
---      enable_rx_cdc_fifo_i => s_gth_gt_rxreset_done(11 downto 0),
-
---      rx_capture_ctrl_i   => s_rx_capture_ctrl,
---      rx_capture_status_o => s_rx_capture_status,
-
---      BRAM_CTRL_RX_RAM_addr => BRAM_CTRL_RX_RAM_addr,
---      BRAM_CTRL_RX_RAM_clk  => BRAM_CTRL_RX_RAM_clk,
---      BRAM_CTRL_RX_RAM_din  => BRAM_CTRL_RX_RAM_din,
---      BRAM_CTRL_RX_RAM_dout => BRAM_CTRL_RX_RAM_dout,
---      BRAM_CTRL_RX_RAM_en   => BRAM_CTRL_RX_RAM_en,
---      BRAM_CTRL_RX_RAM_rst  => BRAM_CTRL_RX_RAM_rst,
---      BRAM_CTRL_RX_RAM_we   => BRAM_CTRL_RX_RAM_we,
-
---      BRAM_CTRL_TX_RAM_addr => BRAM_CTRL_TX_RAM_addr,
---      BRAM_CTRL_TX_RAM_clk  => BRAM_CTRL_TX_RAM_clk,
---      BRAM_CTRL_TX_RAM_din  => BRAM_CTRL_TX_RAM_din,
---      BRAM_CTRL_TX_RAM_dout => BRAM_CTRL_TX_RAM_dout,
---      BRAM_CTRL_TX_RAM_en   => BRAM_CTRL_TX_RAM_en,
---      BRAM_CTRL_TX_RAM_rst  => BRAM_CTRL_TX_RAM_rst,
---      BRAM_CTRL_TX_RAM_we   => BRAM_CTRL_TX_RAM_we
---      );
 
 --  i_io_link_4p8g_demo_ctrl : io_link_4p8g_demo_ctrl
 --    port map(

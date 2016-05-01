@@ -13,6 +13,7 @@ package ipb_addr_decode is
         daq      : integer;
         ttc      : integer;
         trigger  : integer;
+        system   : integer;
     end record;
 
     constant C_NUM_IPB_SLAVES : integer := 37;

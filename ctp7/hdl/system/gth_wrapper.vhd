@@ -21,6 +21,7 @@ use UNISIM.VCOMPONENTS.all;
 
 library work;
 use work.gth_pkg.all;
+use work.gem_pkg.all;
 
 use work.system_package.all;
 
@@ -90,8 +91,8 @@ entity gth_wrapper is
     gth_misc_ctrl_arr_i   : in  t_gth_misc_ctrl_arr(g_NUM_OF_GTH_GTs-1 downto 0);
     gth_misc_status_arr_o : out t_gth_misc_status_arr(g_NUM_OF_GTH_GTs-1 downto 0);
 
-    gth_tx_data_arr_i : in  t_gth_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
-    gth_rx_data_arr_o : out t_gth_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0)
+    gth_tx_data_arr_i : in  t_gt_8b10b_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+    gth_rx_data_arr_o : out t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0)
     );
 end gth_wrapper;
 
@@ -144,8 +145,8 @@ architecture gth_wrapper_arch of gth_wrapper is
   signal s_gth_misc_ctrl_arr   : t_gth_misc_ctrl_arr(g_NUM_OF_GTH_GTs-1 downto 0);
   signal s_gth_misc_status_arr : t_gth_misc_status_arr(g_NUM_OF_GTH_GTs-1 downto 0);
 
-  signal s_gth_tx_data_arr : t_gth_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
-  signal s_gth_rx_data_arr : t_gth_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+  signal s_gth_tx_data_arr : t_gt_8b10b_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+  signal s_gth_rx_data_arr : t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
 
   ---------------------
 

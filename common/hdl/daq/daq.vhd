@@ -267,7 +267,7 @@ architecture Behavioral of daq is
 
 begin
 
-    -- TODO main tasks:
+    -- TODO DAQ main tasks:
     --   * Handle OOS
     --   * Implement buffer status in the AMC header
     --   * TTS State aggregation

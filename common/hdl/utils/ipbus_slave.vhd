@@ -34,8 +34,8 @@ entity ipbus_slave is
         usr_clk_i              : in  std_logic;                              -- user clock used to read and write regs_write_arr_o and regs_read_arr_i 
         regs_read_arr_i        : in  t_std32_array(g_NUM_REGS - 1 downto 0); -- read registers
         regs_write_arr_o       : out t_std32_array(g_NUM_REGS - 1 downto 0); -- write registers 
-        read_pulse_arr_o       : out std_logic_vector(g_NUM_REGS downto 0);  -- asserted when reading the given register (note that this is not guaranteed to only last 1 clock cycle -- it depends on the frequency relation between usr_clk_i and ipb_clk_i)
-        write_pulse_arr_o      : out std_logic_vector(g_NUM_REGS downto 0);  -- asserted when writing the given register (note that this is not guaranteed to only last 1 clock cycle -- it depends on the frequency relation between usr_clk_i and ipb_clk_i)
+        read_pulse_arr_o       : out std_logic_vector(g_NUM_REGS - 1 downto 0);  -- asserted when reading the given register (note that this is not guaranteed to only last 1 clock cycle -- it depends on the frequency relation between usr_clk_i and ipb_clk_i)
+        write_pulse_arr_o      : out std_logic_vector(g_NUM_REGS - 1 downto 0);  -- asserted when writing the given register (note that this is not guaranteed to only last 1 clock cycle -- it depends on the frequency relation between usr_clk_i and ipb_clk_i)
 
         regs_defaults_arr_i    : in  t_std32_array(g_NUM_REGS - 1 downto 0); -- register default values - set when ipb_reset_i = '1'
         individual_addrs_arr_i : in  t_std32_array(g_NUM_REGS - 1 downto 0)  -- individual register addresses - only used when g_USE_INDIVIDUAL_ADDRS = "TRUE"
@@ -47,23 +47,40 @@ architecture Behavioral of ipbus_slave is
     signal ipb_state        : t_ipb_state := IDLE;
     signal ipb_reg_sel      : integer range 0 to g_NUM_REGS - 1 := 0;
     signal ipb_addr_valid   : std_logic := '0';
+    signal ipb_miso         : ipb_rbus;
 
     -- data on ipbus clock domain
-    signal regs_read_arr    : t_std32_array(g_NUM_REGS - 1 downto 0) := (others => '0');
-    signal regs_write_arr   : t_std32_array(g_NUM_REGS - 1 downto 0) := (others => '0');
+    signal regs_read_arr    : t_std32_array(g_NUM_REGS - 1 downto 0) := (others => (others => '0'));
+    signal regs_write_arr   : t_std32_array(g_NUM_REGS - 1 downto 0) := (others => (others => '0'));
     signal regs_write_strb  : std_logic := '0';
     signal regs_write_ack   : std_logic := '0';
     signal regs_read_strb   : std_logic := '0';
     signal regs_read_ack    : std_logic := '0';
+    
+    signal ipb_mosi_debug   : ipb_wbus;
+    
+    attribute mark_debug : string;
+    attribute mark_debug of ipb_state : signal is "true";
+    attribute mark_debug of ipb_reg_sel : signal is "true";
+    attribute mark_debug of ipb_addr_valid : signal is "true";
+    attribute mark_debug of ipb_mosi_debug : signal is "true";
+    attribute mark_debug of ipb_miso : signal is "true";
+    attribute mark_debug of regs_read_strb : signal is "true";
+    attribute mark_debug of regs_read_ack : signal is "true";
+    attribute mark_debug of regs_write_strb : signal is "true";
+    attribute mark_debug of regs_write_ack : signal is "true";
+    
 begin
+    
+    ipb_miso_o <= ipb_miso;
+    ipb_mosi_debug <= ipb_mosi_i;
     
     p_ipb_fsm:
     process(ipb_clk_i)
-        variable read_data : std_logic_vector(31 downto 0);
     begin
         if (rising_edge(ipb_clk_i)) then
             if (ipb_reset_i = '1') then
-                ipb_miso_o      <= (ipb_ack => '0', ipb_err => '0', ipb_rdata => (others => '0'));
+                ipb_miso      <= (ipb_ack => '0', ipb_err => '0', ipb_rdata => (others => '0'));
                 ipb_state       <= IDLE;
                 ipb_reg_sel     <= 0;
                 ipb_addr_valid  <= '0';
@@ -82,17 +99,17 @@ begin
                         regs_read_strb  <= '0';
                         ipb_addr_valid <= '0';
                         if (g_USE_INDIVIDUAL_ADDRS = "TRUE") then
-                            -- individual address matching
+                            -- individual address matching (NOTE: maybe could be doen more efficiently..)
                             for i in 0 to g_NUM_REGS - 1 loop
-                                if (ipb_mosi_i.ipb_addr(g_ADDR_HIGH downto g_ADDR_LOW) = individual_addrs_arr_i(g_ADDR_HIGH downto g_ADDR_LOW)) then
+                                if (ipb_mosi_i.ipb_addr(g_ADDR_HIGH_BIT downto g_ADDR_LOW_BIT) = individual_addrs_arr_i(i)(g_ADDR_HIGH_BIT downto g_ADDR_LOW_BIT)) then
                                     ipb_reg_sel <= i;
                                     ipb_addr_valid <= '1';
                                 end if;
                             end loop;
                         else
                             -- sequential address matching
-                            ipb_reg_sel <= to_integer(unsigned(ipb_mosi_i.ipb_addr(g_ADDR_HIGH downto g_ADDR_LOW)));
-                            if (to_integer(unsigned(ipb_mosi_i.ipb_addr(g_ADDR_HIGH downto g_ADDR_LOW))) < g_NUM_REGS) then
+                            ipb_reg_sel <= to_integer(unsigned(ipb_mosi_i.ipb_addr(g_ADDR_HIGH_BIT downto g_ADDR_LOW_BIT)));
+                            if (to_integer(unsigned(ipb_mosi_i.ipb_addr(g_ADDR_HIGH_BIT downto g_ADDR_LOW_BIT))) < g_NUM_REGS) then
                                 ipb_addr_valid <= '1';
                             end if;
                         end if;
@@ -112,29 +129,27 @@ begin
                             ipb_state <= SYNC_READ;
                         else
                             --error
-                            ipb_miso_o <= (ipb_ack => '1', ipb_err => '1', ipb_rdata => (others => '0'));
+                            ipb_miso <= (ipb_ack => '1', ipb_err => '1', ipb_rdata => (others => '0'));
                             ipb_state <= RST;
                         end if;
-                        
-                        ipb_state <= SYNC_WRITE;
                     when SYNC_WRITE =>
                         if (regs_write_ack = '1') then
-                            ipb_miso_o <= (ipb_ack => '1', ipb_err => '0', ipb_rdata => (others => '0'));
+                            ipb_miso <= (ipb_ack => '1', ipb_err => '0', ipb_rdata => (others => '0'));
                             regs_write_strb <= '0';
                             ipb_state <= RST;
                         end if;
                     when SYNC_READ =>
                         if (regs_read_ack = '1') then
-                            ipb_miso_o <= (ipb_ack => '1', ipb_err => '0', ipb_rdata => regs_read_arr(ipb_reg_sel));
+                            ipb_miso <= (ipb_ack => '1', ipb_err => '0', ipb_rdata => regs_read_arr(ipb_reg_sel));
                             regs_read_strb <= '0';
                             ipb_state <= RST;
                         end if;
                     when RST =>
-                        ipb_miso_o.ipb_ack <= '0';
-                        ipb_miso_o.ipb_err <= '0';
+                        ipb_miso.ipb_ack <= '0';
+                        ipb_miso.ipb_err <= '0';
                         ipb_state          <= IDLE;
                     when others =>
-                        ipb_miso_o  <= (ipb_ack => '0', ipb_err => '0', ipb_rdata => (others => '0'));
+                        ipb_miso  <= (ipb_ack => '0', ipb_err => '0', ipb_rdata => (others => '0'));
                         ipb_state   <= IDLE;
                         ipb_reg_sel <= 0;
                         regs_write_strb <= '0';
@@ -142,7 +157,7 @@ begin
                 end case;
             end if;
         end if;
-    end process ipb_fsm;
+    end process p_ipb_fsm;
 
     -- data transfer from the user clock domain to ipb clock domain
     p_usr_clk_write_sync:
@@ -164,14 +179,14 @@ begin
     p_usr_clk_read_sync:
     process (usr_clk_i) is
     begin
-        if rising_edge(clk) then            
+        if rising_edge(usr_clk_i) then            
             if (regs_read_strb = '1') then
                 regs_read_arr(ipb_reg_sel) <= regs_read_arr_i(ipb_reg_sel);
                 regs_read_ack <= '1';
                 read_pulse_arr_o(ipb_reg_sel) <= '1';
             else
                 regs_read_ack <= '0';
-                write_read_arr_o(ipb_reg_sel) <= '0';
+                read_pulse_arr_o(ipb_reg_sel) <= '0';
             end if;
         end if;
     end process p_usr_clk_read_sync;

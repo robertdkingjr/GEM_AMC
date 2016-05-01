@@ -17,8 +17,6 @@ package registers is
     constant REG_TTC_NUM_REGS : integer := 21;
     constant REG_TTC_ADDRESS_MSB : integer := 5;
     constant REG_TTC_ADDRESS_LSB : integer := 0;
-    type T_REG_TTC_ADDRESS_ARR is array(integer range <>) of std_logic_vector(REG_TTC_ADDRESS_MSB downto REG_TTC_ADDRESS_LSB);
-
     constant REG_TTC_CTRL_L1A_ENABLE_ADDR    : std_logic_vector(5 downto 0) := "00" & x"0";
     constant REG_TTC_CTRL_L1A_ENABLE_BIT    : integer := 0;
     constant REG_TTC_CTRL_L1A_ENABLE_DEFAULT : std_logic := '1';

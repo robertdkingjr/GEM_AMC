@@ -14,17 +14,11 @@ use ieee.numeric_std.all;
 library unisim;
 use unisim.vcomponents.all;
 
---! system packages
-use work.system_flash_sram_package.all;
-use work.system_pcie_package.all;
-use work.system_package.all;
-use work.fmc_package.all;
-use work.wb_package.all;
-use work.ipbus.all;
-
 use work.gem_pkg.all;
 use work.gem_board_config_package.all;
 use work.ipb_addr_decode.all;
+use work.ipbus.all;
+use work.ttc_pkg.all;
 
 entity gem_amc is
     generic(
@@ -40,56 +34,78 @@ entity gem_amc is
         clk_40_ttc_n_i  : in std_logic;
         ttc_data_p_i    : in std_logic;      -- TTC protocol backplane signals
         ttc_data_n_i    : in std_logic;
+        ttc_clocks_o    : out t_ttc_clks;
         
-        -- GT
-        gt_rx_usrclk_i  : in  std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
-        gt_tx_usrclk_i  : in  std_logic(g_NUM_OF_OHs - 1 downto 0);
-        gt_rx_data_i    : in  t_gth_rx_data(g_NUM_OF_OHs - 1 downto 0);
-        gt_tx_data_o    : out t_gth_tx_data(g_NUM_OF_OHs - 1 downto 0);
+        -- 8b10b DAQ + Control GTX / GTH links (3.2Gbs, 16bit @ 160MHz w/ 8b10b encoding)
+        gt_8b10b_rx_clk_arr_i : in  std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+        gt_8b10b_tx_clk_arr_i : in  std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+        gt_8b10b_rx_data_i    : in  t_gt_8b10b_rx_data_arr(g_NUM_OF_OHs - 1 downto 0);
+        gt_8b10b_tx_data_o    : out t_gt_8b10b_tx_data_arr(g_NUM_OF_OHs - 1 downto 0);
+
+        -- Trigger RX GTX / GTH links (3.2Gbs, 16bit @ 160MHz w/ 8b10b encoding)
+        gt_trig0_rx_clk_arr_i : in  std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+        gt_trig0_rx_data_i    : in  t_gt_8b10b_rx_data_arr(g_NUM_OF_OHs - 1 downto 0);
+        gt_trig1_rx_clk_arr_i : in  std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+        gt_trig1_rx_data_i    : in  t_gt_8b10b_rx_data_arr(g_NUM_OF_OHs - 1 downto 0);
         
         -- IPbus
         ipb_reset_i     : in  std_logic;
         ipb_clk_i       : in  std_logic;
-        ipb_reg_miso_o  : out ipb_rbus(g_NUM_IPB_SLAVES - 1 downto 0);
-        ipb_reg_mosi_i  : in  ipb_wbus(g_NUM_IPB_SLAVES - 1 downto 0)
+        ipb_miso_arr_o  : out ipb_rbus_array(g_NUM_IPB_SLAVES - 1 downto 0);
+        ipb_mosi_arr_i  : in  ipb_wbus_array(g_NUM_IPB_SLAVES - 1 downto 0)
     );
 end gem_amc;
 
 architecture gem_amc_arch of gem_amc is
 
-    --== GTX signals ==--
+    --== General ==--
+    signal reset        : std_logic;
 
+    --== GTX signals ==--
     signal gtx_tk_error : std_logic_vector(1 downto 0);
     signal gtx_tr_error : std_logic_vector(1 downto 0);
     signal gtx_evt_rcvd : std_logic_vector(1 downto 0);
+    signal vfat2_t1     : t_t1;
 
     --== TTC signals ==--
-    signal ttc_cmd      : t_gem_ttc_cmd;
-    signal ttc_cnt      : t_gem_ttc_cnt;
-
-    signal ttc_ready    : std_logic;
-    signal ttc_clk      : std_logic;
-    signal ttc_l1a      : std_logic;
-    signal ttc_bc0      : std_logic;
-    signal ttc_ec0      : std_logic;
-    signal ttc_calpulse : std_logic;
-    signal ttc_resync   : std_logic;
-
-    signal ttc_bx_id    : std_logic_vector(11 downto 0);
-    signal ttc_orbit_id : std_logic_vector(15 downto 0);
-    signal ttc_l1a_id   : std_logic_vector(23 downto 0);
-
-    signal vfat2_t1 : t_t1;
+    signal ttc_clocks   : t_ttc_clks;
+    signal ttc_cmd      : t_ttc_cmds;
+    signal ttc_counters : t_ttc_daq_cntrs;
 
     --== DAQ signals ==--    
-
-    signal tk_data_links   : t_data_link_array(0 to number_of_optohybrids - 1);
-    signal trig_data_links : t_trig_link_array(0 to number_of_optohybrids - 1);
+    signal tk_data_links   : t_data_link_array(0 to g_NUM_OF_OHs - 1);
+    signal trig_data_links : t_trig_link_array(0 to g_NUM_OF_OHs - 1);
+    
+    --== Other ==--
+    signal ipb_miso_arr    : ipb_rbus_array(g_NUM_IPB_SLAVES - 1 downto 0) := (others => (ipb_rdata => (others => '0'), ipb_ack => '0', ipb_err => '0'));
 
 --    signal sbit_rate : unsigned(31 downto 0) := (others => '0');
 
 begin
-    ipb_miso_o <= ipb_miso;
+
+    reset <= reset_i; -- TODO: Add a global reset from IPbus
+    ttc_clocks_o <= ttc_clocks; 
+    ipb_miso_arr_o <= ipb_miso_arr;
+    
+    --================================--
+    -- TTC  
+    --================================--
+
+    i_ttc : entity work.ttc
+        port map(
+            reset_i         => reset,
+            clk_40_ttc_p_i  => clk_40_ttc_p_i,
+            clk_40_ttc_n_i  => clk_40_ttc_n_i,
+            ttc_data_p_i    => ttc_data_p_i,
+            ttc_data_n_i    => ttc_data_n_i,
+            ttc_clks_o      => ttc_clocks,
+            ttc_cmds_o      => ttc_cmd,
+            ttc_daq_cntrs_o => ttc_counters,
+            ipb_reset_i     => ipb_reset_i,
+            ipb_clk_i       => ipb_clk_i,
+            ipb_mosi_i      => ipb_mosi_arr_i(C_IPB_SLV.ttc),
+            ipb_miso_o      => ipb_miso_arr(C_IPB_SLV.ttc)
+        );
 
     --================================--
     -- TTC signal handling 	

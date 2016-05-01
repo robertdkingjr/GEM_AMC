@@ -12,7 +12,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library work;
 use work.ipbus.all;
 use work.ipb_addr_decode.all;
 
@@ -25,14 +24,14 @@ entity axi_ipbus_bridge is
 		C_S_AXI_ADDR_WIDTH	: integer	:= 26
 	);
 	port (
-    -- IPbus clock
-    ipb_clk_o   : out std_logic;
-    
-    -- slave to master IPbus
-    ipb_miso_i  : in ipb_rbus_array(C_NUM_IPB_SLAVES-1 downto 0);
-    
-    -- master to slave IPbus
-    ipb_mosi_o  : out ipb_wbus_array(C_NUM_IPB_SLAVES-1 downto 0);  
+	    -- IPbus reset (active high)
+	    ipb_reset_o : out std_logic;
+        -- IPbus clock
+        ipb_clk_o   : out std_logic;        
+        -- slave to master IPbus
+        ipb_miso_i  : in ipb_rbus_array(C_NUM_IPB_SLAVES-1 downto 0);
+        -- master to slave IPbus
+        ipb_mosi_o  : out ipb_wbus_array(C_NUM_IPB_SLAVES-1 downto 0);  
     
 		-- Global Clock Signal
 		S_AXI_ACLK	: in std_logic;
@@ -159,10 +158,10 @@ architecture arch_imp of axi_ipbus_bridge is
 
 begin
 	-- I/O Connections assignments
-
-  ipb_clk_o <= ipb_clk; 
-  ipb_clk <= S_AXI_ACLK;
-  ipb_mosi_o <= ipb_mosi;
+    ipb_clk_o <= ipb_clk; 
+    ipb_clk <= S_AXI_ACLK;
+    ipb_mosi_o <= ipb_mosi;
+    ipb_reset_o <= not S_AXI_ARESETN;
 
 	S_AXI_AWREADY	<= axi_awready;
 	S_AXI_WREADY	<= axi_wready;

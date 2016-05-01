@@ -232,25 +232,6 @@ package gth_pkg is
     eyescandataerror : std_logic;
   end record;
 
-
-  type t_gth_tx_data is record
-    txdata         : std_logic_vector(31 downto 0);
-    txcharisk      : std_logic_vector(3 downto 0);
-    txchardispmode : std_logic_vector(3 downto 0);
-    txchardispval  : std_logic_vector(3 downto 0);
-  end record;
-
-  type t_gth_rx_data is record
-    rxdata          : std_logic_vector(31 downto 0);
-    rxbyteisaligned : std_logic;
-    rxbyterealign   : std_logic;
-    rxcommadet      : std_logic;
-    rxdisperr       : std_logic_vector(3 downto 0);
-    rxnotintable    : std_logic_vector(3 downto 0);
-    rxchariscomma   : std_logic_vector(3 downto 0);
-    rxcharisk       : std_logic_vector(3 downto 0);
-  end record;
-
   type t_gth_common_clk_out_arr is array(integer range <>) of t_gth_common_clk_out;
   type t_gth_common_clk_in_arr is array(integer range <>) of t_gth_common_clk_in;
 
@@ -276,8 +257,6 @@ package gth_pkg is
   type t_gth_rx_status_arr is array(integer range <>) of t_gth_rx_status;
   type t_gth_misc_ctrl_arr is array(integer range <>) of t_gth_misc_ctrl;
   type t_gth_misc_status_arr is array(integer range <>) of t_gth_misc_status;
-  type t_gth_tx_data_arr is array(integer range <>) of t_gth_tx_data;
-  type t_gth_rx_data_arr is array(integer range <>) of t_gth_rx_data;
   type t_gth_tx_init_arr is array(integer range <>) of t_gth_tx_init;
   type t_gth_rx_init_arr is array(integer range <>) of t_gth_rx_init;
 

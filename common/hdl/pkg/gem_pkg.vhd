@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library work;
 use work.gem_board_config_package.CFG_NUM_OF_OHs;
 
 package gem_pkg is
@@ -26,18 +25,29 @@ package gem_pkg is
     type t_std4_array is array(integer range <>) of std_logic_vector(3 downto 0);
 
     --========================--
-    --== Link configuration ==--
+    --== GTH/GTX link types ==--
     --========================--
 
-	-- defines the GT index for each type of OH link
-	type t_oh_link_config is record
-		track_link		: integer range 0 to 79;
-		gbt_link		: integer range 0 to 79;
-		trig0_rx_link	: integer range 0 to 79;
-		trig1_rx_link	: integer range 0 to 79;
-	end record t_oh_link_config;
-	
-	type t_oh_link_config_arr is array (0 to NUM_OF_OHs-1) of t_oh_link_config;
+    type t_gt_8b10b_tx_data is record
+        txdata         : std_logic_vector(31 downto 0);
+        txcharisk      : std_logic_vector(3 downto 0);
+        txchardispmode : std_logic_vector(3 downto 0);
+        txchardispval  : std_logic_vector(3 downto 0);
+    end record;
+
+    type t_gt_8b10b_rx_data is record
+        rxdata          : std_logic_vector(31 downto 0);
+        rxbyteisaligned : std_logic;
+        rxbyterealign   : std_logic;
+        rxcommadet      : std_logic;
+        rxdisperr       : std_logic_vector(3 downto 0);
+        rxnotintable    : std_logic_vector(3 downto 0);
+        rxchariscomma   : std_logic_vector(3 downto 0);
+        rxcharisk       : std_logic_vector(3 downto 0);
+    end record;
+
+    type t_gt_8b10b_tx_data_arr is array(integer range <>) of t_gt_8b10b_tx_data;
+    type t_gt_8b10b_rx_data_arr is array(integer range <>) of t_gt_8b10b_rx_data;
 
     --========================--
     --== Trigger data input ==--
@@ -49,29 +59,7 @@ package gem_pkg is
         data_en     : std_logic;
     end record;
 
-    type t_trig_link_array is array(integer range <>) of t_trig_link;    
-
-    --====================--
-    --==       TTC      ==--
-    --====================--
-
-    type t_gem_ttc_cmd is record
-        l1a         : std_logic;
-        bc0         : std_logic;
-        ec0         : std_logic;
-        oc0         : std_logic;
-        calpulse    : std_logic;
-        start       : std_logic;
-        stop        : std_logic;
-        resync      : std_logic;
-        hard_reset  : std_logic;
-    end record;
-
-    type t_gem_ttc_cnt is record
-        bx_id       : std_logic_vector(11 downto 0); -- BX counter (reset with BC0)
-        orbit_id    : std_logic_vector(15 downto 0); -- Orbit counter (wraps around and is reset with EC0)
-        l1a_id      : std_logic_vector(23 downto 0);  -- L1A counter (reset with EC0)
-    end record;
+    type t_trig_link_array is array(integer range <>) of t_trig_link;
 
     --====================--
     --== DAQ data input ==--
@@ -99,7 +87,7 @@ package gem_pkg is
         vfat_block_too_big      : std_logic;
     end record;
 
-    type t_chamber_err_flags_array is array(integer range <>) of chamber_err_flags_t;
+    type t_chamber_err_flags_array is array(integer range <>) of t_chamber_err_flags;
     
     type t_chamber_infifo_rd is record
         dout          : std_logic_vector(191 downto 0);

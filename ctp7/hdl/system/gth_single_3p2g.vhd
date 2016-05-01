@@ -21,6 +21,7 @@ use UNISIM.VCOMPONENTS.all;
 
 library work;
 use work.gth_pkg.all;
+use work.gem_pkg.all;
 
 --============================================================================
 --                                                          Entity declaration
@@ -60,8 +61,8 @@ entity gth_single_3p2g is
       gth_misc_ctrl_i   : in  t_gth_misc_ctrl;
       gth_misc_status_o : out t_gth_misc_status;
 
-      gth_tx_data_i : in  t_gth_tx_data;
-      gth_rx_data_o : out t_gth_rx_data
+      gth_tx_data_i : in  t_gt_8b10b_tx_data;
+      gth_rx_data_o : out t_gt_8b10b_rx_data
       );
 
 
