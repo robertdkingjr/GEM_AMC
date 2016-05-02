@@ -50,13 +50,21 @@ architecture Behavioral of ipbus_slave is
     signal ipb_miso         : ipb_rbus;
 
     -- data on ipbus clock domain
-    signal regs_read_arr    : t_std32_array(g_NUM_REGS - 1 downto 0) := (others => (others => '0'));
-    signal regs_write_arr   : t_std32_array(g_NUM_REGS - 1 downto 0) := (others => (others => '0'));
-    signal regs_write_strb  : std_logic := '0';
-    signal regs_write_ack   : std_logic := '0';
-    signal regs_read_strb   : std_logic := '0';
-    signal regs_read_ack    : std_logic := '0';
+    signal reg_read_data            : std_logic_vector(31 downto 0) := (others => '0');
+    signal reg_write_data           : std_logic_vector(31 downto 0) := (others => '0');
+    signal regs_write_strb          : std_logic := '0';
+    signal regs_write_ack           : std_logic := '0';
+    signal regs_read_strb           : std_logic := '0';
+    signal regs_read_ack            : std_logic := '0';
+    signal regs_read_ack_sync_ipb   : std_logic := '0';
+    signal regs_write_ack_sync_ipb  : std_logic := '0';
+    signal ipb_reset_sync_usr       : std_logic := '0';
     
+    -- Timeout
+    constant ipb_timeout      : unsigned(3 downto 0) := x"f";
+    signal ipb_timer          : unsigned(3 downto 0) := (others => '0');
+    
+    -- DEBUG
     signal ipb_mosi_debug   : ipb_wbus;
     
     attribute mark_debug : string;
@@ -86,12 +94,7 @@ begin
                 ipb_addr_valid  <= '0';
                 regs_write_strb <= '0';
                 regs_read_strb  <= '0';
-
-                defaults:
-                for i in 0 to g_NUM_REGS - 1 loop
-                    regs_write_arr(0) <= regs_defaults_arr_i(i);
-                end loop;
-
+                ipb_timer <= (others => '0');
             else
                 case ipb_state is
                     when IDLE =>
@@ -120,7 +123,7 @@ begin
                     when RSPD =>
                         if (ipb_addr_valid = '1' and ipb_mosi_i.ipb_write = '1') then
                             --write
-                            regs_write_arr(ipb_reg_sel) <= ipb_mosi_i.ipb_wdata;
+                            reg_write_data <= ipb_mosi_i.ipb_wdata;
                             regs_write_strb <= '1';
                             ipb_state <= SYNC_WRITE;
                         elsif (ipb_addr_valid = '1') then
@@ -132,18 +135,37 @@ begin
                             ipb_miso <= (ipb_ack => '1', ipb_err => '1', ipb_rdata => (others => '0'));
                             ipb_state <= RST;
                         end if;
+                        ipb_timer <= (others => '0');
                     when SYNC_WRITE =>
-                        if (regs_write_ack = '1') then
+                        if (regs_write_ack_sync_ipb = '1') then
                             ipb_miso <= (ipb_ack => '1', ipb_err => '0', ipb_rdata => (others => '0'));
                             regs_write_strb <= '0';
                             ipb_state <= RST;
-                        end if;
+                        -- Timeout (useful if user clock is not available)
+                        elsif (ipb_timer > ipb_timeout) then
+                            ipb_miso <= (ipb_ack => '1', ipb_err => '1', ipb_rdata => (others => '0'));
+                            regs_write_strb <= '0';
+                            ipb_state <= RST;
+                            ipb_timer <= (others => '0');
+                        -- still waiting for IPbus
+                        else
+                          ipb_timer <= ipb_timer + 1;
+                        end if;                            
                     when SYNC_READ =>
-                        if (regs_read_ack = '1') then
-                            ipb_miso <= (ipb_ack => '1', ipb_err => '0', ipb_rdata => regs_read_arr(ipb_reg_sel));
+                        if (regs_read_ack_sync_ipb = '1') then
+                            ipb_miso <= (ipb_ack => '1', ipb_err => '0', ipb_rdata => reg_read_data);
                             regs_read_strb <= '0';
                             ipb_state <= RST;
-                        end if;
+                        -- Timeout (useful if user clock is not available)
+                        elsif (ipb_timer > ipb_timeout) then
+                            ipb_miso <= (ipb_ack => '1', ipb_err => '1', ipb_rdata => (others => '0'));
+                            regs_read_strb <= '0';
+                            ipb_state <= RST;
+                            ipb_timer <= (others => '0');
+                        -- still waiting for IPbus
+                        else
+                          ipb_timer <= ipb_timer + 1;
+                        end if;                            
                     when RST =>
                         ipb_miso.ipb_ack <= '0';
                         ipb_miso.ipb_err <= '0';
@@ -154,23 +176,64 @@ begin
                         ipb_reg_sel <= 0;
                         regs_write_strb <= '0';
                         regs_read_strb  <= '0';
+                        ipb_timer <= (others => '0');
                 end case;
             end if;
         end if;
     end process p_ipb_fsm;
 
+    i_read_ack_sync_ipb_clk: 
+    entity work.synchronizer
+        generic map(
+            N_STAGES => 2
+        )
+        port map(
+            async_i => regs_read_ack,
+            clk_i   => ipb_clk_i,
+            sync_o  => regs_read_ack_sync_ipb
+        );
+
+    i_write_ack_sync_ipb_clk: 
+    entity work.synchronizer
+        generic map(
+            N_STAGES => 2
+        )
+        port map(
+            async_i => regs_write_ack,
+            clk_i   => ipb_clk_i,
+            sync_o  => regs_write_ack_sync_ipb
+        );
+
+    i_ipb_reset_sync_usr_clk: 
+    entity work.synchronizer
+        generic map(
+            N_STAGES => 2
+        )
+        port map(
+            async_i => ipb_reset_i,
+            clk_i   => usr_clk_i,
+            sync_o  => ipb_reset_sync_usr
+        );
+
     -- data transfer from the user clock domain to ipb clock domain
     p_usr_clk_write_sync:
     process (usr_clk_i) is
     begin
-        if rising_edge(usr_clk_i) then            
-            if (regs_write_strb = '1') then
-                regs_write_arr_o(ipb_reg_sel) <= regs_write_arr(ipb_reg_sel);
-                regs_write_ack <= '1';
-                write_pulse_arr_o(ipb_reg_sel) <= '1';
+        if rising_edge(usr_clk_i) then
+            if (ipb_reset_sync_usr = '1') then
+                defaults:
+                for i in 0 to g_NUM_REGS - 1 loop
+                    regs_write_arr_o(i) <= regs_defaults_arr_i(i);
+                end loop;
             else
-                regs_write_ack <= '0';
-                write_pulse_arr_o(ipb_reg_sel) <= '0';
+                if (regs_write_strb = '1') then
+                    regs_write_arr_o(ipb_reg_sel) <= reg_write_data;
+                    regs_write_ack <= '1';
+                    write_pulse_arr_o(ipb_reg_sel) <= '1';
+                else
+                    regs_write_ack <= '0';
+                    write_pulse_arr_o(ipb_reg_sel) <= '0';
+                end if;
             end if;
         end if;
     end process p_usr_clk_write_sync;
@@ -181,7 +244,7 @@ begin
     begin
         if rising_edge(usr_clk_i) then            
             if (regs_read_strb = '1') then
-                regs_read_arr(ipb_reg_sel) <= regs_read_arr_i(ipb_reg_sel);
+                reg_read_data <= regs_read_arr_i(ipb_reg_sel);
                 regs_read_ack <= '1';
                 read_pulse_arr_o(ipb_reg_sel) <= '1';
             else

@@ -60,6 +60,8 @@ architecture gem_amc_arch of gem_amc is
 
     --== General ==--
     signal reset        : std_logic;
+    signal reset_pwrup  : std_logic;
+    signal ipb_reset    : std_logic;
 
     --== GTX signals ==--
     signal gtx_tk_error : std_logic_vector(1 downto 0);
@@ -83,9 +85,27 @@ architecture gem_amc_arch of gem_amc is
 
 begin
 
-    reset <= reset_i; -- TODO: Add a global reset from IPbus
+    reset <= reset_i or reset_pwrup; -- TODO: Add a global reset from IPbus
+    ipb_reset <= ipb_reset_i or reset_pwrup;
     ttc_clocks_o <= ttc_clocks; 
     ipb_miso_arr_o <= ipb_miso_arr;
+
+    --================================--
+    -- Power-on reset  
+    --================================--
+    
+    process(ipb_clk_i)
+        variable countdown : integer := 50_000; -- 1ms - probably way too long, but ok for now (this is only used after powerup)
+    begin
+        if (rising_edge(ipb_clk_i)) then
+            if (countdown > 0) then
+              reset_pwrup <= '1';
+              countdown := countdown - 1;
+            else
+              reset_pwrup <= '0';
+            end if;
+        end if;
+    end process;    
     
     --================================--
     -- TTC  
@@ -101,7 +121,7 @@ begin
             ttc_clks_o      => ttc_clocks,
             ttc_cmds_o      => ttc_cmd,
             ttc_daq_cntrs_o => ttc_counters,
-            ipb_reset_i     => ipb_reset_i,
+            ipb_reset_i     => ipb_reset,
             ipb_clk_i       => ipb_clk_i,
             ipb_mosi_i      => ipb_mosi_arr_i(C_IPB_SLV.ttc),
             ipb_miso_o      => ipb_miso_arr(C_IPB_SLV.ttc)

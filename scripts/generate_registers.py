@@ -379,22 +379,25 @@ def writeStatusBashScript(modules, filename):
 
     f = open(filename, 'w')
 
-    f.write('#!/bin/bash\n\n')
+    f.write('#!/bin/sh\n\n')
     f.write('MODULE=$1\n')
 
     f.write('if [ -z "$INTERVAL" ]; then\n')
     f.write('    echo "Usage: this_script.sh <module_name>"\n')
     f.write('    echo "Available modules:"\n')
     for module in modules:
-        f.write('    echo "%s"' % module.name)
+        f.write('    echo "%s"' % module.name.replace(TOP_NODE_NAME + '.', ''))
     f.write('    exit\n')
     f.write('fi\n\n')
 
     for module in modules:
-        f.write('if [ "$MODULE" = "TTC" ]; then\n')
+        f.write('if [ "$MODULE" = "%s" ]; then\n' % module.name.replace(TOP_NODE_NAME + '.', ''))
         for reg in module.regs:
             if 'r' in reg.permission:
-                f.write("    printf '" + reg.name.ljust(45) + " = %s' $(( `mpeek " + hex(AXI_IPB_BASE_ADDRESS + ((module.baseAddress + reg.address) << 2)) + "` & " + hexPadded32(reg.mask) + " ))\n")
+                if reg.mask == 0xffffffff:
+                    f.write("    printf '" + reg.name.ljust(45) + " = 0x%x\\n' `mpeek " + hex(AXI_IPB_BASE_ADDRESS + ((module.baseAddress + reg.address) << 2)) + "` \n")
+                else:
+                    f.write("    printf '" + reg.name.ljust(45) + " = 0x%x\\n' $(( `mpeek " + hex(AXI_IPB_BASE_ADDRESS + ((module.baseAddress + reg.address) << 2)) + "` & " + hexPadded32(reg.mask) + " ))\n")
         f.write('fi\n\n')
 
 # returns the number of required 32 bit registers for this module -- basically it counts the number of registers with different addresses
