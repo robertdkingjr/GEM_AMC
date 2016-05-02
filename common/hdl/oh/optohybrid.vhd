@@ -30,22 +30,23 @@ use work.ttc_pkg.all;
 use work.gem_pkg.all;
 use work.ipbus.all;
 
-entity optohybrid_single is
+entity optohybrid is
 port (
-    reset_i                 : in std_logic;
-    ttc_clk_i               : in t_ttc_clks;
-    ttc_cmds_i              : in t_ttc_cmds;
-    gth_rx_usrclk_i         : in std_logic;
-    gth_tx_usrclk_i         : in std_logic;
-    gth_rx_data_i           : in t_gth_rx_data;
-    gth_tx_data_o           : out t_gth_tx_data;
-    ipb_clk_i               : in std_logic;
+    reset_i                 : in  std_logic;
+    ttc_clk_i               : in  t_ttc_clks;
+    ttc_cmds_i              : in  t_ttc_cmds;
+    gth_rx_usrclk_i         : in  std_logic;
+    gth_tx_usrclk_i         : in  std_logic;
+    gth_rx_data_i           : in  t_gt_8b10b_rx_data;
+    gth_tx_data_o           : out t_gt_8b10b_tx_data;
+    ipb_reset_i             : in  std_logic;
+    ipb_clk_i               : in  std_logic;
     ipb_reg_miso_o          : out ipb_rbus;
-    ipb_reg_mosi_i          : in ipb_wbus
+    ipb_reg_mosi_i          : in  ipb_wbus
 );
-end optohybrid_single;
+end optohybrid;
 
-architecture Behavioral of optohybrid_single is
+architecture Behavioral of optohybrid is
     
     signal vfat2_t1         : t_t1;
     
@@ -112,7 +113,7 @@ begin
     port map(
         ipb_clk_i   => ipb_clk_i,
         gtx_clk_i   => gth_rx_usrclk_i,
-        reset_i     => reset_i,        
+        reset_i     => ipb_reset_i,        
         ipb_mosi_i  => ipb_reg_mosi_i,
         ipb_miso_o  => ipb_reg_miso_o,        
         tx_en_i     => g2o_req_en,

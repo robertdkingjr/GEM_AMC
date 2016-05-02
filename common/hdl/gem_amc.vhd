@@ -128,6 +128,29 @@ begin
         );
 
     --================================--
+    -- Optohybrids  
+    --================================--
+    
+    i_optohybrids : for i in 0 to CFG_NUM_OF_OHs - 1 generate
+
+        i_optohybrid_single : entity work.optohybrid
+            port map(
+                reset_i         => reset,
+                ttc_clk_i       => ttc_clocks,
+                ttc_cmds_i      => ttc_cmd,
+                gth_rx_usrclk_i => gt_8b10b_rx_clk_arr_i(i),
+                gth_tx_usrclk_i => gt_8b10b_tx_clk_arr_i(i),
+                gth_rx_data_i   => gt_8b10b_rx_data_i(i),
+                gth_tx_data_o   => gt_8b10b_tx_data_o(i),
+                ipb_reset_i     => ipb_reset,
+                ipb_clk_i       => ipb_clk_i,
+                ipb_reg_miso_o  => ipb_miso_arr(C_IPB_SLV.oh_reg(i)),
+                ipb_reg_mosi_i  => ipb_mosi_arr_i(C_IPB_SLV.oh_reg(i))
+            );    
+    
+    end generate;
+
+    --================================--
     -- TTC signal handling 	
     --================================--
 

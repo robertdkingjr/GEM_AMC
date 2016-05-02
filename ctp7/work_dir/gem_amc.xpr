@@ -136,6 +136,25 @@
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="sim/fifo_gtx_rx.vhd"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="doc/fifo_generator_v13_0_changelog.txt"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx.vho"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx.veo"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_generator_v13_0_1/hdl/fifo_generator_v13_0_rfs.vhd"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_generator_v13_0_1/simulation/fifo_generator_vhdl_beh.vhd"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_generator_v13_0_1/hdl/fifo_generator_v13_0_vhsyn_rfs.vhd"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx/fifo_gtx_rx.xdc"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx/fifo_gtx_rx_clocks.xdc"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="blk_mem_gen_v8_3_1/hdl/blk_mem_gen_v8_3.vhd"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="blk_mem_gen_v8_3_1/hdl/blk_mem_gen_v8_3_vhsyn_rfs.vhd"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx_sim_netlist.vhdl"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx_sim_netlist.v"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx_stub.vhdl"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx_stub.v"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx.xml"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx_ooc.xdc"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="synth/fifo_gtx_rx.vhd"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_generator_v13_0_1/hdl/fifo_generator_v13_0.vhd"/>
       </File>
       <File Path="$PPRDIR/../hdl/system/pkg/ctp7_utils_pkg.vhd">
         <FileInfo>
@@ -275,6 +294,30 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PPRDIR/../../common/hdl/oh/optohybrid.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/oh/link/link_tx_tracking.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/oh/link/link_rx_tracking.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/oh/link/link_request.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
         <Option Name="TopModule" Val="gem_ctp7"/>
@@ -310,6 +353,25 @@
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx_stub.v"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx_stub.vhdl"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx_sim_netlist.v"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx_sim_netlist.vhdl"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx.xml"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx_ooc.xdc"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="synth/fifo_gtx_tx.vhd"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_generator_v13_0_1/hdl/fifo_generator_v13_0.vhd"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_generator_v13_0_1/hdl/fifo_generator_v13_0_vhsyn_rfs.vhd"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx/fifo_gtx_tx.xdc"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx/fifo_gtx_tx_clocks.xdc"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="blk_mem_gen_v8_3_1/hdl/blk_mem_gen_v8_3.vhd"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="blk_mem_gen_v8_3_1/hdl/blk_mem_gen_v8_3_vhsyn_rfs.vhd"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="sim/fifo_gtx_tx.vhd"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_generator_v13_0_1/hdl/fifo_generator_v13_0_rfs.vhd"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_generator_v13_0_1/simulation/fifo_generator_vhdl_beh.vhd"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx.veo"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx.vho"/>
+        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="doc/fifo_generator_v13_0_changelog.txt"/>
       </File>
       <Config>
         <Option Name="TopModule" Val="fifo_gtx_tx"/>

@@ -41,6 +41,40 @@ end link_request;
 
 architecture Behavioral of link_request is
 
+    -- IP component declarations
+    
+    component fifo_gtx_tx is
+        PORT (
+            rst : IN std_logic;
+            wr_clk : IN std_logic;
+            rd_clk : IN std_logic;
+            din : IN std_logic_vector(64 DOWNTO 0);
+            wr_en : IN std_logic;
+            rd_en : IN std_logic;
+            dout : OUT std_logic_vector(64 DOWNTO 0);
+            full : OUT std_logic;
+            empty : OUT std_logic;
+            valid : OUT std_logic
+        );
+    end component fifo_gtx_tx;
+
+    component fifo_gtx_rx is
+        PORT (
+            rst : IN std_logic;
+            wr_clk : IN std_logic;
+            rd_clk : IN std_logic;
+            din : IN std_logic_vector(31 DOWNTO 0);
+            wr_en : IN std_logic;
+            rd_en : IN std_logic;
+            dout : OUT std_logic_vector(31 DOWNTO 0);
+            full : OUT std_logic;
+            empty : OUT std_logic;
+            valid : OUT std_logic
+        );
+    end component fifo_gtx_rx;
+    
+    -- Signals
+    
     type state_t is (IDLE, RSPD, ACK, RST);
     
     signal state            : state_t;
@@ -94,7 +128,7 @@ begin
     
     --== TX buffer ==--
     
-    fifo_gtx_tx_inst : entity work.fifo_gtx_tx
+    i_fifo_gtx_tx : component fifo_gtx_tx
     port map(
         rst     => reset_i,
         wr_clk  => ipb_clk_i,
@@ -112,7 +146,7 @@ begin
 
     --== RX buffer ==--
     
-    fifo_gtx_rx_inst : entity work.fifo_gtx_rx
+    i_fifo_gtx_rx : component fifo_gtx_rx
     port map(
         rst     => reset_i,
         wr_clk  => gtx_clk_i,
