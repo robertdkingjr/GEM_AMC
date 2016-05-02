@@ -5,7 +5,7 @@ import textwrap as tw
 
 ADDRESS_TABLE_TOP = './address_table/gem_amc_top.xml'
 CONSTANTS_FILE = '../common/hdl/pkg/registers.vhd'
-BASH_STATUS_SCRIPT_FILE ='./generated/ctp7_status.sh'
+BASH_STATUS_SCRIPT_FILE ='./ctp7_bash_scripts/generated/ctp7_status.sh'
 
 TOP_NODE_NAME = 'GEM_AMC'
 VHDL_REG_CONSTANT_PREFIX = 'REG_'
@@ -119,10 +119,10 @@ def main():
             print(reg.toString())
 
     print('Writing constants file to ' + CONSTANTS_FILE)
-    # writeConstantsFile(modules, CONSTANTS_FILE)
+    writeConstantsFile(modules, CONSTANTS_FILE)
 
-    # for module in modules:
-    #     updateModuleFile(module)
+    for module in modules:
+        updateModuleFile(module)
 
     writeStatusBashScript(modules, BASH_STATUS_SCRIPT_FILE)
 
@@ -397,7 +397,7 @@ def writeStatusBashScript(modules, filename):
                 if reg.mask == 0xffffffff:
                     f.write("    printf '" + reg.name.ljust(45) + " = 0x%x\\n' `mpeek " + hex(AXI_IPB_BASE_ADDRESS + ((module.baseAddress + reg.address) << 2)) + "` \n")
                 else:
-                    f.write("    printf '" + reg.name.ljust(45) + " = 0x%x\\n' $(( `mpeek " + hex(AXI_IPB_BASE_ADDRESS + ((module.baseAddress + reg.address) << 2)) + "` & " + hexPadded32(reg.mask) + " ))\n")
+                    f.write("    printf '" + reg.name.ljust(45) + " = 0x%x\\n' $(( (`mpeek " + hex(AXI_IPB_BASE_ADDRESS + ((module.baseAddress + reg.address) << 2)) + "` & " + hexPadded32(reg.mask) + ") >> " + str(reg.lsb) + " ))\n")
         f.write('fi\n\n')
 
 # returns the number of required 32 bit registers for this module -- basically it counts the number of registers with different addresses
