@@ -196,7 +196,7 @@ begin
     i_write_ack_sync_ipb_clk: 
     entity work.synchronizer
         generic map(
-            N_STAGES => 2
+            N_STAGES => 3
         )
         port map(
             async_i => regs_write_ack,
