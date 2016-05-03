@@ -364,13 +364,13 @@ begin
       probe19     => axi_rdata,
       probe20     => axi_rresp,
       probe21     => axi_rvalid,
-      probe22     => ipb_mosi(C_IPB_SLV.oh_reg(6)).ipb_addr,
-      probe23     => ipb_mosi(C_IPB_SLV.oh_reg(6)).ipb_wdata,
-      probe24     => ipb_mosi(C_IPB_SLV.oh_reg(6)).ipb_strobe,
-      probe25     => ipb_mosi(C_IPB_SLV.oh_reg(6)).ipb_write,
-      probe26     => ipb_miso_i(C_IPB_SLV.oh_reg(6)).ipb_rdata,
-      probe27     => ipb_miso_i(C_IPB_SLV.oh_reg(6)).ipb_ack,
-      probe28     => ipb_miso_i(C_IPB_SLV.oh_reg(6)).ipb_err,
+      probe22     => ipb_mosi(C_IPB_SLV.oh_reg(0)).ipb_addr,
+      probe23     => ipb_mosi(C_IPB_SLV.oh_reg(0)).ipb_wdata,
+      probe24     => ipb_mosi(C_IPB_SLV.oh_reg(0)).ipb_strobe,
+      probe25     => ipb_mosi(C_IPB_SLV.oh_reg(0)).ipb_write,
+      probe26     => ipb_miso_i(C_IPB_SLV.oh_reg(0)).ipb_rdata,
+      probe27     => ipb_miso_i(C_IPB_SLV.oh_reg(0)).ipb_ack,
+      probe28     => ipb_miso_i(C_IPB_SLV.oh_reg(0)).ipb_err,
       probe29     => std_logic_vector(to_unsigned(ipb_slv_select, 8))
     );
 

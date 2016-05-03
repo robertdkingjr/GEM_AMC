@@ -81,8 +81,6 @@ architecture gem_amc_arch of gem_amc is
     --== Other ==--
     signal ipb_miso_arr    : ipb_rbus_array(g_NUM_IPB_SLAVES - 1 downto 0) := (others => (ipb_rdata => (others => '0'), ipb_ack => '0', ipb_err => '0'));
 
---    signal sbit_rate : unsigned(31 downto 0) := (others => '0');
-
 begin
 
     reset <= reset_i or reset_pwrup; -- TODO: Add a global reset from IPbus
@@ -134,6 +132,9 @@ begin
     i_optohybrids : for i in 0 to CFG_NUM_OF_OHs - 1 generate
 
         i_optohybrid_single : entity work.optohybrid
+            generic map(
+                g_DEBUG         => "TRUE"
+            )
             port map(
                 reset_i         => reset,
                 ttc_clk_i       => ttc_clocks,

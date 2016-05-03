@@ -102,7 +102,7 @@ begin
                     when IDLE =>    
                         if (ipb_mosi_i.ipb_strobe = '1') then
                             wr_en <= '1';
-                            wr_data <= not ipb_mosi_i.ipb_write & ipb_mosi_i.ipb_addr(23 downto 20) & ipb_mosi_i.ipb_addr(15 downto 12) & x"000" & ipb_mosi_i.ipb_addr(11 downto 0) & ipb_mosi_i.ipb_wdata; -- see ipb_addr_decode for info on addressing
+                            wr_data <= ipb_mosi_i.ipb_write & ipb_mosi_i.ipb_addr(23 downto 20) & ipb_mosi_i.ipb_addr(15 downto 12) & x"000" & ipb_mosi_i.ipb_addr(11 downto 0) & ipb_mosi_i.ipb_wdata; -- see ipb_addr_decode for info on addressing
                             state <= RSPD;
                         end if;
                     when RSPD =>

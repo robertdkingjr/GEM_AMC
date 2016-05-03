@@ -31,24 +31,29 @@ use work.gem_pkg.all;
 use work.ipbus.all;
 
 entity optohybrid is
-port (
-    reset_i                 : in  std_logic;
-    ttc_clk_i               : in  t_ttc_clks;
-    ttc_cmds_i              : in  t_ttc_cmds;
-    gth_rx_usrclk_i         : in  std_logic;
-    gth_tx_usrclk_i         : in  std_logic;
-    gth_rx_data_i           : in  t_gt_8b10b_rx_data;
-    gth_tx_data_o           : out t_gt_8b10b_tx_data;
-    ipb_reset_i             : in  std_logic;
-    ipb_clk_i               : in  std_logic;
-    ipb_reg_miso_o          : out ipb_rbus;
-    ipb_reg_mosi_i          : in  ipb_wbus
-);
+    generic(
+        g_DEBUG         : string := "FALSE" -- if this is set to true, some chipscope cores will be inserted
+    );
+    port(
+        reset_i         : in  std_logic;
+        ttc_clk_i       : in  t_ttc_clks;
+        ttc_cmds_i      : in  t_ttc_cmds;
+        gth_rx_usrclk_i : in  std_logic;
+        gth_tx_usrclk_i : in  std_logic;
+        gth_rx_data_i   : in  t_gt_8b10b_rx_data;
+        gth_tx_data_o   : out t_gt_8b10b_tx_data;
+        ipb_reset_i     : in  std_logic;
+        ipb_clk_i       : in  std_logic;
+        ipb_reg_miso_o  : out ipb_rbus;
+        ipb_reg_mosi_i  : in  ipb_wbus
+    );
 end optohybrid;
 
 architecture Behavioral of optohybrid is
     
     signal vfat2_t1         : t_t1;
+    
+    signal gth_tx_data      : t_gt_8b10b_tx_data;
     
     --== GTX requests ==--
     
@@ -67,6 +72,8 @@ architecture Behavioral of optohybrid is
         
 begin
 
+    gth_tx_data_o <= gth_tx_data;
+
     -- TODO: transfer between the ttc clk and tx clk domains
     vfat2_t1.lv1a <= ttc_cmds_i.l1a;
     vfat2_t1.bc0  <= ttc_cmds_i.bc0;
@@ -83,8 +90,8 @@ begin
         req_en_o    => g2o_req_en,   
         req_valid_i => g2o_req_valid,   
         req_data_i  => g2o_req_data,           
-        tx_kchar_o  => gth_tx_data_o.txcharisk(1 downto 0),   
-        tx_data_o   => gth_tx_data_o.txdata(15 downto 0)
+        tx_kchar_o  => gth_tx_data.txcharisk(1 downto 0),   
+        tx_data_o   => gth_tx_data.txdata(15 downto 0)
     );  
     
     --==========================--
@@ -122,5 +129,24 @@ begin
         rx_en_i     => o2g_req_en,
         rx_data_i   => o2g_req_data        
     );
+     
+    --============================--
+    --==        Debug           ==--
+    --============================--
+    
+    debug_gen:
+    if g_DEBUG = "TRUE" generate
+        gt_rx_link_ila_inst : entity work.gt_rx_link_ila_wrapper
+            port map(
+                clk_i => gth_rx_usrclk_i,
+                rx_i  => gth_rx_data_i
+            );
+        gt_tx_link_ila_inst : entity work.gt_tx_link_ila_wrapper
+            port map(
+                clk_i => gth_tx_usrclk_i,
+                tx_i  => gth_tx_data
+            );
+    end generate;
+     
      
 end Behavioral;
