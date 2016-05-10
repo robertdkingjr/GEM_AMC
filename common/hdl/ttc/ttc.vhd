@@ -124,6 +124,7 @@ architecture ttc_arch of ttc is
 --============================================================================
 
 begin
+
     i_reset_sync: 
     entity work.synchronizer
         generic map(

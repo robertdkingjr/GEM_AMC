@@ -142,25 +142,6 @@
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="sim/fifo_gtx_rx.vhd"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="doc/fifo_generator_v13_0_changelog.txt"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx.vho"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx.veo"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_generator_v13_0_1/hdl/fifo_generator_v13_0_rfs.vhd"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_generator_v13_0_1/simulation/fifo_generator_vhdl_beh.vhd"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_generator_v13_0_1/hdl/fifo_generator_v13_0_vhsyn_rfs.vhd"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx/fifo_gtx_rx.xdc"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx/fifo_gtx_rx_clocks.xdc"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="blk_mem_gen_v8_3_1/hdl/blk_mem_gen_v8_3.vhd"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="blk_mem_gen_v8_3_1/hdl/blk_mem_gen_v8_3_vhsyn_rfs.vhd"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx_sim_netlist.vhdl"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx_sim_netlist.v"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx_stub.vhdl"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx_stub.v"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx.xml"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_gtx_rx_ooc.xdc"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="synth/fifo_gtx_rx.vhd"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_rx.xci" FileRelPathName="fifo_generator_v13_0_1/hdl/fifo_generator_v13_0.vhd"/>
       </File>
       <File Path="$PPRDIR/../hdl/system/pkg/ctp7_utils_pkg.vhd">
         <FileInfo>
@@ -180,22 +161,6 @@
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_clk_wiz_0_0/v7_bd_clk_wiz_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_blk_mem_gen_0_0/v7_bd_blk_mem_gen_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_interconnect_0_0/v7_bd_axi_interconnect_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_chip2chip_0_0/v7_bd_axi_chip2chip_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_bram_ctrl_gth_reg_file_0/v7_bd_axi_bram_ctrl_gth_reg_file_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_bram_ctrl_drp_0/v7_bd_axi_bram_ctrl_drp_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_bram_ctrl_0_0/v7_bd_axi_bram_ctrl_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_xadc_wiz_0_0/v7_bd_xadc_wiz_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_proc_sys_reset_0_0/v7_bd_proc_sys_reset_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_xbar_0/v7_bd_xbar_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="hdl/v7_bd.hwdef"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="hw_handoff/v7_bd_bd.tcl"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="hw_handoff/v7_bd.hwh"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="v7_bd_ooc.xdc"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_auto_pc_0/v7_bd_auto_pc_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="hdl/v7_bd.vhd"/>
       </File>
       <File Path="$PPRDIR/../hdl/ipbus/pkg/ipb_addr_decode.vhd">
         <FileInfo>
@@ -343,6 +308,36 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PPRDIR/../../common/hdl/oh/link/link_rx_trigger.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/trigger/trigger.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/trigger/trigger_input_processor.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/misc/counter.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/hdl/misc/rate_counter.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
         <Option Name="TopModule" Val="gem_ctp7"/>
@@ -385,25 +380,6 @@
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx_stub.v"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx_stub.vhdl"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx_sim_netlist.v"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx_sim_netlist.vhdl"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx.xml"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx_ooc.xdc"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="synth/fifo_gtx_tx.vhd"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_generator_v13_0_1/hdl/fifo_generator_v13_0.vhd"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_generator_v13_0_1/hdl/fifo_generator_v13_0_vhsyn_rfs.vhd"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx/fifo_gtx_tx.xdc"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx/fifo_gtx_tx_clocks.xdc"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="blk_mem_gen_v8_3_1/hdl/blk_mem_gen_v8_3.vhd"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="blk_mem_gen_v8_3_1/hdl/blk_mem_gen_v8_3_vhsyn_rfs.vhd"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="sim/fifo_gtx_tx.vhd"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_generator_v13_0_1/hdl/fifo_generator_v13_0_rfs.vhd"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_generator_v13_0_1/simulation/fifo_generator_vhdl_beh.vhd"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx.veo"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="fifo_gtx_tx.vho"/>
-        <CompFileExtendedInfo CompFileName="fifo_gtx_tx.xci" FileRelPathName="doc/fifo_generator_v13_0_changelog.txt"/>
       </File>
       <Config>
         <Option Name="TopModule" Val="fifo_gtx_tx"/>
@@ -450,6 +426,26 @@
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
+    <FileSet Name="sbit_cluster_fifo" Type="BlockSrcs" RelSrcDir="$PSRCDIR/sbit_cluster_fifo">
+      <File Path="$PSRCDIR/sources_1/ip/sbit_cluster_fifo.xcix">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/ip/sbit_cluster_fifo/sbit_cluster_fifo.xci">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <Config>
+        <Option Name="TopModule" Val="sbit_cluster_fifo"/>
+        <Option Name="UseBlackboxStub" Val="1"/>
+      </Config>
+    </FileSet>
   </FileSets>
   <Simulators>
     <Simulator Name="XSim">
@@ -489,18 +485,21 @@
     </Run>
     <Run Id="gt_tx_link_ila_synth_1" Type="Ft3:Synth" SrcSet="gt_tx_link_ila" Part="xc7vx690tffg1927-2" ConstrsSet="gt_tx_link_ila" Description="Vivado Synthesis Defaults" Dir="$PRUNDIR/gt_tx_link_ila_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2015">
-          <Desc>Vivado Synthesis Defaults</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2015"/>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
     </Run>
     <Run Id="gt_rx_link_ila_synth_1" Type="Ft3:Synth" SrcSet="gt_rx_link_ila" Part="xc7vx690tffg1927-2" ConstrsSet="gt_rx_link_ila" Description="Vivado Synthesis Defaults" Dir="$PRUNDIR/gt_rx_link_ila_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2015">
-          <Desc>Vivado Synthesis Defaults</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2015"/>
+        <Step Id="synth_design"/>
+      </Strategy>
+      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
+    </Run>
+    <Run Id="sbit_cluster_fifo_synth_1" Type="Ft3:Synth" SrcSet="sbit_cluster_fifo" Part="xc7vx690tffg1927-2" ConstrsSet="sbit_cluster_fifo" Description="Vivado Synthesis Defaults" Dir="$PRUNDIR/sbit_cluster_fifo_synth_1" IncludeInArchive="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2015"/>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -536,9 +535,7 @@
     </Run>
     <Run Id="gt_tx_link_ila_impl_1" Type="Ft2:EntireDesign" Part="xc7vx690tffg1927-2" ConstrsSet="gt_tx_link_ila" Description="Vivado Implementation Defaults" SynthRun="gt_tx_link_ila_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2015">
-          <Desc>Vivado Implementation Defaults</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2015"/>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>
@@ -552,9 +549,21 @@
     </Run>
     <Run Id="gt_rx_link_ila_impl_1" Type="Ft2:EntireDesign" Part="xc7vx690tffg1927-2" ConstrsSet="gt_rx_link_ila" Description="Vivado Implementation Defaults" SynthRun="gt_rx_link_ila_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2015">
-          <Desc>Vivado Implementation Defaults</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2015"/>
+        <Step Id="init_design"/>
+        <Step Id="opt_design"/>
+        <Step Id="power_opt_design"/>
+        <Step Id="place_design"/>
+        <Step Id="post_place_power_opt_design"/>
+        <Step Id="phys_opt_design"/>
+        <Step Id="route_design"/>
+        <Step Id="post_route_phys_opt_design"/>
+        <Step Id="write_bitstream"/>
+      </Strategy>
+    </Run>
+    <Run Id="sbit_cluster_fifo_impl_1" Type="Ft2:EntireDesign" Part="xc7vx690tffg1927-2" ConstrsSet="sbit_cluster_fifo" Description="Vivado Implementation Defaults" SynthRun="sbit_cluster_fifo_synth_1" IncludeInArchive="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2015"/>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>

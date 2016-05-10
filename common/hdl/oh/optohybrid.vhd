@@ -35,17 +35,30 @@ entity optohybrid is
         g_DEBUG         : string := "FALSE" -- if this is set to true, some chipscope cores will be inserted
     );
     port(
-        reset_i         : in  std_logic;
-        ttc_clk_i       : in  t_ttc_clks;
-        ttc_cmds_i      : in  t_ttc_cmds;
-        gth_rx_usrclk_i : in  std_logic;
-        gth_tx_usrclk_i : in  std_logic;
-        gth_rx_data_i   : in  t_gt_8b10b_rx_data;
-        gth_tx_data_o   : out t_gt_8b10b_tx_data;
-        ipb_reset_i     : in  std_logic;
-        ipb_clk_i       : in  std_logic;
-        ipb_reg_miso_o  : out ipb_rbus;
-        ipb_reg_mosi_i  : in  ipb_wbus
+        -- reset
+        reset_i             : in  std_logic;
+
+        -- TTC
+        ttc_clk_i           : in  t_ttc_clks;
+        ttc_cmds_i          : in  t_ttc_cmds;
+        
+        -- Control and tracking data link 
+        gth_rx_usrclk_i     : in  std_logic;
+        gth_tx_usrclk_i     : in  std_logic;
+        gth_rx_data_i       : in  t_gt_8b10b_rx_data;
+        gth_tx_data_o       : out t_gt_8b10b_tx_data;
+        
+        -- Trigger links
+        gth_rx_trig_usrclk_i: in  std_logic_vector(1 downto 0);
+        gth_rx_trig_data_i  : in t_gt_8b10b_rx_data_arr(1 downto 0);
+        sbit_clusters_o     : out t_oh_sbits;
+        sbit_links_status_o : out t_oh_sbit_links;
+        
+        -- IPbus
+        ipb_reset_i         : in  std_logic;
+        ipb_clk_i           : in  std_logic;
+        ipb_reg_miso_o      : out ipb_rbus;
+        ipb_reg_mosi_i      : in  ipb_wbus
     );
 end optohybrid;
 
@@ -69,7 +82,7 @@ architecture Behavioral of optohybrid is
     
     signal evt_en           : std_logic;
     signal evt_data         : std_logic_vector(15 downto 0);
-        
+
 begin
 
     gth_tx_data_o <= gth_tx_data;
@@ -79,57 +92,87 @@ begin
     vfat2_t1.bc0  <= ttc_cmds_i.bc0;
 
     --==========================--
-    --== SFP TX Tracking link ==--
+    --==   TX Tracking link   ==--
     --==========================--
        
     link_tx_tracking_inst : entity work.link_tx_tracking
-    port map(
-        gtx_clk_i   => gth_tx_usrclk_i,   
-        reset_i     => reset_i,           
-        vfat2_t1_i  => vfat2_t1,        
-        req_en_o    => g2o_req_en,   
-        req_valid_i => g2o_req_valid,   
-        req_data_i  => g2o_req_data,           
-        tx_kchar_o  => gth_tx_data.txcharisk(1 downto 0),   
-        tx_data_o   => gth_tx_data.txdata(15 downto 0)
-    );  
+        port map(
+            gtx_clk_i   => gth_tx_usrclk_i,   
+            reset_i     => reset_i,           
+            vfat2_t1_i  => vfat2_t1,        
+            req_en_o    => g2o_req_en,   
+            req_valid_i => g2o_req_valid,   
+            req_data_i  => g2o_req_data,           
+            tx_kchar_o  => gth_tx_data.txcharisk(1 downto 0),   
+            tx_data_o   => gth_tx_data.txdata(15 downto 0)
+        );  
     
     --==========================--
-    --== SFP RX Tracking link ==--
+    --==   RX Tracking link   ==--
     --==========================--
     
     link_rx_tracking_inst : entity work.link_rx_tracking
-    port map(
-        gtx_clk_i   => gth_rx_usrclk_i,   
-        reset_i     => reset_i,           
-        req_en_o    => o2g_req_en,   
-        req_data_o  => o2g_req_data,   
-        evt_en_o    => open,
-        evt_data_o  => open,
-        tk_error_o  => open,
-        evt_rcvd_o  => open,
-        rx_kchar_i  => gth_rx_data_i.rxcharisk(1 downto 0),   
-        rx_data_i   => gth_rx_data_i.rxdata(15 downto 0)        
-    );
+        port map(
+            gtx_clk_i   => gth_rx_usrclk_i,   
+            reset_i     => reset_i,           
+            req_en_o    => o2g_req_en,   
+            req_data_o  => o2g_req_data,   
+            evt_en_o    => open,
+            evt_data_o  => open,
+            tk_error_o  => open,
+            evt_rcvd_o  => open,
+            rx_kchar_i  => gth_rx_data_i.rxcharisk(1 downto 0),   
+            rx_data_i   => gth_rx_data_i.rxdata(15 downto 0)        
+        );
 
-    --============================--
-    --== GTX request forwarding ==--
-    --============================--
+    --=================================--
+    --== Register request forwarding ==--
+    --=================================--
     
     link_request_inst : entity work.link_request
-    port map(
-        ipb_clk_i   => ipb_clk_i,
-        gtx_clk_i   => gth_rx_usrclk_i,
-        reset_i     => ipb_reset_i,        
-        ipb_mosi_i  => ipb_reg_mosi_i,
-        ipb_miso_o  => ipb_reg_miso_o,        
-        tx_en_i     => g2o_req_en,
-        tx_valid_o  => g2o_req_valid,
-        tx_data_o   => g2o_req_data,        
-        rx_en_i     => o2g_req_en,
-        rx_data_i   => o2g_req_data        
-    );
+        port map(
+            ipb_clk_i   => ipb_clk_i,
+            gtx_clk_i   => gth_rx_usrclk_i,
+            reset_i     => ipb_reset_i,        
+            ipb_mosi_i  => ipb_reg_mosi_i,
+            ipb_miso_o  => ipb_reg_miso_o,        
+            tx_en_i     => g2o_req_en,
+            tx_valid_o  => g2o_req_valid,
+            tx_data_o   => g2o_req_data,        
+            rx_en_i     => o2g_req_en,
+            rx_data_i   => o2g_req_data        
+        );
      
+    --=========================--
+    --==   RX Trigger Link   ==--
+    --=========================--
+    
+    link_rx_trigger0_inst : entity work.link_rx_trigger
+        port map(
+            ttc_clk_i           => ttc_clk_i.clk_40,
+            reset_i             => reset_i,
+            gt_rx_trig_usrclk_i => gth_rx_trig_usrclk_i(0),
+            gt_rx_trig_data_i   => gth_rx_trig_data_i(0),
+            sbit_cluster0_o     => sbit_clusters_o(0),
+            sbit_cluster1_o     => sbit_clusters_o(1),
+            sbit_cluster2_o     => sbit_clusters_o(2),
+            sbit_cluster3_o     => sbit_clusters_o(3),
+            link_status_o       => sbit_links_status_o(0)
+        );
+     
+    link_rx_trigger1_inst : entity work.link_rx_trigger
+        port map(
+            ttc_clk_i           => ttc_clk_i.clk_40,
+            reset_i             => reset_i,
+            gt_rx_trig_usrclk_i => gth_rx_trig_usrclk_i(1),
+            gt_rx_trig_data_i   => gth_rx_trig_data_i(1),
+            sbit_cluster0_o     => sbit_clusters_o(4),
+            sbit_cluster1_o     => sbit_clusters_o(5),
+            sbit_cluster2_o     => sbit_clusters_o(6),
+            sbit_cluster3_o     => sbit_clusters_o(7),
+            link_status_o       => sbit_links_status_o(1)
+        );
+
     --============================--
     --==        Debug           ==--
     --============================--

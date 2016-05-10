@@ -6,11 +6,20 @@ use work.gem_board_config_package.CFG_NUM_OF_OHs;
 package gem_pkg is
 
     --======================--
+    --==      General     ==--
+    --======================-- 
+    
+    constant C_TTC_CLK_FREQUENCY      : integer := 40_079_000;
+    constant C_TTC_CLK_FREQUENCY_SLV  : std_logic_vector(31 downto 0) := x"02638e98";
+
+    function count_ones(s : std_logic_vector) return integer;
+
+    --======================--
     --== Config Constants ==--
     --======================-- 
     
     -- DAQ
-    constant DAQ_FORMAT_VERSION         : std_logic_vector(3 downto 0)  := x"0";
+    constant C_DAQ_FORMAT_VERSION     : std_logic_vector(3 downto 0)  := x"0";
 
     --============--
     --== Common ==--
@@ -50,16 +59,27 @@ package gem_pkg is
     type t_gt_8b10b_rx_data_arr is array(integer range <>) of t_gt_8b10b_rx_data;
 
     --========================--
-    --== Trigger data input ==--
+    --== SBit cluster data  ==--
     --========================--
 
-    type t_trig_link is record
-        clk         : std_logic;
-        data        : std_logic_vector(55 downto 0);
-        data_en     : std_logic;
+    type t_sbit_cluster is record
+        size        : std_logic_vector(2 downto 0);
+        address     : std_logic_vector(10 downto 0);
     end record;
 
-    type t_trig_link_array is array(integer range <>) of t_trig_link;
+    type t_oh_sbits is array(7 downto 0) of t_sbit_cluster;
+    type t_oh_sbits_arr is array(integer range <>) of t_oh_sbits;
+
+    type t_sbit_link_status is record
+        valid           : std_logic;
+        sync_word       : std_logic;
+        missed_comma    : std_logic;
+        underflow       : std_logic;
+        overflow        : std_logic;
+    end record;
+
+    type t_oh_sbit_links is array(1 downto 0) of t_sbit_link_status;    
+    type t_oh_sbit_links_arr is array(integer range <>) of t_oh_sbit_links;
 
     --====================--
     --== DAQ data input ==--
@@ -125,4 +145,17 @@ package gem_pkg is
 end gem_pkg;
    
 package body gem_pkg is
+
+    function count_ones(s : std_logic_vector) return integer is
+        variable temp : natural := 0;
+    begin
+        for i in s'range loop
+            if s(i) = '1' then
+                temp := temp + 1;
+            end if;
+        end loop;
+
+        return temp;
+    end function count_ones;
+    
 end gem_pkg;

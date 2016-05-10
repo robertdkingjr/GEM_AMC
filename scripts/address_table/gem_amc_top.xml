@@ -4,8 +4,17 @@
   <node id="GEM_AMC">
 
     <!--TTC module -->
-    <node id="TTC"  address="0x00300000"  description="TTC control and monitoring. It takes care of locking to the TTC clock coming from the backplane as well as decoding TTC commands and forwarding that to all other modules in the design. It also provides several control and monitoring registers (resets, command decoding configuration, clock and data status, bc0 status, command counters and a small spy buffer)"
-          fw_is_module="true" fw_module_file="../common/hdl/ttc/ttc.vhd" fw_user_clock_signal="clk_40" fw_bus_clock_signal="ipb_clk_i" fw_bus_reset_signal="ipb_reset_i" fw_master_bus_signal="ipb_mosi_i" fw_slave_bus_signal="ipb_miso_o" fw_reg_addr_msb="5" fw_reg_addr_lsb="0">
+    <node id="TTC"  address="0x00300000"
+          description="TTC control and monitoring. It takes care of locking to the TTC clock coming from the backplane as well as decoding TTC commands and forwarding that to all other modules in the design. It also provides several control and monitoring registers (resets, command decoding configuration, clock and data status, bc0 status, command counters and a small spy buffer)"
+          fw_is_module="true"
+          fw_module_file="../common/hdl/ttc/ttc.vhd"
+          fw_user_clock_signal="clk_40"
+          fw_bus_clock_signal="ipb_clk_i"
+          fw_bus_reset_signal="ipb_reset_i"
+          fw_master_bus_signal="ipb_mosi_i"
+          fw_slave_bus_signal="ipb_miso_o"
+          fw_reg_addr_msb="5"
+          fw_reg_addr_lsb="0">
         <node id="CTRL" address="0x0" description="TTC control">
             <node id="MODULE_RESET" address="0x0" mask="0x80000000" permission="w" description="TTC module reset"
                   fw_signal="ttc_ctrl.reset_local" fw_is_write_pulse="true" fw_write_pulse_length="1"/>
@@ -105,6 +114,91 @@
               fw_signal="ttc_spy_buffer" fw_read_pulse_signal="ttc_spy_reset" fw_read_pulse_length="1"/>
     </node>
     <!--end TTC module -->
+
+    <!--Trigger module -->
+    <node id="TTC"  address="0x00800000"
+          description="Trigger module handles everything related to sbit cluster data (link synchronization, monitoring, local triggering, matching to L1A and reporting data to DAQ)"
+          fw_is_module="true"
+          fw_module_file="../common/hdl/trigger/trigger.vhd"
+          fw_user_clock_signal="ttc_clk_i.clk_40"
+          fw_bus_clock_signal="ipb_clk_i"
+          fw_bus_reset_signal="ipb_reset_i"
+          fw_master_bus_signal="ipb_mosi_i"
+          fw_slave_bus_signal="ipb_miso_o"
+          fw_reg_addr_msb="12"
+          fw_reg_addr_lsb="0">
+
+        <node id="CTRL" address="0x0" description="Trigger control">
+            <node id="MODULE_RESET" address="0x0" mask="0x80000000" permission="w"
+                  description="Trigger module reset"
+                  fw_signal="reset_local" fw_is_write_pulse="true" fw_write_pulse_length="1"/>
+            <node id="CNT_RESET" address="0x0" mask="0x40000000" permission="w"
+                  description="Trigger counter reset"
+                  fw_signal="reset_cnt" fw_is_write_pulse="true" fw_write_pulse_length="1"
+                  sw_ctrl_configure_set="0x1" sw_ctrl_start_set="0x1"/>
+            <node id="OH_KILL_MASK" address="0x1" mask="0x00ffffff" permission="rw"
+                  description="OH trigger kill mask (kills all sbits from the corresponding OHs)"
+                  fw_signal="oh_mask"/>
+        </node>
+
+        <node id="STATUS" address="0x10" description="Trigger status">
+            <node id="OR_TRIGGER_RATE" address="0x0" mask="0xffffffff" permission="r"
+                  description="OR-Trigger rate (Hz) -- this trigger fires whenever there's at least one valid sbit cluster on any link"
+                  fw_signal="or_trigger_rate"
+                  sw_monitor_warn_min_threshold="1000000"/>
+        </node>
+
+        <node id="OH_${OH_IDX}" address="0x100" description="Trigger link for OH ${OH_IDX}"
+              generate="true" generate_size="2" generate_address_step="0x100" generate_idx_var="OH_IDX">
+            <node id="TRIGGER_RATE" address="0x0" mask="0xffffffff" permission="r"
+                  description="Trigger rate (Hz) -- this trigger fires whenever there's at least one valid sbit cluster"
+                  fw_signal="trigger_rate(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="1000000"/>
+            <node id="CLUSTER_SIZE_${CS_IDX}_RATE" address="0x1" mask="0xffffffff" permission="r"
+                  description="Rate of cluster size ${CS_IDX} (size 0 means no sbit clusters)"
+                  fw_signal="cluster_cnt_rate(${OH_IDX} * 9 + ${CS_IDX})"/>
+            <node id="LINK0_NOT_VALID_CNT" address="0xa" mask="0x0000ffff" permission="r"
+                  description="Count of valid flag being 0 in the sync FIFO for link 0"
+                  fw_signal="not_valid_cnt(${OH_IDX})(15 downto 0)"
+                  sw_monitor_error_min_threshold="100"/>
+            <node id="LINK1_NOT_VALID_CNT" address="0xa" mask="0xffff0000" permission="r"
+                  description="Count of valid flag being 0 in the sync FIFO for link 1"
+                  fw_signal="not_valid_cnt(${OH_IDX})(31 downto 16)"
+                  sw_monitor_error_min_threshold="100"/>
+            <node id="LINK0_MISSED_COMMA_CNT" address="0xb" mask="0x0000ffff" permission="r"
+                  description="Count of missed comma character at the expected time for link 0 (this indicates an out-of-sync condition)"
+                  fw_signal="missed_comma_cnt(${OH_IDX})(15 downto 0)"
+                  sw_monitor_error_min_threshold="1"/>
+            <node id="LINK1_MISSED_COMMA_CNT" address="0xb" mask="0xffff0000" permission="r"
+                  description="Count of missed comma character at the expected time for link 1 (this indicates an out-of-sync condition)"
+                  fw_signal="missed_comma_cnt(${OH_IDX})(31 downto 16)"
+                  sw_monitor_error_min_threshold="1"/>
+            <node id="LINK0_OVERFLOW_CNT" address="0xc" mask="0x0000ffff" permission="r"
+                  description="Count of overflow occurances in the sync FIFO for link 0"
+                  fw_signal="link_overflow_cnt(${OH_IDX})(15 downto 0)"
+                  sw_monitor_error_min_threshold="1"/>
+            <node id="LINK1_OVERFLOW_CNT" address="0xc" mask="0xffff0000" permission="r"
+                  description="Count of overflow occurances in the sync FIFO for link 1"
+                  fw_signal="link_overflow_cnt(${OH_IDX})(31 downto 16)"
+                  sw_monitor_error_min_threshold="1"/>
+            <node id="LINK0_UNDERFLOW_CNT" address="0xd" mask="0x0000ffff" permission="r"
+                  description="Count of underflow occurances in the sync FIFO for link 0"
+                  fw_signal="link_underflow_cnt(${OH_IDX})(15 downto 0)"
+                  sw_monitor_error_min_threshold="1"/>
+            <node id="LINK1_UNDERFLOW_CNT" address="0xd" mask="0xffff0000" permission="r"
+                  description="Count of underflow occurances in the sync FIFO for link 1"
+                  fw_signal="link_underflow_cnt(${OH_IDX})(31 downto 16)"
+                  sw_monitor_error_min_threshold="1"/>
+            <node id="LINK0_SYNC_WORD_CNT" address="0xe" mask="0x0000ffff" permission="r"
+                  description="Count of sync words seen on link 0"
+                  fw_signal="sync_word_cnt(${OH_IDX})(15 downto 0)"/>
+            <node id="LINK1_SYNC_WORD_CNT" address="0xe" mask="0xffff0000" permission="r"
+                  description="Count of sync words seen on link 1"
+                  fw_signal="sync_word_cnt(${OH_IDX})(31 downto 16)"/>
+        </node>
+
+    </node>
+    <!--end trigger module -->
 
   </node>
 </node>

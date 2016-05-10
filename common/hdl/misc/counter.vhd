@@ -16,41 +16,38 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library work;
-use work.user_package.all;
-
 entity counter is
-port(
-
-    ref_clk_i   : in std_logic;
-    reset_i     : in std_logic;
-    
-    en_i        : in std_logic;
-    
-    data_o      : out std_logic_vector(31 downto 0)
-    
-);
+    generic(
+        g_COUNTER_WIDTH : integer := 32
+    );
+    port(
+        ref_clk_i : in  std_logic;
+        reset_i   : in  std_logic;
+        en_i      : in  std_logic;
+        count_o   : out std_logic_vector(g_COUNTER_WIDTH - 1 downto 0)
+    );
 end counter;
 
-architecture Behavioral of counter is
+architecture counter_arch of counter is
 
-    signal data : unsigned(31 downto 0);
+    constant max_count : unsigned(g_COUNTER_WIDTH - 1 downto 0) := (others => '1');
+    signal count : unsigned(g_COUNTER_WIDTH - 1 downto 0);
 
 begin
 
     process(ref_clk_i)
     begin
-        if (rising_edge(ref_clk_i)) then
-            if (reset_i = '1') then
-                data_o <= (others => '0');
-                data <= (others => '0');
+        if rising_edge(ref_clk_i) then
+            if reset_i = '1' then
+                count_o <= (others => '0');
+                count <= (others => '0');
             else
-                if (en_i = '1') then
-                    data <= data + 1;
+                if en_i = '1' and count < max_count then
+                    count <= count + 1;
                 end if;
-                data_o <= std_logic_vector(data);
+                count_o <= std_logic_vector(count);
             end if;
         end if;
     end process;
 
-end Behavioral;
+end counter_arch;
