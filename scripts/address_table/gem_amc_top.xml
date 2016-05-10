@@ -116,7 +116,7 @@
     <!--end TTC module -->
 
     <!--Trigger module -->
-    <node id="TTC"  address="0x00800000"
+    <node id="Trigger"  address="0x00800000"
           description="Trigger module handles everything related to sbit cluster data (link synchronization, monitoring, local triggering, matching to L1A and reporting data to DAQ)"
           fw_is_module="true"
           fw_module_file="../common/hdl/trigger/trigger.vhd"
@@ -138,7 +138,8 @@
                   sw_ctrl_configure_set="0x1" sw_ctrl_start_set="0x1"/>
             <node id="OH_KILL_MASK" address="0x1" mask="0x00ffffff" permission="rw"
                   description="OH trigger kill mask (kills all sbits from the corresponding OHs)"
-                  fw_signal="oh_mask"/>
+                  fw_signal="oh_mask"
+                  fw_default="0x000000"/>
         </node>
 
         <node id="STATUS" address="0x10" description="Trigger status">
@@ -156,7 +157,8 @@
                   sw_monitor_warn_min_threshold="1000000"/>
             <node id="CLUSTER_SIZE_${CS_IDX}_RATE" address="0x1" mask="0xffffffff" permission="r"
                   description="Rate of cluster size ${CS_IDX} (size 0 means no sbit clusters)"
-                  fw_signal="cluster_cnt_rate(${OH_IDX} * 9 + ${CS_IDX})"/>
+                  fw_signal="cluster_cnt_rate(${OH_IDX} * 9 + ${CS_IDX})"
+                  generate="true" generate_size="9" generate_address_step="0x1" generate_idx_var="CS_IDX"/>
             <node id="LINK0_NOT_VALID_CNT" address="0xa" mask="0x0000ffff" permission="r"
                   description="Count of valid flag being 0 in the sync FIFO for link 0"
                   fw_signal="not_valid_cnt(${OH_IDX})(15 downto 0)"

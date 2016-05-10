@@ -106,8 +106,9 @@ def main():
     root = tree.getroot()[0]
 
     modules = []
+    vars = {}
 
-    findRegisters(root, '', 0x0, modules, None)
+    findRegisters(root, '', 0x0, modules, None, vars, False)
 
     print('Modules:')
     for module in modules:
@@ -126,19 +127,30 @@ def main():
 
     writeStatusBashScript(modules, BASH_STATUS_SCRIPT_FILE)
 
-def findRegisters(node, baseName, baseAddress, modules, currentModule):
+def findRegisters(node, baseName, baseAddress, modules, currentModule, vars, isGenerated):
+    if (isGenerated == None or isGenerated == False) and node.get('generate') is not None and node.get('generate') == 'true':
+        generateSize = parseInt(node.get('generate_size'))
+        generateAddressStep = parseInt(node.get('generate_address_step'))
+        generateIdxVar = node.get('generate_idx_var')
+        for i in range(0, generateSize):
+            vars[generateIdxVar] = i
+            print('generate base_addr = ' + hex(baseAddress + generateAddressStep * i) + ' for node ' + node.get('id'))
+            findRegisters(node, baseName, baseAddress + generateAddressStep * i, modules, currentModule, vars, True)
+        return
+
     isModule = node.get('fw_is_module') is not None and node.get('fw_is_module') == 'true'
     name = baseName
     module = currentModule
     if baseName != '':
         name += '.'
     name += node.get('id')
+    name = substituteVars(name, vars)
     address = baseAddress
 
     if isModule:
         module = Module()
         module.name = name
-        module.description = node.get('description')
+        module.description = substituteVars(node.get('description'), vars)
         module.baseAddress = parseInt(node.get('address'))
         module.regAddressMsb = parseInt(node.get('fw_reg_addr_msb'))
         module.regAddressLsb = parseInt(node.get('fw_reg_addr_lsb'))
@@ -160,13 +172,13 @@ def findRegisters(node, baseName, baseAddress, modules, currentModule):
             reg = Register()
             reg.name = name
             reg.address = address
-            reg.description = node.get('description')
+            reg.description = substituteVars(node.get('description'), vars)
             reg.permission = node.get('permission')
             reg.mask = parseInt(node.get('mask'))
             msb, lsb = getLowHighFromBitmask(reg.mask)
             reg.msb = msb
             reg.lsb = lsb
-            reg.signal = node.get('fw_signal')
+            reg.signal = substituteVars(node.get('fw_signal'), vars)
             reg.default = parseInt(node.get('fw_default'))
             if node.get('fw_is_write_pulse') is not None:
                 reg.isWritePulse = bool(node.get('fw_is_write_pulse') == 'true')
@@ -186,7 +198,7 @@ def findRegisters(node, baseName, baseAddress, modules, currentModule):
             module.addReg(reg)
 
     for child in node:
-        findRegisters(child, name, address, modules, module)
+        findRegisters(child, name, address, modules, module, vars, False)
 
 def writeConstantsFile(modules, filename):
     f = open(filename, 'w')
@@ -487,6 +499,12 @@ def getLowHighFromBitmask(bitmask):
             if rangeDone == False:
                 rangeDone = True
     return msb, lsb
+
+def substituteVars(string, vars):
+    ret = string
+    for varKey in vars.keys():
+        ret = ret.replace('${' + varKey + '}', str(vars[varKey]))
+    return ret
 
 if __name__ == '__main__':
     main()
