@@ -42,21 +42,9 @@ port(
     -- Track data
     tk_data_link_i              : in t_data_link;
     
-    -- TTS
-    tts_state_o                 : out std_logic_vector(3 downto 0);
-    
-    -- Critical error flags
-    err_infifo_full_o           : out std_logic;
-    err_infifo_underflow_o      : out std_logic; -- Tried to read too many blocks from the input fifo when sending events to the DAQlink (indicates a problem in the vfat block counter)
-    err_evtfifo_full_o          : out std_logic;
-    err_evtfifo_underflow_o     : out std_logic; -- Tried to read too many events from the event fifo (indicates a problem in the AMC event builder)
-    err_event_too_big_o         : out std_logic; -- detected an event with too many VFAT blocks (more than 4095 blocks!)
-    err_vfat_block_too_small_o  : out std_logic; -- didn't get the full 14 VFAT words for some block
-    err_vfat_block_too_big_o    : out std_logic; -- got more than 14 VFAT words for one block
-    
-    -- IPbus
-    ipb_read_reg_data_o         : out t_std32_array(0 to 15);
-    ipb_write_reg_data_i        : in t_std32_array(0 to 15)
+    -- Status and control
+    status_o                    : out t_daq_input_status;
+    control_i                   : in t_daq_input_control
 );
 
 end track_input_processor;
@@ -608,52 +596,41 @@ begin
     -- Monitoring & Control
     --================================--
 
-    --== FIFO current status and global flags ==--
-    ipb_read_reg_data_o(0) <= evtfifo_empty &             -- Event FIFO
-                              err_evtfifo_near_full &
-                              evtfifo_full &
-                              evtfifo_underflow &
-                              infifo_empty &              -- Input FIFO
-                              err_infifo_near_full &
-                              infifo_full &
-                              infifo_underflow &
-                              x"00" &
-                              tts_state &
-                              err_event_too_big &          -- Critical
-                              err_evtfifo_full &           -- Critical
-                              err_infifo_underflow &       -- Critical
-                              err_infifo_full &            -- Critical
-                              err_corrupted_vfat_data &    -- Corruption
-                              err_vfat_block_too_big &     -- Corruption
-                              err_vfat_block_too_small &   -- Corruption
-                              err_event_bigger_than_24 &   -- Corruption
-                              err_mixed_oh_bc &            -- Mixed OH BC
-                              err_mixed_vfat_bc &          -- Mixed VFAT BC
-                              err_mixed_vfat_ec &          -- Mixed VFAT EC
-                              "0";
-                                
-    --== Corrupted VFAT counter ==--    
-    ipb_read_reg_data_o(1) <= std_logic_vector(cnt_corrupted_vfat);
+    status_o.evtfifo_empty              <= evtfifo_empty;
+    status_o.evtfifo_near_full          <= err_evtfifo_near_full;
+    status_o.evtfifo_full               <= evtfifo_full;
+    status_o.evtfifo_underflow          <= evtfifo_underflow;
+    status_o.infifo_empty               <= infifo_empty;
+    status_o.infifo_near_full           <= err_infifo_near_full;
+    status_o.infifo_full                <= infifo_full;
+    status_o.infifo_underflow           <= infifo_underflow;
+    status_o.tts_state                  <= tts_state;
+    status_o.err_event_too_big          <= err_event_too_big;
+    status_o.err_evtfifo_full           <= err_evtfifo_full;
+    status_o.err_infifo_underflow       <= err_infifo_underflow;
+    status_o.err_infifo_full            <= err_infifo_full;
+    status_o.err_corrupted_vfat_data    <= err_corrupted_vfat_data;
+    status_o.err_vfat_block_too_big     <= err_vfat_block_too_big;
+    status_o.err_vfat_block_too_small   <= err_vfat_block_too_small;
+    status_o.err_event_bigger_than_24   <= err_event_bigger_than_24;
+    status_o.err_mixed_oh_bc            <= err_mixed_oh_bc;
+    status_o.err_mixed_vfat_bc          <= err_mixed_vfat_bc;
+    status_o.err_mixed_vfat_ec          <= err_mixed_vfat_ec;
 
-    --== Current event builder event number ==--
-    ipb_read_reg_data_o(2) <= x"00" & std_logic_vector(eb_event_num);
-        
-    --== Timeout delay ==--
-    ipb_read_reg_data_o(3)(23 downto 0) <= std_logic_vector(eb_timeout_delay);
-    eb_timeout_delay <= unsigned(ipb_write_reg_data_i(3)(23 downto 0));
+    status_o.cnt_corrupted_vfat         <= std_logic_vector(cnt_corrupted_vfat);
+    status_o.eb_event_num               <= std_logic_vector(eb_event_num);
+    status_o.eb_max_timer               <= std_logic_vector(eb_max_timer);
+    status_o.eb_last_timer              <= std_logic_vector(eb_last_timer);
 
-    --== Timeout stats ==--
-    ipb_read_reg_data_o(7)(23 downto 0) <= std_logic_vector(eb_max_timer);
-    ipb_read_reg_data_o(8)(23 downto 0) <= std_logic_vector(eb_last_timer);
-    
-    --== Debug: last VFAT block ==--
-    ipb_read_reg_data_o(9)  <= ep_vfat_block_data(31 downto 0);
-    ipb_read_reg_data_o(10) <= ep_vfat_block_data(63 downto 32);
-    ipb_read_reg_data_o(11) <= ep_vfat_block_data(95 downto 64);
-    ipb_read_reg_data_o(12) <= ep_vfat_block_data(127 downto 96);
-    ipb_read_reg_data_o(13) <= ep_vfat_block_data(159 downto 128);
-    ipb_read_reg_data_o(14) <= ep_vfat_block_data(191 downto 160);
-    ipb_read_reg_data_o(15) <= ep_vfat_block_data(223 downto 192);
+    status_o.ep_vfat_block_data(0)      <= ep_vfat_block_data(31 downto 0);
+    status_o.ep_vfat_block_data(1)      <= ep_vfat_block_data(63 downto 32);
+    status_o.ep_vfat_block_data(2)      <= ep_vfat_block_data(95 downto 64);
+    status_o.ep_vfat_block_data(3)      <= ep_vfat_block_data(127 downto 96);
+    status_o.ep_vfat_block_data(4)      <= ep_vfat_block_data(159 downto 128);
+    status_o.ep_vfat_block_data(5)      <= ep_vfat_block_data(191 downto 160);
+    status_o.ep_vfat_block_data(6)      <= ep_vfat_block_data(223 downto 192);
+
+    eb_timeout_delay <= unsigned(control_i.eb_timeout_delay);
 
 end Behavioral;
 

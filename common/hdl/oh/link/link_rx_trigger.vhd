@@ -18,7 +18,9 @@ port(
     reset_i             : in  std_logic;
     
     gt_rx_trig_usrclk_i : in  std_logic;
-    gt_rx_trig_data_i   : in  t_gt_8b10b_rx_data;
+    rx_kchar_i          : in std_logic_vector(1 downto 0);
+    rx_data_i           : in std_logic_vector(15 downto 0);
+    
     sbit_cluster0_o     : out t_sbit_cluster;
     sbit_cluster1_o     : out t_sbit_cluster;
     sbit_cluster2_o     : out t_sbit_cluster;
@@ -70,7 +72,7 @@ begin
             else
                 case state is
                     when COMMA =>
-                        if (gt_rx_trig_data_i.rxcharisk(1 downto 0) = "01" and gt_rx_trig_data_i.rxdata(7 downto 0) = x"BC") then
+                        if (rx_kchar_i(1 downto 0) = "01" and rx_data_i(7 downto 0) = x"BC") then
                             state <= DATA_0;
                         end if;
                     when DATA_0 => state <= DATA_1;
@@ -95,23 +97,23 @@ begin
                 case state is
                     when COMMA =>
                         fifo_we <= '0';
-                        if (gt_rx_trig_data_i.rxcharisk(1 downto 0) = "01" and gt_rx_trig_data_i.rxdata(7 downto 0) = x"BC") then
+                        if (rx_kchar_i(1 downto 0) = "01" and rx_data_i(7 downto 0) = x"BC") then
                             reset_done <= '1';
                             if (fifo_we = '1') then
                                 missed_comma_err <= '0'; -- deassert it only if it's the first clock we're in the COMMA state
                             end if;
-                            fifo_din(55 downto 48) <= gt_rx_trig_data_i.rxdata(15 downto 8);
+                            fifo_din(55 downto 48) <= rx_data_i(15 downto 8);
                         elsif (reset_done = '1') then
                             missed_comma_err <= '1';
                         end if;
                     when DATA_0 =>
-                        fifo_din(47 downto 32) <= gt_rx_trig_data_i.rxdata(15 downto 0);
+                        fifo_din(47 downto 32) <= rx_data_i(15 downto 0);
                     when DATA_1 =>
-                        fifo_din(31 downto 16) <= gt_rx_trig_data_i.rxdata(15 downto 0);
+                        fifo_din(31 downto 16) <= rx_data_i(15 downto 0);
                     when DATA_2 =>
                         fifo_we <= '1';
                         fifo_re <= '1';
-                        fifo_din(15 downto 0) <= gt_rx_trig_data_i.rxdata(15 downto 0);
+                        fifo_din(15 downto 0) <= rx_data_i(15 downto 0);
                         fifo_din(56) <= missed_comma_err;
                         fifo_din(57) <= fifo_almost_full;
                         fifo_din(58) <= '0'; -- will be used for sync character

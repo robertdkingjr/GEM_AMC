@@ -18,7 +18,6 @@ use ieee.std_logic_1164.all;
 library unisim;
 use unisim.vcomponents.all;
 
-library work;
 use work.gem_pkg.all;
 
 entity link_tx_tracking is

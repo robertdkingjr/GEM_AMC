@@ -657,6 +657,26 @@
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
+    <FileSet Name="sync_fifo_8b10b_16" Type="BlockSrcs" RelSrcDir="$PSRCDIR/sync_fifo_8b10b_16">
+      <File Path="$PSRCDIR/sources_1/ip/sync_fifo_8b10b_16.xcix">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/ip/sync_fifo_8b10b_16/sync_fifo_8b10b_16.xci">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <Config>
+        <Option Name="TopModule" Val="sync_fifo_8b10b_16"/>
+        <Option Name="UseBlackboxStub" Val="1"/>
+      </Config>
+    </FileSet>
   </FileSets>
   <Simulators>
     <Simulator Name="XSim">
@@ -743,6 +763,15 @@
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
     </Run>
     <Run Id="daq_event_fifo_synth_1" Type="Ft3:Synth" SrcSet="daq_event_fifo" Part="xc7vx690tffg1927-2" ConstrsSet="daq_event_fifo" Description="Vivado Synthesis Defaults" Dir="$PRUNDIR/daq_event_fifo_synth_1" IncludeInArchive="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2015">
+          <Desc>Vivado Synthesis Defaults</Desc>
+        </StratHandle>
+        <Step Id="synth_design"/>
+      </Strategy>
+      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
+    </Run>
+    <Run Id="sync_fifo_8b10b_16_synth_1" Type="Ft3:Synth" SrcSet="sync_fifo_8b10b_16" Part="xc7vx690tffg1927-2" ConstrsSet="sync_fifo_8b10b_16" Description="Vivado Synthesis Defaults" Dir="$PRUNDIR/sync_fifo_8b10b_16_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2015">
           <Desc>Vivado Synthesis Defaults</Desc>
@@ -871,6 +900,22 @@
       </Strategy>
     </Run>
     <Run Id="daq_event_fifo_impl_1" Type="Ft2:EntireDesign" Part="xc7vx690tffg1927-2" ConstrsSet="daq_event_fifo" Description="Vivado Implementation Defaults" SynthRun="daq_event_fifo_synth_1" IncludeInArchive="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2015">
+          <Desc>Vivado Implementation Defaults</Desc>
+        </StratHandle>
+        <Step Id="init_design"/>
+        <Step Id="opt_design"/>
+        <Step Id="power_opt_design"/>
+        <Step Id="place_design"/>
+        <Step Id="post_place_power_opt_design"/>
+        <Step Id="phys_opt_design"/>
+        <Step Id="route_design"/>
+        <Step Id="post_route_phys_opt_design"/>
+        <Step Id="write_bitstream"/>
+      </Strategy>
+    </Run>
+    <Run Id="sync_fifo_8b10b_16_impl_1" Type="Ft2:EntireDesign" Part="xc7vx690tffg1927-2" ConstrsSet="sync_fifo_8b10b_16" Description="Vivado Implementation Defaults" SynthRun="sync_fifo_8b10b_16_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2015">
           <Desc>Vivado Implementation Defaults</Desc>

@@ -149,8 +149,8 @@
                   sw_monitor_warn_min_threshold="1000000"/>
         </node>
 
-        <node id="OH_${OH_IDX}" address="0x100" description="Trigger link for OH ${OH_IDX}"
-              generate="true" generate_size="2" generate_address_step="0x100" generate_idx_var="OH_IDX">
+        <node id="OH${OH_IDX}" address="0x100" description="Trigger link for OH ${OH_IDX}"
+              generate="true" generate_size="4" generate_address_step="0x100" generate_idx_var="OH_IDX">
             <node id="TRIGGER_RATE" address="0x0" mask="0xffffffff" permission="r"
                   description="Trigger rate (Hz) -- this trigger fires whenever there's at least one valid sbit cluster"
                   fw_signal="trigger_rate(${OH_IDX})"
@@ -228,6 +228,24 @@
         <node id="BOARD_ID" address="0x2" mask="0x0000ffff" permission="rw"
               description="Board ID that gets embedded in the AMC13 header"
               fw_signal="board_id" fw_default="0xbeef"/>
+        <node id="RELEASE_MAJOR" address="0x3" mask="0x00ff0000" permission="r"
+              description="Firmware release major version"
+              fw_signal="std_logic_vector(to_unsigned(version_major, 8))"/>
+        <node id="RELEASE_MINOR" address="0x3" mask="0x0000ff00" permission="r"
+              description="Firmware release minor version"
+              fw_signal="std_logic_vector(to_unsigned(version_minor, 8))"/>
+        <node id="RELEASE_BUILD" address="0x3" mask="0x000000ff" permission="r"
+              description="Firmware release build version"
+              fw_signal="std_logic_vector(to_unsigned(version_build, 8))"/>
+        <node id="RELEASE_YEAR" address="0x4" mask="0xfff00000" permission="r"
+              description="Firmware release year"
+              fw_signal="std_logic_vector(to_unsigned(date_year, 12))"/>
+        <node id="RELEASE_MONTH" address="0x4" mask="0x00000f00" permission="r"
+              description="Firmware release month"
+              fw_signal="std_logic_vector(to_unsigned(date_month, 4))"/>
+        <node id="RELEASE_DAY" address="0x4" mask="0x000000ff" permission="r"
+              description="Firmware release day"
+              fw_signal="std_logic_vector(to_unsigned(date_day, 8))"/>
     </node>
 
     <!--DAQ module -->
@@ -357,9 +375,9 @@
                   fw_signal="run_params" fw_default="0x000000"/>
         </node>
 
-        <node id="OH{OH_IDX}"  address="0x10"
+        <node id="OH${OH_IDX}"  address="0x10"
               description="Link specific registers for OH${OH_IDX}"
-              generate="true" generate_size="2" generate_address_step="0x10" generate_idx_var="OH_IDX">
+              generate="true" generate_size="4" generate_address_step="0x10" generate_idx_var="OH_IDX">
             
             <node id="CONTROL"  address="0x0">
                 <node id="EOE_TIMEOUT" address="0x3"  mask="0x00ffffff" permission="rw"
@@ -367,51 +385,62 @@
                                    If no new data was received in this amount of time, GLIB
                                    will close the current event and report it to DAQ. This is one
                                    of the two ways to close an event, the other is to get new
-                                   data with different BX number"/>
+                                   data with different BX number"
+                      fw_signal="input_control_arr(${OH_IDX}).eb_timeout_delay" fw_default="0x0030d4"/>
             </node>
 
             <node id="STATUS"  address="0x0">
                 <node id="VFAT_MIXED_EC"    mask="0x00000002" permission="r"
-                      description="There was at least one event with mixed VFAT Event IDs"/>
+                      description="There was at least one event with mixed VFAT Event IDs"
+                      fw_signal="input_status_arr(${OH_IDX}).err_mixed_vfat_ec"/>
                 <node id="VFAT_MIXED_BC"  mask="0x00000004" permission="r"
-                      description="There was at least one event with mixed VFAT BX IDs"/>
+                      description="There was at least one event with mixed VFAT BX IDs"
+                      fw_signal="input_status_arr(${OH_IDX}).err_mixed_vfat_bc"/>
                 <node id="OH_MIXED_BC"         mask="0x00000008" permission="r"
                       description="There was at least one event with mixed OH BX IDs (OH BX
                                    ID is reported for every VFAT block, but not sent to
-                                   AMC13)."/>
+                                   AMC13)."
+                      fw_signal="input_status_arr(${OH_IDX}).err_mixed_oh_bc"/>
 
                 <node id="VFAT_TOO_MANY"      mask="0x00000010" permission="r"
-                      description="Corruption: more than 24 VFATs in event"/>
+                      description="Corruption: more than 24 VFATs in event"
+                      fw_signal="input_status_arr(${OH_IDX}).err_event_bigger_than_24"/>
                 <node id="VFAT_SMALL_BLOCK"   mask="0x00000020" permission="r"
-                      description="Corruption: VFAT block smaller than 192bits"/>
+                      description="Corruption: VFAT block smaller than 192bits"
+                      fw_signal="input_status_arr(${OH_IDX}).err_vfat_block_too_small"/>
                 <node id="VFAT_LARGE_BLOCK"   mask="0x00000040" permission="r"
-                      description="Corruption: VFAT block bigger than 192bits"/>
+                      description="Corruption: VFAT block bigger than 192bits"
+                      fw_signal="input_status_arr(${OH_IDX}).err_vfat_block_too_big"/>
                 <node id="VFAT_NO_MARKER"     mask="0x00000080" permission="r"
                       description="Corruption: VFAT marker not detected.
                                    There was at least one VFAT block not conforming to the
-                                   pattern of Axxx Cxxx Exxx…… (see VFAT data format)
+                                   pattern of Axxx Cxxx Exxx... (see VFAT data format)
                                    Note that this data will still be included in the current event
                                    and sent to AMC13, but it will not be considered in
-                                   end­of­event detection"/>
+                                   end­of­event detection"
+                      fw_signal="input_status_arr(${OH_IDX}).err_corrupted_vfat_data"/>
                 <node id="INPUT_FIFO_HAD_OFLOW"   mask="0x00000100" permission="r"
                       description="Critical: Input FIFO overflow occurred.
                                    This bit is latched if Input FIFO was ever full when receiving
                                    new data – this means data was lost.
-                                   TTS ERROR is asserted when this bit is 1"/>
+                                   TTS ERROR is asserted when this bit is 1"
+                      fw_signal="input_status_arr(${OH_IDX}).err_infifo_full"/>
                 <node id="INPUT_FIFO_HAD_UFLOW"   mask="0x00000200" permission="r"
                       description="Critical: Input FIFO underflow occurred.
                                    This bit is latched if Input FIFO underflow was ever
                                    detected. This means that Event FIFO indicated that there
                                    should be more data than was stored in Input FIFO. This
                                    might happen due to overflow or some other malfunction.
-                                   TTS ERROR is asserted when this bit is 1"/>
+                                   TTS ERROR is asserted when this bit is 1"
+                      fw_signal="input_status_arr(${OH_IDX}).err_infifo_underflow"/>
                 <node id="EVENT_FIFO_HAD_OFLOW"   mask="0x00000400" permission="r"
                       description="Critical: Event FIFO overflow occurred.
                                    This bit is latched if Event FIFO was ever full when trying to
                                    build a new event. This means data was lost.
                                    It’s not likely that this will ever be asserted because Input
                                    FIFO should overflow first.
-                                   TTS ERROR is asserted when this bit is 1"/>
+                                   TTS ERROR is asserted when this bit is 1"
+                      fw_signal="input_status_arr(${OH_IDX}).err_evtfifo_full"/>
                 <node id="EVT_SIZE_ERR"           mask="0x00000800" permission="r"
                       description="Critical: Event size overflow occurred.
                                    This bit is latched if there was an event containing more
@@ -420,25 +449,35 @@
                                    detected properly or for whatever reason GLIB is receiving
                                    a stream of VFAT blocks indicating that they belong to the
                                    same event (EC/BC is the same)
-                                   TTS ERROR is asserted when this bit is 1"/>
+                                   TTS ERROR is asserted when this bit is 1"
+                      fw_signal="input_status_arr(${OH_IDX}).err_event_too_big"/>
                 <node id="TTS_STATE"           mask="0x0000f000" permission="r"
-                      description="Input TTS state (gets integrated into global TTS state later)"/>
+                      description="Input TTS state (gets integrated into global TTS state later)"
+                      fw_signal="input_status_arr(${OH_IDX}).tts_state"/>
                 <node id="INPUT_FIFO_IS_UFLOW"    mask="0x01000000" permission="r"
-                      description="Current status: Input FIFO is in underflow"/>
+                      description="Current status: Input FIFO is in underflow"
+                      fw_signal="input_status_arr(${OH_IDX}).infifo_underflow"/>
                 <node id="INPUT_FIFO_IS_FULL"     mask="0x02000000" permission="r"
-                      description="Current status: Input FIFO is full"/>
+                      description="Current status: Input FIFO is full"
+                      fw_signal="input_status_arr(${OH_IDX}).infifo_full"/>
                 <node id="INPUT_FIFO_IS_AFULL"    mask="0x04000000" permission="r"
-                      description="Current status: Input FIFO is near­full (asserted at 75% and deasserted at 50%)"/>
+                      description="Current status: Input FIFO is near­full (asserted at 75% and deasserted at 50%)"
+                      fw_signal="input_status_arr(${OH_IDX}).infifo_near_full"/>
                 <node id="INPUT_FIFO_IS_EMPTY"    mask="0x08000000" permission="r"
-                      description="Current status: Input FIFO is empty"/>
+                      description="Current status: Input FIFO is empty"
+                      fw_signal="input_status_arr(${OH_IDX}).infifo_empty"/>
                 <node id="EVENT_FIFO_IS_UFLOW"    mask="0x10000000" permission="r"
-                      description="Current status: Event FIFO is in underflow"/>
+                      description="Current status: Event FIFO is in underflow"
+                      fw_signal="input_status_arr(${OH_IDX}).evtfifo_underflow"/>
                 <node id="EVENT_FIFO_IS_FULL"     mask="0x20000000" permission="r"
-                      description="Current status: Event FIFO is full"/>
+                      description="Current status: Event FIFO is full"
+                      fw_signal="input_status_arr(${OH_IDX}).evtfifo_full"/>
                 <node id="EVENT_FIFO_IS_AFULL"    mask="0x40000000" permission="r"
-                      description="Current status: Event FIFO is near­full (asserted at 75% and deasserted at 50%)"/>
+                      description="Current status: Event FIFO is near­full (asserted at 75% and deasserted at 50%)"
+                      fw_signal="input_status_arr(${OH_IDX}).evtfifo_near_full"/>
                 <node id="EVENT_FIFO_IS_EMPTY"    mask="0x80000000" permission="r"
-                      description="Current status: Event FIFO is empty"/>
+                      description="Current status: Event FIFO is empty"
+                      fw_signal="input_status_arr(${OH_IDX}).evtfifo_empty"/>
             </node>
 
             <node id="COUNTERS">
@@ -447,36 +486,224 @@
                                    conform to the pattern of Axxx Cxxx Exxx... (see VFAT
                                    data format)
                                    Note that this data is still included in events and sent to
-                                   AMC13, but it does not participate in end­of­event
-                                   detection."/>
-                <node id="EVN"                   address="0x2" mask="0xffffffff" permission="r"
+                                   AMC13, but it does not participate in end-of-event
+                                   detection."
+                      fw_signal="input_status_arr(${OH_IDX}).cnt_corrupted_vfat"/>
+                <node id="EVN"                   address="0x2" mask="0x00ffffff" permission="r"
                       description="Current event number of the event builder.
                                    This counter starts at 1 and increments with each
-                                   end­of­event detection. This number should be similar to
+                                   end-of-event detection. This number should be similar to
                                    the number of events sent to AMC13 in normal operation,
-                                   but it might not always be exactly the same because there’s
+                                   but it might not always be exactly the same because there's
                                    some latency between building an event and sending it. In
                                    addition, event sending could stop due to DAQ FIFO being
-                                   almost full or DAQLink not being ready."/>
+                                   almost full or DAQLink not being ready."
+                      fw_signal="input_status_arr(${OH_IDX}).eb_event_num"/>
                 <node id="MAX_EOE_TIMER"         address="0x7" mask="0x00ffffff" permission="r"
                       description="Units = clock cycles @ 160MHz. 
                                    This indicates the maximum amount of time that event
                                    builder took to build and close the event. Note: this is
                                    mostly for debugging, most of the time it should be equal
-                                   to 'End of event timeout'"/>
+                                   to 'End of event timeout'"
+                      fw_signal="input_status_arr(${OH_IDX}).eb_max_timer"/>
                 <node id="LAST_EOE_TIMER"        address="0x8" mask="0x00ffffff" permission="r"
                       description="Units = clock cycles @ 160MHz. 
                                    This shows how long event builder took to build and close
                                    the last event. Note: this is mostly for debugging, but could
-                                   be used to tune the 'end of event timeout'"/>
+                                   be used to tune the 'end of event timeout'"
+                      fw_signal="input_status_arr(${OH_IDX}).eb_last_timer"/>
             </node>
 
             <node id="LASTBLOCK${BLOCK_IDX}"  address="0x9" permission="r" mask="0xffffffff"
                   description="contains the last 192+32 bits received from the VFAT and OH"
-                  generate="true" generate_size="7" generate_address_step="0x1" generate_idx_var="BLOCK_IDX">
-            </node>              
+                  generate="true" generate_size="7" generate_address_step="0x1" generate_idx_var="BLOCK_IDX"
+                  fw_signal="input_status_arr(${OH_IDX}).ep_vfat_block_data(${BLOCK_IDX})">
+            </node>
         </node>
     </node>
+    
+    <!--OptoHybrid module -->
+    <node id="OptoHybrid"  address="0x00400000"
+          description="Optohybrid Registers"
+          fw_is_module="true"
+          fw_is_module_external="true">
+                    
+        <node id="OH${OH_IDX}"  address="0x0" description="Optohybrid ${OH_IDX}"
+              generate="true" generate_size="4" generate_address_step="0x00010000" generate_idx_var="OH_IDX">
 
+            <node id="COUNTERS"  address="0xa000000"
+                    description="Counters provided on the OptoHybrid">       
+
+                <node id="T1"  address="0x54"
+                        description="Counters related to the OptoHybrid T1 signals">
+                    <node id="TTC"       address="0x00"
+                            description="T1 signals received from the GLIB TTC decoder
+                                        by way of the uTCA backplane (AMC13)">
+                        <node id="L1A"      address="0x0"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>
+                        <node id="CalPulse" address="0x1"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>
+                        <node id="Resync"   address="0x2"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>
+                        <node id="BC0"      address="0x3"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>                                        
+                    </node>
+                    
+                    <node id="INTERNAL"  address="0x04"
+                            description="T1 signals generated by the OptoHybrid firmware">
+
+                        <node id="L1A"      address="0x0"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>
+                        <node id="CalPulse" address="0x1"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>
+                        <node id="Resync"   address="0x2"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>
+                        <node id="BC0"      address="0x3"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>                                        
+
+                    </node>
+
+                    <node id="EXTERNAL"  address="0x08"
+                            description="T1 signals recieved from an external source">
+
+                        <node id="L1A"      address="0x0"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>
+                        <node id="CalPulse" address="0x1"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>
+                        <node id="Resync"   address="0x2"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>
+                        <node id="BC0"      address="0x3"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>                                        
+
+                    </node>
+                    <node id="LOOPBACK"  address="0x0c"
+                            description="T1 signals sent in loopback mode">
+
+                        <node id="L1A"      address="0x0"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>
+                        <node id="CalPulse" address="0x1"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>
+                        <node id="Resync"   address="0x2"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>
+                        <node id="BC0"      address="0x3"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>                                        
+
+                    </node>
+                    <node id="SENT"      address="0x10"
+                            description="T1 signals sent to the GEB (VFATs)">
+
+                        <node id="L1A"      address="0x0"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>
+                        <node id="CalPulse" address="0x1"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>
+                        <node id="Resync"   address="0x2"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>
+                        <node id="BC0"      address="0x3"  permission="r">
+                            <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                        </node>                                        
+
+                    </node>
+                </node>
+
+                <node id="GTX"  address="0x68"
+                        description="Counters related to the OptoHybrid optical links">
+
+                    <node id="TRK_ERR"   address="0x0"  permission="r"
+                            description="Error counter on the tracking data optical link">
+                        <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                    </node>
+
+                    <node id="TRG_ERR"   address="0x2"  permission="r"
+                            description="Error counter on the trigger data optical link">
+                        <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                    </node>
+
+                    <node id="DATA_Packets"   address="0x4"  permission="r"
+                            description="Number of received data packets counter on the optical link">
+                        <node id="Reset"  address="0x0"  mask="0x1"  permission="w"/>
+                    </node>
+                    
+                </node>                    
+            </node> <!-- end of COUNTERS -->
+
+
+            <node id="CONTROL"  address="0xb000000"
+                description="Control registers of the OptoHybrid">
+
+                  <node id="VFAT"  address="0x0"  permission="rw"
+                    description="Control on the OptoHybrid related to the VFATs">
+                    <node id="MASK"  address="0x0"  mask="0xffffffff"  permission="rw"
+                          description="Masks individual VFATs from sending tracking data packets"/>
+                    <node id="RESET"  address="0x3"  mask="0x1"  permission="w"
+                          description="Returns to a 0 state"/>
+                  </node>
+                  <node id="TRIGGER" address="0x1" permission="rw"
+                        description="Trigger options for the OptoHybrid">
+                    <node id="SOURCE"  address="0x0"  mask="0x7"  permission="rw"
+                          description="Selects the source of T1 signals sent to the GEB (3 bits [0,4]:
+                                       0: T1 from GLIB TTC decoder over backplane (AMC13)
+                                       1: T1 from OptoHybrid firmware
+                                       2: T1 from external source
+                                       3: Internal loopback on S-bits
+                                       4: Logical OR of all sources"/>
+                    <node id="LOOPBACK"  address="0x1"  mask="0x1f"  permission="rw"
+                          description="Selects the S-bit source to loop back  (5 bits)"/>
+                  </node>
+
+                  <node id="CLOCK"  address="0x4"  permission="rw"
+                    description="Control on the OptoHybrid related to the clocking">
+                    <node id="REF_CLK"  address="0x0"  mask="0x3"  permission="rw"
+                          description="Select the reference clock source (3 bits):
+                                       0: on board oscillator
+                                       1: GTX recovered clock
+                                       2: external clock"/>
+                  </node>
+                  
+                  <node id="OUTPUT"  address="0x5"  permission="rw"
+                    description="Control on the OptoHybrid related to the SBits sent out">
+                    <node id="SBits"  address="0x0"  permission="rw"
+                          description="Select the SBit sources to send out (30 bits, maximum 6 may be set high)"/>
+                  </node>
+            </node> <!-- end of CONTROL -->
+    
+            <node id="STATUS"  address="0xc000000"
+                    description="Status registers of the OptoHybrid">
+
+                <node id="FW"  address="0x0"  permission="r"
+                        description="Firmware version on the OH"/>
+
+                <node id="FPGA_PLL_LOCK"  address="0x1"  mask="0x1"  permission="r"
+                    description="Returns the lock status of the FPGA clock PLL"/>
+                <node id="EXT_PLL_LOCK"   address="0x2"  mask="0x1"  permission="r"
+                    description="Returns the lock status of the external clock PLL"/>
+                <node id="CDCE_LOCK"      address="0x3"  mask="0x1"  permission="r"
+                    description="Returns the lock status of the CDCE"/>
+                <node id="GTX_LOCK"       address="0x4"  mask="0x1"  permission="r"
+                    description="Returns the lock status of the recovered clock (GTX)"/>                    
+            </node>
+
+            <node id="FW_DATE" address="0xc000" mask="0xffffffff" permission="r"
+                  description="OH firmware date"/>        
+        </node> <!-- end OH${OH_IDX} block -->
+    </node> <!-- end OptoHybrid block -->
   </node>
 </node>

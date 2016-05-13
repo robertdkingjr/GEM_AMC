@@ -117,22 +117,50 @@ package gem_pkg is
     
     type t_data_link_array is array(integer range <>) of t_data_link;    
 
+    --=====================================--
+    --==   DAQ input status and control  ==--
+    --=====================================--
+    
+    type t_daq_input_status is record
+        evtfifo_empty           : std_logic;
+        evtfifo_near_full       : std_logic;
+        evtfifo_full            : std_logic;
+        evtfifo_underflow       : std_logic;
+        infifo_empty            : std_logic;
+        infifo_near_full        : std_logic;
+        infifo_full             : std_logic;
+        infifo_underflow        : std_logic;
+        tts_state               : std_logic_vector(3 downto 0);
+        err_event_too_big       : std_logic;
+        err_evtfifo_full        : std_logic;
+        err_infifo_underflow    : std_logic;
+        err_infifo_full         : std_logic;
+        err_corrupted_vfat_data : std_logic;
+        err_vfat_block_too_big  : std_logic;
+        err_vfat_block_too_small: std_logic;
+        err_event_bigger_than_24: std_logic;
+        err_mixed_oh_bc         : std_logic;
+        err_mixed_vfat_bc       : std_logic;
+        err_mixed_vfat_ec       : std_logic;
+        cnt_corrupted_vfat      : std_logic_vector(31 downto 0);
+        eb_event_num            : std_logic_vector(23 downto 0);
+        eb_max_timer            : std_logic_vector(23 downto 0);
+        eb_last_timer           : std_logic_vector(23 downto 0);
+        ep_vfat_block_data      : t_std32_array(6 downto 0);
+    end record;
+
+    type t_daq_input_status_arr is array(integer range <>) of t_daq_input_status;
+
+    type t_daq_input_control is record
+        eb_timeout_delay        : std_logic_vector(23 downto 0);
+    end record;
+    
+    type t_daq_input_control_arr is array(integer range <>) of t_daq_input_control;
+
     --====================--
     --==   DAQ other    ==--
     --====================--
-    
-    type t_chamber_err_flags is record
-        infifo_full             : std_logic;
-        infifo_underflow        : std_logic;
-        evtfifo_full            : std_logic;
-        evtfifo_underflow       : std_logic;
-        event_too_big           : std_logic;
-        vfat_block_too_small    : std_logic;
-        vfat_block_too_big      : std_logic;
-    end record;
 
-    type t_chamber_err_flags_array is array(integer range <>) of t_chamber_err_flags;
-    
     type t_chamber_infifo_rd is record
         dout          : std_logic_vector(191 downto 0);
         rd_en         : std_logic;

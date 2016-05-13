@@ -19,7 +19,8 @@ use IEEE.STD_LOGIC_1164.all;
 --============================================================================
 package gem_board_config_package is
 
-    constant CFG_NUM_OF_OHs     : integer := 2;
+    --constant CFG_NUM_OF_OHs     : integer := 2;
+    constant CFG_NUM_OF_OHs     : integer := 4;
 
 
     --========================--
@@ -37,8 +38,12 @@ package gem_board_config_package is
     type t_oh_link_config_arr is array (0 to CFG_NUM_OF_OHs - 1) of t_oh_link_config;
 	
 	constant CFG_OH_LINK_CONFIG_ARR : t_oh_link_config_arr := (
-		(6, 6, 7, 8),	-- OH 0 (for now just duplicate track for gbt since they don't exist in the design, but change this if you add them) 
-		(9, 9, 10, 11)	-- OH 1 (for now just duplicate track for gbt since they don't exist in the design, but change this if you add them) 
+        --(6, 6, 7, 8),   -- OH 0 (for now just duplicate track for gbt since they don't exist in the design, but change this if you add them) 
+        --(9, 9, 10, 11)  -- OH 1 (for now just duplicate track for gbt since they don't exist in the design, but change this if you add them) 
+        (0, 0, 1, 2), 
+        (3, 3, 4, 5), 
+        (6, 6, 7, 8), 
+        (9, 9, 10, 11) 
 	);
 
 end package gem_board_config_package;

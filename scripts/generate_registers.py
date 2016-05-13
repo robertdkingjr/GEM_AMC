@@ -32,6 +32,7 @@ class Module:
     busReset = ''
     masterBus = ''
     slaveBus = ''
+    isExternal = False # if this is true it means that firmware doesn't have to be modified, only bash scripts will be generated
 
     def __init__(self):
         self.regs = []
@@ -40,9 +41,12 @@ class Module:
         self.regs.append(reg)
 
     def isValid(self):
-        return self.name is not None and self.file is not None and self.userClock is not None and self.busClock is not None\
-               and self.busReset is not None and self.masterBus is not None and self.slaveBus is not None\
-               and self.regAddressMsb is not None and self.regAddressLsb is not None
+        if self.isExternal:
+            return self.name is not None
+        else:
+            return self.name is not None and self.file is not None and self.userClock is not None and self.busClock is not None\
+                   and self.busReset is not None and self.masterBus is not None and self.slaveBus is not None\
+                   and self.regAddressMsb is not None and self.regAddressLsb is not None
 
     def toString(self):
         return str(self.name) + ' module: ' + str(self.description) + '\n'\
@@ -74,10 +78,14 @@ class Register:
     msb = -1
     lsb = -1
 
-    def isValidReg(self):
-        return self.name is not None and self.address is not None and self.permission is not None\
-               and self.mask is not None and self.signal is not None\
-               and (self.default is not None or self.isWritePulse == True or self.permission == 'r')
+    def isValidReg(self, isExternal = False):
+        if isExternal:
+            return self.name is not None and self.address is not None and self.permission is not None\
+                   and self.mask is not None
+        else:
+            return self.name is not None and self.address is not None and self.permission is not None\
+                   and self.mask is not None and self.signal is not None\
+                   and (self.default is not None or self.isWritePulse == True or self.permission == 'r')
 
     def toString(self):
         ret = 'Register ' + str(self.name) + ': ' + str(self.description) + '\n'\
@@ -123,7 +131,8 @@ def main():
     writeConstantsFile(modules, CONSTANTS_FILE)
 
     for module in modules:
-        updateModuleFile(module)
+        if not module.isExternal:
+            updateModuleFile(module)
 
     writeStatusBashScript(modules, BASH_STATUS_SCRIPT_FILE)
 
@@ -152,14 +161,17 @@ def findRegisters(node, baseName, baseAddress, modules, currentModule, vars, isG
         module.name = name
         module.description = substituteVars(node.get('description'), vars)
         module.baseAddress = parseInt(node.get('address'))
-        module.regAddressMsb = parseInt(node.get('fw_reg_addr_msb'))
-        module.regAddressLsb = parseInt(node.get('fw_reg_addr_lsb'))
-        module.file = node.get('fw_module_file')
-        module.userClock = node.get('fw_user_clock_signal')
-        module.busClock = node.get('fw_bus_clock_signal')
-        module.busReset = node.get('fw_bus_reset_signal')
-        module.masterBus = node.get('fw_master_bus_signal')
-        module.slaveBus = node.get('fw_slave_bus_signal')
+        if node.get('fw_is_module_external') is not None and node.get('fw_is_module_external') == 'true':
+            module.isExternal = True
+        else:
+            module.regAddressMsb = parseInt(node.get('fw_reg_addr_msb'))
+            module.regAddressLsb = parseInt(node.get('fw_reg_addr_lsb'))
+            module.file = node.get('fw_module_file')
+            module.userClock = node.get('fw_user_clock_signal')
+            module.busClock = node.get('fw_bus_clock_signal')
+            module.busReset = node.get('fw_bus_reset_signal')
+            module.masterBus = node.get('fw_master_bus_signal')
+            module.slaveBus = node.get('fw_slave_bus_signal')
         if not module.isValid():
             error = 'One or more parameters for module ' + module.name + ' is missing... ' + module.toString()
             raise ValueError(error)
@@ -192,7 +204,7 @@ def findRegisters(node, baseName, baseAddress, modules, currentModule, vars, isG
             if module is None:
                 error = 'Module is not set, cannot add register ' + reg.name
                 raise ValueError(error)
-            if not reg.isValidReg():
+            if not reg.isValidReg(module.isExternal):
                 raise ValueError('One or more attributes for register %s are missing.. %s' % (reg.name, reg.toString()))
 
             module.addReg(reg)
@@ -208,6 +220,9 @@ def writeConstantsFile(modules, filename):
     f.write('package registers is\n')
 
     for module in modules:
+        if module.isExternal:
+            continue
+
         totalRegs32 = getNumRequiredRegs32(module)
 
         # check if we have enough address bits for the max reg address (recall that the reg list is sorted by address)
@@ -259,6 +274,9 @@ def writeConstantsFile(modules, filename):
     f.close()
 
 def updateModuleFile(module):
+    if module.isExternal:
+        return
+
     totalRegs32 = getNumRequiredRegs32(module)
     print('Updating ' + module.name + ' module in file = ' + module.file)
     f = open(module.file, 'r+')
@@ -516,6 +534,8 @@ def getLowHighFromBitmask(bitmask):
     return msb, lsb
 
 def substituteVars(string, vars):
+    if string is None:
+        return string
     ret = string
     for varKey in vars.keys():
         ret = ret.replace('${' + varKey + '}', str(vars[varKey]))

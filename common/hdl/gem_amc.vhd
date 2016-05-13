@@ -225,6 +225,21 @@ begin
             board_sn_i       => board_id_i
         );    
 
+    --================================--
+    -- GEM System
+    --================================--
+
+    i_gem_system : entity work.gem_system_regs
+        port map(
+            ipb_clk_i        => ipb_clk_i,
+            ipb_reset_i      => ipb_reset_i,
+            ipb_mosi_i       => ipb_mosi_arr_i(C_IPB_SLV.system),
+            ipb_miso_o       => ipb_miso_arr(C_IPB_SLV.system),
+            tk_rx_polarity_o => open,
+            tk_tx_polarity_o => open,
+            board_id_o       => open
+        );
+
     --==========--
     -- Counters --
     --==========--
