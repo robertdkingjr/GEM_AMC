@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 use work.gem_board_config_package.CFG_NUM_OF_OHs;
 
@@ -9,8 +10,7 @@ package gem_pkg is
     --==      General     ==--
     --======================-- 
     
-    constant C_TTC_CLK_FREQUENCY      : integer := 40_079_000;
-    constant C_TTC_CLK_FREQUENCY_SLV  : std_logic_vector(31 downto 0) := x"02638e98";
+    constant C_LED_PULSE_LENGTH_TTC_CLK : std_logic_vector(20 downto 0) := std_logic_vector(to_unsigned(1_600_000, 21));
 
     function count_ones(s : std_logic_vector) return integer;
 
@@ -80,6 +80,30 @@ package gem_pkg is
 
     type t_oh_sbit_links is array(1 downto 0) of t_sbit_link_status;    
     type t_oh_sbit_links_arr is array(integer range <>) of t_oh_sbit_links;
+
+    --====================--
+    --==     DAQLink    ==--
+    --====================--
+
+    type t_daq_to_daqlink is record
+        reset           : std_logic;
+        ttc_clk         : std_logic;
+        ttc_bc0         : std_logic;
+        trig            : std_logic_vector(7 downto 0);
+        tts_clk         : std_logic;
+        tts_state       : std_logic_vector(3 downto 0);
+        resync          : std_logic;
+        event_clk       : std_logic;
+        event_valid     : std_logic;
+        event_header    : std_logic;
+        event_trailer   : std_logic;
+        event_data      : std_logic_vector(63 downto 0);
+    end record;
+
+    type t_daqlink_to_daq is record
+        ready           : std_logic;
+        almost_full     : std_logic;
+    end record;
 
     --====================--
     --== DAQ data input ==--

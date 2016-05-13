@@ -116,7 +116,7 @@
     <!--end TTC module -->
 
     <!--Trigger module -->
-    <node id="Trigger"  address="0x00800000"
+    <node id="TRIGGER"  address="0x00800000"
           description="Trigger module handles everything related to sbit cluster data (link synchronization, monitoring, local triggering, matching to L1A and reporting data to DAQ)"
           fw_is_module="true"
           fw_module_file="../common/hdl/trigger/trigger.vhd"
@@ -197,10 +197,286 @@
             <node id="LINK1_SYNC_WORD_CNT" address="0xe" mask="0xffff0000" permission="r"
                   description="Count of sync words seen on link 1"
                   fw_signal="sync_word_cnt(${OH_IDX})(31 downto 16)"/>
+            <node id="DEBUG_LAST_CLUSTER_${CLUSTER_IDX}" address="0x10" mask="0x0000ffff" permission="r"
+                  description="Last cluster ${CLUSTER_IDX}"
+                  fw_signal="'0' &amp; sbit_clusters_i(${OH_IDX})(${CLUSTER_IDX}).size &amp; '0' &amp; sbit_clusters_i(${OH_IDX})(${CLUSTER_IDX}).address"
+                  generate="true" generate_size="8" generate_address_step="0x1" generate_idx_var="CLUSTER_IDX"/>
         </node>
 
     </node>
     <!--end trigger module -->
+
+    <!--GEM System module -->
+    <node id="GEM_SYSTEM"  address="0x00900000"
+          description="This module is controlling GEM AMC System wide settings"
+          fw_is_module="true"
+          fw_module_file="../common/hdl/misc/gem_system_regs.vhd"
+          fw_user_clock_signal="ipb_clk_i"
+          fw_bus_clock_signal="ipb_clk_i"
+          fw_bus_reset_signal="ipb_reset_i"
+          fw_master_bus_signal="ipb_mosi_i"
+          fw_slave_bus_signal="ipb_miso_o"
+          fw_reg_addr_msb="3"
+          fw_reg_addr_lsb="0">
+          
+        <node id="TK_LINK_RX_POLARITY" address="0x0" mask="0x00ffffff" permission="rw"
+              description="RX polarity of the track/control links (bit 0 corresponds to link 0)"
+              fw_signal="tk_rx_polarity" fw_default="0x000000"/>
+        <node id="TK_LINK_TX_POLARITY" address="0x1" mask="0x00ffffff" permission="rw"
+              description="TX polarity of the track/control links (bit 0 corresponds to link 0)"
+              fw_signal="tk_tx_polarity" fw_default="0x000000"/>
+        <node id="BOARD_ID" address="0x2" mask="0x0000ffff" permission="rw"
+              description="Board ID that gets embedded in the AMC13 header"
+              fw_signal="board_id" fw_default="0xbeef"/>
+    </node>
+
+    <!--DAQ module -->
+    <node id="DAQ"  address="0x00700000"
+          description="DAQ module buffers track data, builds events, analyses the data for consistency and ships off the events with all the needed headers and trailers to AMC13 over DAQLink"
+          fw_is_module="true"
+          fw_module_file="../common/hdl/daq/daq.vhd"
+          fw_user_clock_signal="ipb_clk_i"
+          fw_bus_clock_signal="ipb_clk_i"
+          fw_bus_reset_signal="ipb_reset_i"
+          fw_master_bus_signal="ipb_mosi_i"
+          fw_slave_bus_signal="ipb_miso_o"
+          fw_reg_addr_msb="8"
+          fw_reg_addr_lsb="0">
+          
+        <node id="CONTROL"  address="0x0" description="DAQ Control">
+            <node id="DAQ_ENABLE"         address="0x0" mask="0x00000001" permission="rw"
+                  description="If this is set to 0, there will be no data sent to AMC13 and TTS state will always be READY (0x8)"
+                  fw_signal="daq_enable" fw_default="0b0"/>
+            <node id="DAQ_LINK_RESET"     address="0x0" mask="0x00000004" permission="rw"
+                  description="Directly connected to DAQLink module reset port. BU is
+                               advising against ever using it except for powerup, but it
+                               may clear some error conditions (like daqlink_almost_ful
+                               stuck at 1). AMC13 reset is probably required after this."
+                  fw_signal="reset_daqlink_ipb" fw_default="0b0"/>
+            <node id="RESET"              address="0x0" mask="0x00000008" permission="rw"
+                  description="Clears all FIFOs, state flags and counters. It also stops and
+                               resets all state machines (no events will be built, recorded
+                               or sent during reset)
+                               When set to 1, it will be held in reset state until 0 is
+                               explicitly written (this can be changed in the future if
+                               necessary)"
+                  fw_signal="reset_local" fw_default="0b0"/>
+            <node id="TTS_OVERRIDE"       address="0x0" mask="0x000000f0" permission="rw"
+                  description="When not 0, it will override the GLIB TTS state with the
+                               provided value (e.g. writing 0x8 will force GLIB to always be
+                               in TTS READY state)"
+                  fw_signal="tts_override" fw_default="0x0"/>
+            <node id="INPUT_ENABLE_MASK"  address="0x0" mask="0xffffff00" permission="rw"
+                  description="This is a bitmask telling GLIB to enable certain inputs (least
+                               significant bit is input 0). Only first is enabled by default"
+                  fw_signal="input_mask" fw_default="0x1"/>
+            <node id="DAV_TIMEOUT"        address="0x6"  mask="0x00ffffff" permission="rw"
+                  description="This setting controls how long DAQ will wait for individual
+                               inputs to report data before calling it timed-out  (if timeout
+                               occurs a header and trailer for that chamber will still be
+                               inserted and timeout flag will be set there, though no VFAT
+                               payload will be present). Units = clock cycles @ 25MHz
+                               (current DAQLink clk frequency)"
+                  fw_signal="dav_timeout" fw_default="0x3d090"/>
+        </node>
+        
+        <node id="STATUS"  address="0x1" description="DAQ global status registers">
+            <node id="DAQ_LINK_RDY"    address="0x0"  mask="0x00000001" permission="r"
+                  description="When this is 1, it means that GLIB is in good communication
+                               with AMC13. It must be 1 for GLIB to be able to send data."
+                  fw_signal="daq_ready"/>
+            <node id="DAQ_CLK_LOCKED"  address="0x0"  mask="0x00000002" permission="r"
+                  description="This flag is 1 if DAQ clock is locked at this moment"
+                  fw_signal="daq_clk_locked_i"/>
+            <node id="TTC_RDY"         address="0x0"  mask="0x00000004" permission="r"
+                  description="This flag is 1 if TTC clock MMCM is locked"
+                  fw_signal="ttc_status_i.mmcm_locked"/>
+            <node id="DAQ_LINK_AFULL"       address="0x0"  mask="0x00000008" permission="r"
+                  description="This bit comes directly from DAQLink module, indicating
+                               that its internal buffers are almost full. No events will be sent
+                               when this bit is 1 (though events can still be built and
+                               stored in the Input and Event FIFOs)"
+                  fw_signal="daq_almost_full"/>
+            <node id="TTC_BC0_LOCKED"       address="0x0"  mask="0x00000010" permission="r"
+                  description="This bit is set if BC0 is currently locked (last BC0 arrived at the expected time)"
+                  fw_signal="ttc_status_i.bc0_status.locked"/>
+            <node id="L1A_FIFO_HAD_OVERFLOW"       address="0x0"  mask="0x00800000" permission="r"
+                  description="This bit is latched whenever L1A FIFO overflow is asserted.
+                               This means that one or more L1As were lost, so we are
+                               out-of-sync: resync or reset is needed"
+                  fw_signal="err_l1afifo_full"/>
+            <node id="L1A_FIFO_IS_UNDERFLOW"       address="0x0"  mask="0x01000000" permission="r"
+                  description="L1A FIFO is in underflow at this moment (this bit is not latched)"
+                  fw_signal="l1afifo_underflow"/>
+            <node id="L1A_FIFO_IS_FULL"       address="0x0"  mask="0x02000000" permission="r"
+                  description="L1A FIFO is full at this moment (this bit is not latched)"
+                  fw_signal="l1afifo_full"/>
+            <node id="L1A_FIFO_IS_NEAR_FULL"       address="0x0"  mask="0x04000000" permission="r"
+                  description="This bit gets asserted when L1A FIFO gets 75% full and deasserted when it gets down to 50%"
+                  fw_signal="l1afifo_near_full"/>
+            <node id="L1A_FIFO_IS_EMPTY"       address="0x0"  mask="0x08000000" permission="r"
+                  description="L1A FIFO is empty at this moment (this bit is not latched)"
+                  fw_signal="l1afifo_empty"/>
+            <node id="TTS_STATE"       address="0x0"  mask="0xf0000000" permission="r"
+                  description="Current TTS state (READY, BUSY, ERROR, WARN, OUT-OF-SYNC)"
+                  fw_signal="tts_state"/>
+        </node>
+        
+        <node id="EXT_STATUS"  address="0x2" description="DAQ global extended status registers">
+            <node id="NOTINTABLE_ERR"  address="0x0"  mask="0x0000ffff" permission="r"
+                  description="This counter is counting DAQLink GTX/GTH not-in-table errors"
+                  fw_signal="daq_notintable_err_cnt"/>
+            <node id="DISPER_ERR"      address="0x1"  mask="0x0000ffff" permission="r"
+                  description="This counter is counting DAQLink GTX/GTH dispersion errors"
+                  fw_signal="daq_disper_err_cnt"/>
+            <node id="L1AID"           address="0x2"  mask="0x00ffffff" permission="r"
+                  description="Current L1A ID (similar to event number, but this may be a bit ahead of that if we're still waiting for data for unprocessed L1As)"
+                  fw_signal="ttc_daq_cntrs_i.l1id"/>
+            <node id="EVT_SENT"        address="0x3"  mask="0xffffffff" permission="r"
+                  description="Number of events shipped out to DAQLink"
+                  fw_signal="std_logic_vector(cnt_sent_events)"/>
+            <node id="MAX_DAV_TIMER"   address="0x5"  mask="0x00ffffff" permission="r"
+                  description="This indicates the maximum amount of time that DAQ had
+                               to wait for all inputs to report data (can be used to optimize
+                               DAV timeout setting). Units = clock cycles @ DAQ clock frequency (currently using 40.08MHz TTC clock)
+                               (current DAQLink clk frequency)"
+                  fw_signal="std_logic_vector(max_dav_timer)"/>
+            <node id="LAST_DAV_TIMER"  address="0x6"  mask="0x00ffffff" permission="r"
+                  description="This indicates how DAQ had to wait for all inputs to report
+                               data for the last event (mostly for debugging). Units = clock
+                               cycles @ DAQ clock frequency (currently using 40.08MHz TTC clock)"
+                  fw_signal="std_logic_vector(last_dav_timer)"/>
+        </node>
+
+        <node id="EXT_CONTROL"  address="0xe" description="DAQ global extended configuration registers">
+            <node id="RUN_TYPE"       address="0x1"  mask="0x0f000000" permission="rw"
+                  description="User settable run type that gets embedded into the AMC header"
+                  fw_signal="run_type" fw_default="0x0"/>
+            <node id="RUN_PARAMS"     address="0x1"  mask="0x00ffffff" permission="rw"
+                  description="User settable run params that gets embedded into the AMC header"
+                  fw_signal="run_params" fw_default="0x000000"/>
+        </node>
+
+        <node id="OH{OH_IDX}"  address="0x10"
+              description="Link specific registers for OH${OH_IDX}"
+              generate="true" generate_size="2" generate_address_step="0x10" generate_idx_var="OH_IDX">
+            
+            <node id="CONTROL"  address="0x0">
+                <node id="EOE_TIMEOUT" address="0x3"  mask="0x00ffffff" permission="rw"
+                      description="Units = clock cycles @ 160MHz. 
+                                   If no new data was received in this amount of time, GLIB
+                                   will close the current event and report it to DAQ. This is one
+                                   of the two ways to close an event, the other is to get new
+                                   data with different BX number"/>
+            </node>
+
+            <node id="STATUS"  address="0x0">
+                <node id="VFAT_MIXED_EC"    mask="0x00000002" permission="r"
+                      description="There was at least one event with mixed VFAT Event IDs"/>
+                <node id="VFAT_MIXED_BC"  mask="0x00000004" permission="r"
+                      description="There was at least one event with mixed VFAT BX IDs"/>
+                <node id="OH_MIXED_BC"         mask="0x00000008" permission="r"
+                      description="There was at least one event with mixed OH BX IDs (OH BX
+                                   ID is reported for every VFAT block, but not sent to
+                                   AMC13)."/>
+
+                <node id="VFAT_TOO_MANY"      mask="0x00000010" permission="r"
+                      description="Corruption: more than 24 VFATs in event"/>
+                <node id="VFAT_SMALL_BLOCK"   mask="0x00000020" permission="r"
+                      description="Corruption: VFAT block smaller than 192bits"/>
+                <node id="VFAT_LARGE_BLOCK"   mask="0x00000040" permission="r"
+                      description="Corruption: VFAT block bigger than 192bits"/>
+                <node id="VFAT_NO_MARKER"     mask="0x00000080" permission="r"
+                      description="Corruption: VFAT marker not detected.
+                                   There was at least one VFAT block not conforming to the
+                                   pattern of Axxx Cxxx Exxx…… (see VFAT data format)
+                                   Note that this data will still be included in the current event
+                                   and sent to AMC13, but it will not be considered in
+                                   end­of­event detection"/>
+                <node id="INPUT_FIFO_HAD_OFLOW"   mask="0x00000100" permission="r"
+                      description="Critical: Input FIFO overflow occurred.
+                                   This bit is latched if Input FIFO was ever full when receiving
+                                   new data – this means data was lost.
+                                   TTS ERROR is asserted when this bit is 1"/>
+                <node id="INPUT_FIFO_HAD_UFLOW"   mask="0x00000200" permission="r"
+                      description="Critical: Input FIFO underflow occurred.
+                                   This bit is latched if Input FIFO underflow was ever
+                                   detected. This means that Event FIFO indicated that there
+                                   should be more data than was stored in Input FIFO. This
+                                   might happen due to overflow or some other malfunction.
+                                   TTS ERROR is asserted when this bit is 1"/>
+                <node id="EVENT_FIFO_HAD_OFLOW"   mask="0x00000400" permission="r"
+                      description="Critical: Event FIFO overflow occurred.
+                                   This bit is latched if Event FIFO was ever full when trying to
+                                   build a new event. This means data was lost.
+                                   It’s not likely that this will ever be asserted because Input
+                                   FIFO should overflow first.
+                                   TTS ERROR is asserted when this bit is 1"/>
+                <node id="EVT_SIZE_ERR"           mask="0x00000800" permission="r"
+                      description="Critical: Event size overflow occurred.
+                                   This bit is latched if there was an event containing more
+                                   than 4096 VFAT blocks. Input FIFO and Event FIFO will be
+                                   out­of­sync. This might happen if end­of­event is not
+                                   detected properly or for whatever reason GLIB is receiving
+                                   a stream of VFAT blocks indicating that they belong to the
+                                   same event (EC/BC is the same)
+                                   TTS ERROR is asserted when this bit is 1"/>
+                <node id="TTS_STATE"           mask="0x0000f000" permission="r"
+                      description="Input TTS state (gets integrated into global TTS state later)"/>
+                <node id="INPUT_FIFO_IS_UFLOW"    mask="0x01000000" permission="r"
+                      description="Current status: Input FIFO is in underflow"/>
+                <node id="INPUT_FIFO_IS_FULL"     mask="0x02000000" permission="r"
+                      description="Current status: Input FIFO is full"/>
+                <node id="INPUT_FIFO_IS_AFULL"    mask="0x04000000" permission="r"
+                      description="Current status: Input FIFO is near­full (asserted at 75% and deasserted at 50%)"/>
+                <node id="INPUT_FIFO_IS_EMPTY"    mask="0x08000000" permission="r"
+                      description="Current status: Input FIFO is empty"/>
+                <node id="EVENT_FIFO_IS_UFLOW"    mask="0x10000000" permission="r"
+                      description="Current status: Event FIFO is in underflow"/>
+                <node id="EVENT_FIFO_IS_FULL"     mask="0x20000000" permission="r"
+                      description="Current status: Event FIFO is full"/>
+                <node id="EVENT_FIFO_IS_AFULL"    mask="0x40000000" permission="r"
+                      description="Current status: Event FIFO is near­full (asserted at 75% and deasserted at 50%)"/>
+                <node id="EVENT_FIFO_IS_EMPTY"    mask="0x80000000" permission="r"
+                      description="Current status: Event FIFO is empty"/>
+            </node>
+
+            <node id="COUNTERS">
+                <node id="CORRUPT_VFAT_BLK_CNT"  address="0x1" mask="0xffffffff" permission="r"
+                      description="This counter is incremented when a VFAT block does not
+                                   conform to the pattern of Axxx Cxxx Exxx... (see VFAT
+                                   data format)
+                                   Note that this data is still included in events and sent to
+                                   AMC13, but it does not participate in end­of­event
+                                   detection."/>
+                <node id="EVN"                   address="0x2" mask="0xffffffff" permission="r"
+                      description="Current event number of the event builder.
+                                   This counter starts at 1 and increments with each
+                                   end­of­event detection. This number should be similar to
+                                   the number of events sent to AMC13 in normal operation,
+                                   but it might not always be exactly the same because there’s
+                                   some latency between building an event and sending it. In
+                                   addition, event sending could stop due to DAQ FIFO being
+                                   almost full or DAQLink not being ready."/>
+                <node id="MAX_EOE_TIMER"         address="0x7" mask="0x00ffffff" permission="r"
+                      description="Units = clock cycles @ 160MHz. 
+                                   This indicates the maximum amount of time that event
+                                   builder took to build and close the event. Note: this is
+                                   mostly for debugging, most of the time it should be equal
+                                   to 'End of event timeout'"/>
+                <node id="LAST_EOE_TIMER"        address="0x8" mask="0x00ffffff" permission="r"
+                      description="Units = clock cycles @ 160MHz. 
+                                   This shows how long event builder took to build and close
+                                   the last event. Note: this is mostly for debugging, but could
+                                   be used to tune the 'end of event timeout'"/>
+            </node>
+
+            <node id="LASTBLOCK${BLOCK_IDX}"  address="0x9" permission="r" mask="0xffffffff"
+                  description="contains the last 192+32 bits received from the VFAT and OH"
+                  generate="true" generate_size="7" generate_address_step="0x1" generate_idx_var="BLOCK_IDX">
+            </node>              
+        </node>
+    </node>
 
   </node>
 </node>

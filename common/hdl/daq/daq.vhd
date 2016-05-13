@@ -16,65 +16,82 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
-library work;
+use work.gem_pkg.all;
+use work.ttc_pkg.all;
 use work.ipbus.all;
-use work.system_package.all;
-use work.user_package.all;
+use work.registers.all;
 
 entity daq is
+generic(
+    g_NUM_OF_OHs         : integer    
+);
 port(
 
     -- Reset
     reset_i                     : in std_logic;
-    resync_i                    : in std_logic;
 
     -- Clocks
-    mgt_ref_clk125_i            : in std_logic;
-    clk125_i                    : in std_logic;
-    ipb_clk_i                   : in std_logic;
+    daq_clk_i                   : in std_logic; -- for now use 25MHz, but could try 50MHz
+    daq_clk_locked_i            : in std_logic;
 
-    -- Pins
-    daq_gtx_tx_pin_p            : out std_logic; 
-    daq_gtx_tx_pin_n            : out std_logic; 
-    daq_gtx_rx_pin_p            : in std_logic; 
-    daq_gtx_rx_pin_n            : in std_logic; 
-
+    -- DAQLink
+    daq_to_daqlink_o            : out t_daq_to_daqlink;
+    daqlink_to_daq_i            : in  t_daqlink_to_daq;
+        
     -- TTC
-    ttc_ready_i                 : in std_logic;
-    ttc_clk_i                   : in std_logic;
-    ttc_l1a_i                   : in std_logic;
-    ttc_bc0_i                   : in std_logic;
-    ttc_ec0_i                   : in std_logic;
-    ttc_bx_id_i                 : in std_logic_vector(11 downto 0);
-    ttc_orbit_id_i              : in std_logic_vector(15 downto 0);
-    ttc_l1a_id_i                : in std_logic_vector(23 downto 0);
+    ttc_clks_i                  : in t_ttc_clks;
+    ttc_cmds_i                  : in t_ttc_cmds;
+    ttc_daq_cntrs_i             : in t_ttc_daq_cntrs;
+    ttc_status_i                : in t_ttc_status;
 
     -- Track data
-    tk_data_links_i             : in t_data_link_array(0 to number_of_optohybrids - 1);
-    trig_data_links_i           : in t_trig_link_array(0 to number_of_optohybrids - 1);
-    sbit_rate_i                 : in unsigned(31 downto 0);
+    tk_data_links_i             : in t_data_link_array(g_NUM_OF_OHs - 1 downto 0);
     
     -- IPbus
+    ipb_reset_i                 : in  std_logic;
+    ipb_clk_i                   : in std_logic;
 	ipb_mosi_i                  : in ipb_wbus;
 	ipb_miso_o                  : out ipb_rbus;
     
     -- Other
-    board_sn_i                  : in std_logic_vector(7 downto 0) -- board serial ID, needed for the header to AMC13
+    board_sn_i                  : in std_logic_vector(15 downto 0) -- board serial ID, needed for the header to AMC13
     
 );
 end daq;
 
 architecture Behavioral of daq is
 
+    --================== COMPONENTS ==================--
+
+    component daq_l1a_fifo is
+        port (
+            rst         : in  std_logic;
+            wr_clk      : in  std_logic;
+            rd_clk      : in  std_logic;
+            din         : in  std_logic_vector(51 downto 0);
+            wr_en       : in  std_logic;
+            wr_ack      : out std_logic;
+            rd_en       : in  std_logic;
+            dout        : out std_logic_vector(51 downto 0);
+            full        : out std_logic;
+            overflow    : out std_logic;
+            almost_full : out std_logic;
+            empty       : out std_logic;
+            valid       : out std_logic;
+            underflow   : out std_logic;
+            prog_full   : out std_logic
+        );
+    end component daq_l1a_fifo;  
+
+    --================== SIGNALS ==================--
+
     -- Reset
+    signal reset_global         : std_logic := '1';
     signal reset_daq            : std_logic := '1';
     signal reset_daqlink        : std_logic := '1'; -- should only be done once at powerup
     signal reset_pwrup          : std_logic := '1';
-    signal reset_ipb            : std_logic := '1';
+    signal reset_local          : std_logic := '1';
     signal reset_daqlink_ipb    : std_logic := '0';
-
-    -- Clocks
-    signal daq_clk_bufg         : std_logic;
 
     -- DAQlink
     signal daq_event_data       : std_logic_vector(63 downto 0) := (others => '0');
@@ -83,8 +100,6 @@ architecture Behavioral of daq is
     signal daq_event_trailer    : std_logic := '0';
     signal daq_ready            : std_logic := '0';
     signal daq_almost_full      : std_logic := '0';
-    signal daq_gtx_clk          : std_logic;    
-    signal daq_clock_locked     : std_logic := '0';
   
     signal daq_disper_err_cnt   : std_logic_vector(15 downto 0) := (others => '0');
     signal daq_notintable_err_cnt: std_logic_vector(15 downto 0) := (others => '0');
@@ -120,9 +135,9 @@ architecture Behavioral of daq is
     -- IPbus registers
     type ipb_state_t is (IDLE, RSPD, RST);
     signal ipb_state                : ipb_state_t := IDLE;    
-    signal ipb_reg_sel              : integer range 0 to (16 * (number_of_optohybrids + 10)) + 15; -- 16 regs for AMC evt builder and 16 regs for each chamber evt builder   
-    signal ipb_read_reg_data        : t_std32_array(0 to (16 * (number_of_optohybrids + 10)) + 15); -- 16 regs for AMC evt builder and 16 regs for each chamber evt builder
-    signal ipb_write_reg_data       : t_std32_array(0 to (16 * (number_of_optohybrids + 10)) + 15); -- 16 regs for AMC evt builder and 16 regs for each chamber evt builder
+    signal ipb_reg_sel              : integer range 0 to (16 * (g_NUM_OF_OHs + 10)) + 15;  -- 16 regs for AMC evt builder and 16 regs for each chamber evt builder   
+    signal ipb_read_reg_data        : t_std32_array(0 to (16 * (g_NUM_OF_OHs + 10)) + 15); -- 16 regs for AMC evt builder and 16 regs for each chamber evt builder
+    signal ipb_write_reg_data       : t_std32_array(0 to (16 * (g_NUM_OF_OHs + 10)) + 15); -- 16 regs for AMC evt builder and 16 regs for each chamber evt builder
     
     -- L1A FIFO
     signal l1afifo_din          : std_logic_vector(51 downto 0) := (others => '0');
@@ -143,7 +158,7 @@ architecture Behavioral of daq is
     signal dav_timer            : unsigned(23 downto 0) := (others => '0'); -- TODO: probably don't need this to be so large.. (need to test)
     signal max_dav_timer        : unsigned(23 downto 0) := (others => '0'); -- TODO: probably don't need this to be so large.. (need to test)
     signal last_dav_timer       : unsigned(23 downto 0) := (others => '0'); -- TODO: probably don't need this to be so large.. (need to test)
-    signal dav_timeout          : unsigned(23 downto 0) := x"03d090"; -- 10ms (very large)
+    signal dav_timeout          : std_logic_vector(23 downto 0) := x"03d090"; -- 10ms (very large)
     signal dav_timeout_flags    : std_logic_vector(23 downto 0) := (others => '0'); -- inputs which have timed out
     
     ---=== AMC Event Builder signals ===---
@@ -161,110 +176,62 @@ architecture Behavioral of daq is
            
     ---=== Chamber Event Builder signals ===---
     
-    signal chamber_infifos      : t_chamber_infifo_rd_array(0 to number_of_optohybrids - 1);
-    signal chamber_evtfifos     : t_chamber_evtfifo_rd_array(0 to number_of_optohybrids - 1);
-    signal chmb_evtfifos_empty  : std_logic_vector(number_of_optohybrids - 1 downto 0) := (others => '1'); -- you should probably just move this flag out of the t_chamber_evtfifo_rd_array struct 
-    signal chmb_evtfifos_rd_en  : std_logic_vector(number_of_optohybrids - 1 downto 0) := (others => '0'); -- you should probably just move this flag out of the t_chamber_evtfifo_rd_array struct 
-    signal chmb_infifos_rd_en   : std_logic_vector(number_of_optohybrids - 1 downto 0) := (others => '0'); -- you should probably just move this flag out of the t_chamber_evtfifo_rd_array struct 
-    signal chmb_tts_states      : t_std4_array(0 to number_of_optohybrids - 1);
+    signal chamber_infifos      : t_chamber_infifo_rd_array(0 to g_NUM_OF_OHs - 1);
+    signal chamber_evtfifos     : t_chamber_evtfifo_rd_array(0 to g_NUM_OF_OHs - 1);
+    signal chmb_evtfifos_empty  : std_logic_vector(g_NUM_OF_OHs - 1 downto 0) := (others => '1'); -- you should probably just move this flag out of the t_chamber_evtfifo_rd_array struct 
+    signal chmb_evtfifos_rd_en  : std_logic_vector(g_NUM_OF_OHs - 1 downto 0) := (others => '0'); -- you should probably just move this flag out of the t_chamber_evtfifo_rd_array struct 
+    signal chmb_infifos_rd_en   : std_logic_vector(g_NUM_OF_OHs - 1 downto 0) := (others => '0'); -- you should probably just move this flag out of the t_chamber_evtfifo_rd_array struct 
+    signal chmb_tts_states      : t_std4_array(0 to g_NUM_OF_OHs - 1);
     
     signal err_event_too_big    : std_logic;
     signal err_evtfifo_underflow: std_logic;
+
+    ------ Register signals begin (this section is generated by <gem_amc_repo_root>/scripts/generate_registers.py -- do not edit)
+    signal regs_read_arr        : t_std32_array(REG_DAQ_NUM_REGS - 1 downto 0);
+    signal regs_write_arr       : t_std32_array(REG_DAQ_NUM_REGS - 1 downto 0);
+    signal regs_addresses       : t_std32_array(REG_DAQ_NUM_REGS - 1 downto 0);
+    signal regs_defaults        : t_std32_array(REG_DAQ_NUM_REGS - 1 downto 0) := (others => (others => '0'));
+    signal regs_read_pulse_arr  : std_logic_vector(REG_DAQ_NUM_REGS - 1 downto 0);
+    signal regs_write_pulse_arr : std_logic_vector(REG_DAQ_NUM_REGS - 1 downto 0);
+    ------ Register signals end ----------------------------------------------
+
     
     -- Debug flags for ChipScope
-    attribute MARK_DEBUG : string;
-    attribute MARK_DEBUG of reset_daq           : signal is "TRUE";
-    attribute MARK_DEBUG of daq_clk_bufg        : signal is "TRUE";
-
-    attribute MARK_DEBUG of resync_i            : signal is "TRUE";
-    attribute MARK_DEBUG of ttc_ready_i         : signal is "TRUE";
-    attribute MARK_DEBUG of ttc_clk_i           : signal is "TRUE";
-    attribute MARK_DEBUG of ttc_l1a_i           : signal is "TRUE";
-    attribute MARK_DEBUG of ttc_bc0_i           : signal is "TRUE";
-    attribute MARK_DEBUG of ttc_ec0_i           : signal is "TRUE";
-    attribute MARK_DEBUG of ttc_bx_id_i         : signal is "TRUE";
-    attribute MARK_DEBUG of ttc_orbit_id_i      : signal is "TRUE";
-    attribute MARK_DEBUG of ttc_l1a_id_i        : signal is "TRUE";
-    
-    attribute MARK_DEBUG of dav_timer           : signal is "TRUE";
-    attribute MARK_DEBUG of max_dav_timer       : signal is "TRUE";
-    attribute MARK_DEBUG of last_dav_timer      : signal is "TRUE";
-    attribute MARK_DEBUG of dav_timeout         : signal is "TRUE";
-    attribute MARK_DEBUG of dav_timeout_flags   : signal is "TRUE";
-
-    attribute MARK_DEBUG of daq_state           : signal is "TRUE";
-    attribute MARK_DEBUG of daq_curr_vfat_block : signal is "TRUE";
-    attribute MARK_DEBUG of daq_curr_block_word : signal is "TRUE";
-
-    attribute MARK_DEBUG of daq_event_data      : signal is "TRUE";
-    attribute MARK_DEBUG of daq_event_write_en  : signal is "TRUE";
-    attribute MARK_DEBUG of daq_event_header    : signal is "TRUE";
-    attribute MARK_DEBUG of daq_event_trailer   : signal is "TRUE";
-    attribute MARK_DEBUG of daq_ready           : signal is "TRUE";
-    attribute MARK_DEBUG of daq_almost_full     : signal is "TRUE";
-    
-    attribute MARK_DEBUG of input_mask          : signal is "TRUE";
-    attribute MARK_DEBUG of e_input_idx         : signal is "TRUE";
-    attribute MARK_DEBUG of e_word_count        : signal is "TRUE";
-    attribute MARK_DEBUG of e_dav_mask          : signal is "TRUE";
-    attribute MARK_DEBUG of e_dav_count         : signal is "TRUE";
-    
-    attribute MARK_DEBUG of l1afifo_dout        : signal is "TRUE";
-    attribute MARK_DEBUG of l1afifo_rd_en       : signal is "TRUE";
-    attribute MARK_DEBUG of l1afifo_empty       : signal is "TRUE";
-    
-    attribute MARK_DEBUG of chmb_evtfifos_empty : signal is "TRUE";
-    attribute MARK_DEBUG of chmb_evtfifos_rd_en : signal is "TRUE";
-    attribute MARK_DEBUG of chmb_infifos_rd_en  : signal is "TRUE";
-    
+--    attribute MARK_DEBUG : string;
+--    attribute MARK_DEBUG of reset_daq           : signal is "TRUE";
+--    attribute MARK_DEBUG of daq_clk_i           : signal is "TRUE";
 --
---    attribute MARK_DEBUG of track_rx_clk_i : signal is "TRUE";
---    attribute MARK_DEBUG of track_rx_en_i : signal is "TRUE";
---    attribute MARK_DEBUG of track_rx_data_i : signal is "TRUE";
---    attribute MARK_DEBUG of ep_vfat_block_data : signal is "TRUE";
---    attribute MARK_DEBUG of ep_vfat_block_en : signal is "TRUE";
+--    attribute MARK_DEBUG of dav_timer           : signal is "TRUE";
+--    attribute MARK_DEBUG of max_dav_timer       : signal is "TRUE";
+--    attribute MARK_DEBUG of last_dav_timer      : signal is "TRUE";
+--    attribute MARK_DEBUG of dav_timeout         : signal is "TRUE";
+--    attribute MARK_DEBUG of dav_timeout_flags   : signal is "TRUE";
 --
---    attribute MARK_DEBUG of infifo_din : signal is "TRUE";
---    attribute MARK_DEBUG of infifo_dout : signal is "TRUE";
---    attribute MARK_DEBUG of infifo_rd_en : signal is "TRUE";
---    attribute MARK_DEBUG of infifo_wr_en : signal is "TRUE";
---    attribute MARK_DEBUG of infifo_full : signal is "TRUE";
---    attribute MARK_DEBUG of infifo_empty : signal is "TRUE";
---    attribute MARK_DEBUG of infifo_valid : signal is "TRUE";
---    attribute MARK_DEBUG of infifo_underflow : signal is "TRUE";
+--    attribute MARK_DEBUG of daq_state           : signal is "TRUE";
+--    attribute MARK_DEBUG of daq_curr_vfat_block : signal is "TRUE";
+--    attribute MARK_DEBUG of daq_curr_block_word : signal is "TRUE";
+--
+--    attribute MARK_DEBUG of daq_event_data      : signal is "TRUE";
+--    attribute MARK_DEBUG of daq_event_write_en  : signal is "TRUE";
+--    attribute MARK_DEBUG of daq_event_header    : signal is "TRUE";
+--    attribute MARK_DEBUG of daq_event_trailer   : signal is "TRUE";
+--    attribute MARK_DEBUG of daq_ready           : signal is "TRUE";
+--    attribute MARK_DEBUG of daq_almost_full     : signal is "TRUE";
 --    
---    attribute MARK_DEBUG of evtfifo_din : signal is "TRUE";
---    attribute MARK_DEBUG of evtfifo_dout : signal is "TRUE";
---    attribute MARK_DEBUG of evtfifo_rd_en : signal is "TRUE";
---    attribute MARK_DEBUG of evtfifo_wr_en : signal is "TRUE";
---    attribute MARK_DEBUG of evtfifo_full : signal is "TRUE";
---    attribute MARK_DEBUG of evtfifo_empty : signal is "TRUE";
---    attribute MARK_DEBUG of evtfifo_valid : signal is "TRUE";
---    attribute MARK_DEBUG of evtfifo_underflow : signal is "TRUE";
+--    attribute MARK_DEBUG of input_mask          : signal is "TRUE";
+--    attribute MARK_DEBUG of e_input_idx         : signal is "TRUE";
+--    attribute MARK_DEBUG of e_word_count        : signal is "TRUE";
+--    attribute MARK_DEBUG of e_dav_mask          : signal is "TRUE";
+--    attribute MARK_DEBUG of e_dav_count         : signal is "TRUE";
 --    
---    attribute MARK_DEBUG of ep_last_ec : signal is "TRUE";
---    attribute MARK_DEBUG of ep_last_bc : signal is "TRUE";
---    attribute MARK_DEBUG of ep_first_ever_block : signal is "TRUE";
---    attribute MARK_DEBUG of ep_end_of_event : signal is "TRUE";
---    attribute MARK_DEBUG of ep_invalid_vfat_block : signal is "TRUE";
+--    attribute MARK_DEBUG of l1afifo_dout        : signal is "TRUE";
+--    attribute MARK_DEBUG of l1afifo_rd_en       : signal is "TRUE";
+--    attribute MARK_DEBUG of l1afifo_empty       : signal is "TRUE";
 --    
---    attribute MARK_DEBUG of eb_vfat_ec : signal is "TRUE";
---    attribute MARK_DEBUG of eb_bc : signal is "TRUE";
---    attribute MARK_DEBUG of eb_oh_bc : signal is "TRUE";
---    attribute MARK_DEBUG of eb_event_num_short : signal is "TRUE";
---    attribute MARK_DEBUG of eb_vfat_words_64 : signal is "TRUE";
---    attribute MARK_DEBUG of eb_counters_valid : signal is "TRUE";
---    
---    attribute MARK_DEBUG of eb_invalid_vfat_block : signal is "TRUE";
---    attribute MARK_DEBUG of eb_event_too_big : signal is "TRUE";
---    attribute MARK_DEBUG of eb_event_bigger_than_24 : signal is "TRUE";
---    attribute MARK_DEBUG of eb_vfat_bx_mismatch : signal is "TRUE";
---    attribute MARK_DEBUG of eb_oos_oh : signal is "TRUE";
---    attribute MARK_DEBUG of eb_vfat_oh_bx_mismatch : signal is "TRUE";
---    attribute MARK_DEBUG of eb_oos_glib_vfat : signal is "TRUE";
---    
---    attribute MARK_DEBUG of gs_corrupted_vfat_data : signal is "TRUE";
-
+--    attribute MARK_DEBUG of chmb_evtfifos_empty : signal is "TRUE";
+--    attribute MARK_DEBUG of chmb_evtfifos_rd_en : signal is "TRUE";
+--    attribute MARK_DEBUG of chmb_infifos_rd_en  : signal is "TRUE";
+    
 begin
 
     -- TODO DAQ main tasks:
@@ -276,18 +243,48 @@ begin
     --   * Stop building events if input fifo is full -- let it drain to some level and only then restart building (otherwise you're pointing to inexisting data). I guess it's better to loose some data than to have something that doesn't make any sense..
 
     --================================--
-    -- Resets
+    -- DAQLink interface
     --================================--
     
-    reset_daq <= reset_pwrup or reset_i or reset_ipb;
-    reset_daqlink <= reset_pwrup or reset_i or reset_daqlink_ipb;
+    daq_to_daqlink_o.reset <= '0'; -- will need to investigate this later
+    daq_to_daqlink_o.resync <= '0'; -- will need to investigate this later
+    daq_to_daqlink_o.trig <= x"00";
+    daq_to_daqlink_o.ttc_clk <= ttc_clks_i.clk_40;
+    daq_to_daqlink_o.ttc_bc0 <= ttc_cmds_i.bc0;
+    daq_to_daqlink_o.tts_clk <= ttc_clks_i.clk_40;
+    daq_to_daqlink_o.tts_state <= tts_state;
+    daq_to_daqlink_o.event_clk <= daq_clk_i; -- TODO: check if the TTS state is transfered to the TTC clock domain correctly, if not, maybe use a different clock
+    daq_to_daqlink_o.event_data <= daq_event_data;
+    daq_to_daqlink_o.event_header <= daq_event_header;
+    daq_to_daqlink_o.event_trailer <= daq_event_trailer;
+    daq_to_daqlink_o.event_valid <= daq_event_write_en;
+
+    daq_ready <= daqlink_to_daq_i.ready;
+    daq_almost_full <= daqlink_to_daq_i.almost_full;
+
+    --================================--
+    -- Resets
+    --================================--
+
+    i_reset_sync : entity work.synchronizer
+        generic map(
+            N_STAGES => 3
+        )
+        port map(
+            async_i => reset_i,
+            clk_i   => ttc_clks_i.clk_40,
+            sync_o  => reset_global
+        );
+    
+    reset_daq <= reset_pwrup or reset_global or reset_local;
+    reset_daqlink <= reset_pwrup or reset_global or reset_daqlink_ipb;
     
     -- Reset after powerup
     
-    process(ttc_clk_i)
+    process(ttc_clks_i.clk_40)
         variable countdown : integer := 40_000_000; -- probably way too long, but ok for now (this is only used after powerup)
     begin
-        if (rising_edge(ttc_clk_i)) then
+        if (rising_edge(ttc_clks_i.clk_40)) then
             if (countdown > 0) then
               reset_pwrup <= '1';
               countdown := countdown - 1;
@@ -298,28 +295,14 @@ begin
     end process;
 
     --================================--
-    -- DAQ clocks
-    --================================--
-    
-    daq_clocks : entity work.daq_clocks
-    port map
-    (
-        CLK_IN1            => clk125_i,
-        CLK_OUT1           => daq_clk_bufg, -- 25MHz
-        CLK_OUT2           => open, -- 250MHz, not used
-        RESET              => reset_i,
-        LOCKED             => daq_clock_locked
-    );    
-
-    --================================--
     -- L1A FIFO
     --================================--
     
-    daq_l1a_fifo_inst : entity work.daq_l1a_fifo
+    i_l1a_fifo : component daq_l1a_fifo
     PORT MAP (
         rst => reset_daq,
-        wr_clk => ttc_clk_i,
-        rd_clk => daq_clk_bufg,
+        wr_clk => ttc_clks_i.clk_40,
+        rd_clk => daq_clk_i,
         din => l1afifo_din,
         wr_en => l1afifo_wr_en,
         wr_ack => open,
@@ -335,16 +318,16 @@ begin
     );
     
     -- fill the L1A FIFO
-    process(ttc_clk_i)
+    process(ttc_clks_i.clk_40)
     begin
-        if (rising_edge(ttc_clk_i)) then
+        if (rising_edge(ttc_clks_i.clk_40)) then
             if (reset_daq = '1') then
                 err_l1afifo_full <= '0';
                 l1afifo_wr_en <= '0';
             else
-                if (ttc_l1a_i = '1') then
+                if (ttc_cmds_i.l1a = '1') then
                     if (l1afifo_full = '0') then
-                        l1afifo_din <= ttc_l1a_id_i & ttc_orbit_id_i & ttc_bx_id_i;
+                        l1afifo_din <= ttc_daq_cntrs_i.l1id & ttc_daq_cntrs_i.orbit & ttc_daq_cntrs_i.bx;
                         l1afifo_wr_en <= '1';
                     else
                         err_l1afifo_full <= '1';
@@ -361,10 +344,10 @@ begin
     -- Chamber Event Builders
     --================================--
 
-    chamber_evt_builder_loop : for I in 0 to (number_of_optohybrids - 1) generate
+    g_chamber_evt_builders : for I in 0 to (g_NUM_OF_OHs - 1) generate
     begin
 
-        track_input_processors : entity work.track_input_processor
+        i_track_input_processor : entity work.track_input_processor
         port map
         (
             -- Reset
@@ -374,7 +357,7 @@ begin
             input_enable_i              => input_mask(I),
 
             -- FIFOs
-            fifo_rd_clk_i               => daq_clk_bufg,
+            fifo_rd_clk_i               => daq_clk_i,
             infifo_dout_o               => chamber_infifos(I).dout,
             infifo_rd_en_i              => chamber_infifos(I).rd_en,
             infifo_empty_o              => chamber_infifos(I).empty,
@@ -402,8 +385,6 @@ begin
             err_vfat_block_too_big_o    => open, -- got more than 14 VFAT words for one block
             
             -- IPbus (the first 16 regs are reserved for AMC event builder and then each chamber event builder will get 16 regs above that)
---            ipb_read_reg_data_o         => ipb_read_reg_data(((I + 1) * 16) to (((I + 2) * 16) - 1)),
---            ipb_write_reg_data_i        => ipb_write_reg_data(((I + 1) * 16) to (((I + 2) * 16) - 1))
             ipb_read_reg_data_o         => ipb_read_reg_data((I+1) * 16 to (I+1) * 16 + 15),
             ipb_write_reg_data_i        => ipb_write_reg_data((I+1) * 16 to (I+1) * 16 + 15)
         );
@@ -418,10 +399,11 @@ begin
     -- TTS
     --================================--
 
+    -- TODO: need to do TTS error reporting on common clock (either TTC clk or DAQ clk)
     process (tk_data_links_i(0).clk)
     begin
         if (rising_edge(tk_data_links_i(0).clk)) then
-            for I in 0 to (number_of_optohybrids - 1) loop
+            for I in 0 to (g_NUM_OF_OHs - 1) loop
                 tts_chmb_critical <= tts_chmb_critical or (chmb_tts_states(I)(2) and input_mask(I) and not reset_daq);
                 tts_chmb_out_of_sync <= tts_chmb_out_of_sync or (chmb_tts_states(I)(1) and input_mask(I));
                 tts_chmb_warning <= tts_chmb_warning or (chmb_tts_states(I)(0) and input_mask(I));
@@ -429,9 +411,9 @@ begin
         end if;
     end process;
 
-    tts_critical_error <= tts_critical_error or err_l1afifo_full or tts_chmb_critical;
+    tts_critical_error <= err_l1afifo_full or tts_chmb_critical;
     tts_out_of_sync <= tts_chmb_out_of_sync;
-    tts_warning <= tts_warning or l1afifo_near_full or tts_chmb_warning;
+    tts_warning <= l1afifo_near_full or tts_chmb_warning;
     tts_busy <= reset_daq;
 
     tts_state <= tts_override when (tts_override /= x"0") else
@@ -440,42 +422,13 @@ begin
                  x"c" when (tts_critical_error = '1') else
                  x"2" when (tts_out_of_sync = '1') else
                  x"1" when (tts_warning = '1') else
-                 x"8";
-        
-    --================================--
-    -- DAQ Link
-    --================================--
-
-    -- DAQ Link instantiation
-    daq_link : entity work.daqlink_wrapper
-    port map(
-        RESET_IN              => reset_daqlink,
-        MGT_REF_CLK_IN        => mgt_ref_clk125_i,
-        GTX_TXN_OUT           => daq_gtx_tx_pin_n,
-        GTX_TXP_OUT           => daq_gtx_tx_pin_p,
-        GTX_RXN_IN            => daq_gtx_rx_pin_n,
-        GTX_RXP_IN            => daq_gtx_rx_pin_p,
-        DATA_CLK_IN           => daq_clk_bufg,
-        EVENT_DATA_IN         => daq_event_data,
-        EVENT_DATA_HEADER_IN  => daq_event_header,
-        EVENT_DATA_TRAILER_IN => daq_event_trailer,
-        DATA_WRITE_EN_IN      => daq_event_write_en,
-        READY_OUT             => daq_ready,
-        ALMOST_FULL_OUT       => daq_almost_full,
-        TTS_CLK_IN            => ttc_clk_i,
-        TTS_STATE_IN          => tts_state,
-        GTX_CLK_OUT           => daq_gtx_clk,
-        ERR_DISPER_COUNT      => daq_disper_err_cnt,
-        ERR_NOT_IN_TABLE_COUNT=> daq_notintable_err_cnt,
-        BC0_IN                => ttc_bc0_i,
-        CLK125_IN             => clk125_i
-    );    
+                 x"8"; 
      
     --================================--
     -- Event shipping to DAQLink
     --================================--
     
-    process(daq_clk_bufg)
+    process(daq_clk_i)
     
         -- event info
         variable e_l1a_id                   : std_logic_vector(23 downto 0) := (others => '0');        
@@ -501,7 +454,7 @@ begin
               
     begin
     
-        if (rising_edge(daq_clk_bufg)) then
+        if (rising_edge(daq_clk_i)) then
         
             if (reset_daq = '1') then
                 daq_state <= x"0";
@@ -544,7 +497,7 @@ begin
                     
                     
                     -- have an L1A and data from all enabled inputs is ready (or these inputs have timed out)
-                    if (l1afifo_empty = '0' and ((input_mask and ((not chmb_evtfifos_empty) or dav_timeout_flags)) = input_mask)) then
+                    if (l1afifo_empty = '0' and ((input_mask(g_NUM_OF_OHs - 1 downto 0) and ((not chmb_evtfifos_empty) or dav_timeout_flags(g_NUM_OF_OHs - 1 downto 0))) = input_mask(g_NUM_OF_OHs - 1 downto 0))) then
                         if (daq_ready = '1' and daq_almost_full = '0' and daq_enable = '1') then -- everybody ready?.... GO! :)
                             -- start the DAQ state machine
                             daq_state <= x"1";
@@ -553,7 +506,7 @@ begin
                             l1afifo_rd_en <= '1';
                             
                             -- set the DAV mask
-                            e_dav_mask <= input_mask and ((not chmb_evtfifos_empty) and (not dav_timeout_flags));
+                            e_dav_mask(g_NUM_OF_OHs - 1 downto 0) <= input_mask(g_NUM_OF_OHs - 1 downto 0) and ((not chmb_evtfifos_empty) and (not dav_timeout_flags(g_NUM_OF_OHs - 1 downto 0)));
                             
                             -- save timer stats
                             dav_timer <= (others => '0');
@@ -568,8 +521,8 @@ begin
                     end if;
                     
                     -- set the timeout flags if the timer has reached the dav_timeout value
-                    if (dav_timer >= dav_timeout) then
-                        dav_timeout_flags <= chmb_evtfifos_empty and input_mask;
+                    if (dav_timer >= unsigned(dav_timeout)) then
+                        dav_timeout_flags(g_NUM_OF_OHs - 1 downto 0) <= chmb_evtfifos_empty and input_mask(g_NUM_OF_OHs - 1 downto 0);
                     end if;
                                         
                 else -- lets send some data!
@@ -609,11 +562,10 @@ begin
                         e_dav_count <= to_integer(unsigned(e_dav_mask(0 downto 0))) + to_integer(unsigned(e_dav_mask(1 downto 1))) + to_integer(unsigned(e_dav_mask(2 downto 2))) + to_integer(unsigned(e_dav_mask(3 downto 3))) + to_integer(unsigned(e_dav_mask(4 downto 4))) + to_integer(unsigned(e_dav_mask(5 downto 5))) + to_integer(unsigned(e_dav_mask(6 downto 6))) + to_integer(unsigned(e_dav_mask(7 downto 7))) + to_integer(unsigned(e_dav_mask(8 downto 8))) + to_integer(unsigned(e_dav_mask(9 downto 9))) + to_integer(unsigned(e_dav_mask(10 downto 10))) + to_integer(unsigned(e_dav_mask(11 downto 11))) + to_integer(unsigned(e_dav_mask(12 downto 12))) + to_integer(unsigned(e_dav_mask(13 downto 13))) + to_integer(unsigned(e_dav_mask(14 downto 14))) + to_integer(unsigned(e_dav_mask(15 downto 15))) + to_integer(unsigned(e_dav_mask(16 downto 16))) + to_integer(unsigned(e_dav_mask(17 downto 17))) + to_integer(unsigned(e_dav_mask(18 downto 18))) + to_integer(unsigned(e_dav_mask(19 downto 19))) + to_integer(unsigned(e_dav_mask(20 downto 20))) + to_integer(unsigned(e_dav_mask(21 downto 21))) + to_integer(unsigned(e_dav_mask(22 downto 22))) + to_integer(unsigned(e_dav_mask(23 downto 23)));
                         
                         -- send the data
-                        daq_event_data <= daq_format_version &
+                        daq_event_data <= C_DAQ_FORMAT_VERSION &
                                           run_type &
                                           run_params &
                                           e_orbit_id & 
-                                          x"00" & 
                                           board_sn_i;
                         daq_event_header <= '0';
                         daq_event_trailer <= '0';
@@ -627,7 +579,7 @@ begin
                     elsif (daq_state = x"3") then
                         
                         -- if this input doesn't have data and we're not at the last input yet, then go to the next input
-                        if ((e_input_idx < number_of_optohybrids - 1) and (e_dav_mask(e_input_idx) = '0')) then 
+                        if ((e_input_idx < g_NUM_OF_OHs - 1) and (e_dav_mask(e_input_idx) = '0')) then 
                         
                             daq_event_write_en <= '0';
                             e_input_idx <= e_input_idx + 1;
@@ -768,12 +720,12 @@ begin
                     elsif (daq_state = x"6") then
                         
                         -- increment the input index if it hasn't maxed out yet
-                        if (e_input_idx < number_of_optohybrids - 1) then
+                        if (e_input_idx < g_NUM_OF_OHs - 1) then
                             e_input_idx <= e_input_idx + 1;
                         end if;
                         
                         -- if we have data for the next input or if we've reached the last input
-                        if ((e_input_idx >= number_of_optohybrids - 1) or (e_dav_mask(e_input_idx + 1) = '1')) then
+                        if ((e_input_idx >= g_NUM_OF_OHs - 1) or (e_dav_mask(e_input_idx + 1) = '1')) then
                         
                             -- send the data
                             daq_event_data <= x"0000" & -- OH CRC
@@ -811,10 +763,11 @@ begin
                                           x"000000" &   -- Chamber error flag (hmm)
                                           -- GLIB status
                                           daq_almost_full &
-                                          ttc_ready_i & 
-                                          daq_clock_locked & 
+                                          ttc_status_i.mmcm_locked & 
+                                          daq_clk_locked_i & 
                                           daq_ready &
-                                          x"0";         -- Reserved
+                                          ttc_status_i.bc0_status.locked &
+                                          "000";         -- Reserved
                         daq_event_header <= '0';
                         daq_event_trailer <= '0';
                         daq_event_write_en <= '1';
@@ -856,132 +809,189 @@ begin
     -- Monitoring & Control
     --================================--
     
-    --== DAQ control ==--
-    ipb_read_reg_data(0)(0) <= daq_enable;
-    ipb_read_reg_data(0)(2) <= reset_daqlink_ipb;
-    ipb_read_reg_data(0)(3) <= reset_ipb;
-    ipb_read_reg_data(0)(7 downto 4) <= tts_override;
-    ipb_read_reg_data(0)(31 downto 8) <= input_mask;
-    
-    daq_enable <= ipb_write_reg_data(0)(0);
-    reset_daqlink_ipb <= ipb_write_reg_data(0)(2);
-    reset_ipb <= ipb_write_reg_data(0)(3);
-    tts_override <= ipb_write_reg_data(0)(7 downto 4);
-    input_mask <= ipb_write_reg_data(0)(31 downto 8);
+--    --== DAQ control ==--
+--    ipb_read_reg_data(0)(0) <= daq_enable;
+--    ipb_read_reg_data(0)(2) <= reset_daqlink_ipb;
+--    ipb_read_reg_data(0)(3) <= reset_local;
+--    ipb_read_reg_data(0)(7 downto 4) <= tts_override;
+--    ipb_read_reg_data(0)(31 downto 8) <= input_mask;
+--    
+--    daq_enable <= ipb_write_reg_data(0)(0);
+--    reset_daqlink_ipb <= ipb_write_reg_data(0)(2);
+--    reset_local <= ipb_write_reg_data(0)(3);
+--    tts_override <= ipb_write_reg_data(0)(7 downto 4);
+--    input_mask <= ipb_write_reg_data(0)(31 downto 8);
+--
+--    --== DAQ and TTS state ==--
+--    ipb_read_reg_data(1) <= tts_state &
+--                            l1afifo_empty &
+--                            l1afifo_near_full &
+--                            l1afifo_full &
+--                            l1afifo_underflow &
+--                            err_l1afifo_full &
+--                            x"0000" & "00" &
+--                            ttc_status_i.bc0_status.locked &
+--                            daq_almost_full &
+--                            ttc_status_i.mmcm_locked & 
+--                            daq_clk_locked_i & 
+--                            daq_ready;
+--
+--    --== DAQLink error counters ==--
+--    ipb_read_reg_data(2)(15 downto 0) <= daq_notintable_err_cnt;
+--    ipb_read_reg_data(3)(15 downto 0) <= daq_disper_err_cnt;
+--    
+--    --== Number of received triggers (L1A ID) ==--
+--    ipb_read_reg_data(4) <= x"00" & ttc_daq_cntrs_i.l1id;
+--
+--    --== Number of sent events ==--
+--    ipb_read_reg_data(5) <= std_logic_vector(cnt_sent_events);
+--    
+--    --== DAV Timeout ==--
+--    ipb_read_reg_data(6)(23 downto 0) <= std_logic_vector(dav_timeout);
+--    dav_timeout <= ipb_write_reg_data(6)(23 downto 0);
+--
+--    --== DAV Timing stats ==--    
+--    ipb_read_reg_data(7)(23 downto 0) <= std_logic_vector(max_dav_timer);
+--    ipb_read_reg_data(8)(23 downto 0) <= std_logic_vector(last_dav_timer);
+--    
+--    --== Software settable run type and run parameters ==--
+--    ipb_read_reg_data(15)(27 downto 24) <= run_type;
+--    ipb_read_reg_data(15)(23 downto 0) <= run_params;
+--
+--    run_type <= ipb_write_reg_data(15)(27 downto 24);
+--    run_params <= ipb_write_reg_data(15)(23 downto 0);    
+--
+--    --================================--
+--    -- IPbus
+--    --================================--
+--
+--    process(ipb_clk_i)       
+--    begin    
+--        if (rising_edge(ipb_clk_i)) then      
+--            if (ipb_reset_i = '1') then    
+--                ipb_miso_o <= (ipb_ack => '0', ipb_err => '0', ipb_rdata => (others => '0'));    
+--                ipb_state <= IDLE;
+--                ipb_reg_sel <= 0;
+--                
+--                ipb_write_reg_data <= (others => (others => '0'));
+--                ipb_write_reg_data(0)(31 downto 8) <= x"000001"; -- enable the first input by default
+--                ipb_write_reg_data(6)(23 downto 0) <= x"03d090"; -- default DAV timeout of 10ms
+--                
+--                for I in 0 to (g_NUM_OF_OHs - 1) loop
+--                    ipb_write_reg_data((I+1)*16 + 3)(23 downto 0) <= x"000c35"; -- default DAV timeout of 10ms
+--                end loop;
+--            else         
+--                case ipb_state is
+--                    when IDLE =>                    
+--                        ipb_reg_sel <= to_integer(unsigned(ipb_mosi_i.ipb_addr(8 downto 0)));
+--                        if (ipb_mosi_i.ipb_strobe = '1') then
+--                            ipb_state <= RSPD;
+--                        end if;
+--                    when RSPD =>
+--                        ipb_miso_o <= (ipb_ack => '1', ipb_err => '0', ipb_rdata => ipb_read_reg_data(ipb_reg_sel));
+--                        if (ipb_mosi_i.ipb_write = '1') then
+--                            ipb_write_reg_data(ipb_reg_sel) <= ipb_mosi_i.ipb_wdata;
+--                        end if;
+--                        ipb_state <= RST;
+--                    when RST =>
+--                        ipb_miso_o.ipb_ack <= '0';
+--                        ipb_state <= IDLE;
+--                    when others => 
+--                        ipb_miso_o <= (ipb_ack => '0', ipb_err => '0', ipb_rdata => (others => '0'));    
+--                        ipb_state <= IDLE;
+--                        ipb_reg_sel <= 0;
+--                    end case;
+--            end if;        
+--        end if;        
+--    end process;
 
-    --== DAQ and TTS state ==--
-    ipb_read_reg_data(1) <= tts_state &
-                            l1afifo_empty &
-                            l1afifo_near_full &
-                            l1afifo_full &
-                            l1afifo_underflow &
-                            err_l1afifo_full &
-                            x"0000" & "000" &
-                            daq_almost_full &
-                            ttc_ready_i & 
-                            daq_clock_locked & 
-                            daq_ready;
+    --===============================================================================================
+    -- this section is generated by <gem_amc_repo_root>/scripts/generate_registers.py (do not edit) 
+    --==== Registers begin ==========================================================================
 
-    --== DAQLink error counters ==--
-    ipb_read_reg_data(2)(15 downto 0) <= daq_notintable_err_cnt;
-    ipb_read_reg_data(3)(15 downto 0) <= daq_disper_err_cnt;
-    
-    --== Number of received triggers (L1A ID) ==--
-    ipb_read_reg_data(4) <= x"00" & ttc_l1a_id_i;
+    -- IPbus slave instanciation
+    ipbus_slave_inst : entity work.ipbus_slave
+        generic map(
+           g_NUM_REGS             => REG_DAQ_NUM_REGS,
+           g_ADDR_HIGH_BIT        => REG_DAQ_ADDRESS_MSB,
+           g_ADDR_LOW_BIT         => REG_DAQ_ADDRESS_LSB,
+           g_USE_INDIVIDUAL_ADDRS => "TRUE"
+       )
+       port map(
+           ipb_reset_i            => ipb_reset_i,
+           ipb_clk_i              => ipb_clk_i,
+           ipb_mosi_i             => ipb_mosi_i,
+           ipb_miso_o             => ipb_miso_o,
+           usr_clk_i              => ipb_clk_i,
+           regs_read_arr_i        => regs_read_arr,
+           regs_write_arr_o       => regs_write_arr,
+           read_pulse_arr_o       => regs_read_pulse_arr,
+           write_pulse_arr_o      => regs_write_pulse_arr,
+           individual_addrs_arr_i => regs_addresses,
+           regs_defaults_arr_i    => regs_defaults
+      );
 
-    --== Number of sent events ==--
-    ipb_read_reg_data(5) <= std_logic_vector(cnt_sent_events);
-    
-    --== DAV Timeout ==--
-    ipb_read_reg_data(6)(23 downto 0) <= std_logic_vector(dav_timeout);
-    dav_timeout <= unsigned(ipb_write_reg_data(6)(23 downto 0));
+    -- Addresses
+    regs_addresses(0)(REG_DAQ_ADDRESS_MSB downto REG_DAQ_ADDRESS_LSB) <= '0' & x"00";
+    regs_addresses(1)(REG_DAQ_ADDRESS_MSB downto REG_DAQ_ADDRESS_LSB) <= '0' & x"01";
+    regs_addresses(2)(REG_DAQ_ADDRESS_MSB downto REG_DAQ_ADDRESS_LSB) <= '0' & x"02";
+    regs_addresses(3)(REG_DAQ_ADDRESS_MSB downto REG_DAQ_ADDRESS_LSB) <= '0' & x"03";
+    regs_addresses(4)(REG_DAQ_ADDRESS_MSB downto REG_DAQ_ADDRESS_LSB) <= '0' & x"04";
+    regs_addresses(5)(REG_DAQ_ADDRESS_MSB downto REG_DAQ_ADDRESS_LSB) <= '0' & x"05";
+    regs_addresses(6)(REG_DAQ_ADDRESS_MSB downto REG_DAQ_ADDRESS_LSB) <= '0' & x"06";
+    regs_addresses(7)(REG_DAQ_ADDRESS_MSB downto REG_DAQ_ADDRESS_LSB) <= '0' & x"07";
+    regs_addresses(8)(REG_DAQ_ADDRESS_MSB downto REG_DAQ_ADDRESS_LSB) <= '0' & x"08";
+    regs_addresses(9)(REG_DAQ_ADDRESS_MSB downto REG_DAQ_ADDRESS_LSB) <= '0' & x"0f";
 
-    --== DAV Timing stats ==--    
-    ipb_read_reg_data(7)(23 downto 0) <= std_logic_vector(max_dav_timer);
-    ipb_read_reg_data(8)(23 downto 0) <= std_logic_vector(last_dav_timer);
+    -- Connect read signals
+    regs_read_arr(0)(REG_DAQ_CONTROL_DAQ_ENABLE_BIT) <= daq_enable;
+    regs_read_arr(0)(REG_DAQ_CONTROL_DAQ_LINK_RESET_BIT) <= reset_daqlink_ipb;
+    regs_read_arr(0)(REG_DAQ_CONTROL_RESET_BIT) <= reset_local;
+    regs_read_arr(0)(REG_DAQ_CONTROL_TTS_OVERRIDE_MSB downto REG_DAQ_CONTROL_TTS_OVERRIDE_LSB) <= tts_override;
+    regs_read_arr(0)(REG_DAQ_CONTROL_INPUT_ENABLE_MASK_MSB downto REG_DAQ_CONTROL_INPUT_ENABLE_MASK_LSB) <= input_mask;
+    regs_read_arr(1)(REG_DAQ_STATUS_DAQ_LINK_RDY_BIT) <= daq_ready;
+    regs_read_arr(1)(REG_DAQ_STATUS_DAQ_CLK_LOCKED_BIT) <= daq_clk_locked_i;
+    regs_read_arr(1)(REG_DAQ_STATUS_TTC_RDY_BIT) <= ttc_status_i.mmcm_locked;
+    regs_read_arr(1)(REG_DAQ_STATUS_DAQ_LINK_AFULL_BIT) <= daq_almost_full;
+    regs_read_arr(1)(REG_DAQ_STATUS_TTC_BC0_LOCKED_BIT) <= ttc_status_i.bc0_status.locked;
+    regs_read_arr(1)(REG_DAQ_STATUS_ERR_L1A_FIFO_OVERFLOW_BIT) <= err_l1afifo_full;
+    regs_read_arr(1)(REG_DAQ_STATUS_L1A_FIFO_UNDERFLOW_BIT) <= l1afifo_underflow;
+    regs_read_arr(1)(REG_DAQ_STATUS_L1A_FIFO_FULL_BIT) <= l1afifo_full;
+    regs_read_arr(1)(REG_DAQ_STATUS_L1A_FIFO_NEAR_FULL_BIT) <= l1afifo_near_full;
+    regs_read_arr(1)(REG_DAQ_STATUS_L1A_FIFO_EMPTY_BIT) <= l1afifo_empty;
+    regs_read_arr(1)(REG_DAQ_STATUS_TTS_STATE_MSB downto REG_DAQ_STATUS_TTS_STATE_LSB) <= tts_state;
+    regs_read_arr(2)(REG_DAQ_EXT_STATUS_NOTINTABLE_ERR_MSB downto REG_DAQ_EXT_STATUS_NOTINTABLE_ERR_LSB) <= daq_notintable_err_cnt;
+    regs_read_arr(3)(REG_DAQ_EXT_STATUS_DISPER_ERR_MSB downto REG_DAQ_EXT_STATUS_DISPER_ERR_LSB) <= daq_disper_err_cnt;
+    regs_read_arr(4)(REG_DAQ_EXT_STATUS_L1AID_MSB downto REG_DAQ_EXT_STATUS_L1AID_LSB) <= ttc_daq_cntrs_i.l1id;
+    regs_read_arr(5)(REG_DAQ_EXT_STATUS_EVT_SENT_MSB downto REG_DAQ_EXT_STATUS_EVT_SENT_LSB) <= std_logic_vector(cnt_sent_events);
+    regs_read_arr(6)(REG_DAQ_CONTROL_DAV_TIMEOUT_MSB downto REG_DAQ_CONTROL_DAV_TIMEOUT_LSB) <= dav_timeout;
+    regs_read_arr(7)(REG_DAQ_EXT_STATUS_MAX_DAV_TIMER_MSB downto REG_DAQ_EXT_STATUS_MAX_DAV_TIMER_LSB) <= std_logic_vector(max_dav_timer);
+    regs_read_arr(8)(REG_DAQ_EXT_STATUS_LAST_DAV_TIMER_MSB downto REG_DAQ_EXT_STATUS_LAST_DAV_TIMER_LSB) <= std_logic_vector(last_dav_timer);
+    regs_read_arr(9)(REG_DAQ_EXT_CONTROL_RUN_PARAMS_MSB downto REG_DAQ_EXT_CONTROL_RUN_PARAMS_LSB) <= run_params;
+    regs_read_arr(9)(REG_DAQ_EXT_CONTROL_RUN_TYPE_MSB downto REG_DAQ_EXT_CONTROL_RUN_TYPE_LSB) <= run_type;
 
-    --== SBit clusters ==--
-    process(tk_data_links_i(0).clk)
-    begin
-        if (rising_edge(tk_data_links_i(0).clk)) then
-            if (trig_data_links_i(0).data_en = '1') then
-                ipb_read_reg_data(9)(30 downto 28) <= trig_data_links_i(0).data(55 downto 53);
-                ipb_read_reg_data(9)(26 downto 16) <= trig_data_links_i(0).data(52 downto 42);
-                ipb_read_reg_data(9)(14 downto 12) <= trig_data_links_i(0).data(41 downto 39);
-                ipb_read_reg_data(9)(10 downto 0) <= trig_data_links_i(0).data(38 downto 28);
-                
-                ipb_read_reg_data(10)(30 downto 28) <= trig_data_links_i(0).data(27 downto 25);
-                ipb_read_reg_data(10)(26 downto 16) <= trig_data_links_i(0).data(24 downto 14);
-                ipb_read_reg_data(10)(14 downto 12) <= trig_data_links_i(0).data(13 downto 11);
-                ipb_read_reg_data(10)(10 downto 0) <= trig_data_links_i(0).data(10 downto 0);
-            end if;
-            
-            if (trig_data_links_i(1).data_en = '1') then    
-                ipb_read_reg_data(11)(30 downto 28) <= trig_data_links_i(1).data(55 downto 53);
-                ipb_read_reg_data(11)(26 downto 16) <= trig_data_links_i(1).data(52 downto 42);
-                ipb_read_reg_data(11)(14 downto 12) <= trig_data_links_i(1).data(41 downto 39);
-                ipb_read_reg_data(11)(10 downto 0) <= trig_data_links_i(1).data(38 downto 28);
-                
-                ipb_read_reg_data(12)(30 downto 28) <= trig_data_links_i(1).data(27 downto 25);
-                ipb_read_reg_data(12)(26 downto 16) <= trig_data_links_i(1).data(24 downto 14);
-                ipb_read_reg_data(12)(14 downto 12) <= trig_data_links_i(1).data(13 downto 11);
-                ipb_read_reg_data(12)(10 downto 0) <= trig_data_links_i(1).data(10 downto 0);
-            end if;
-        end if;
-    end process;    
-    
-    ipb_read_reg_data(13) <= std_logic_vector(sbit_rate_i);
-    
-    --== Software settable run type and run parameters ==--
-    ipb_read_reg_data(15)(27 downto 24) <= run_type;
-    ipb_read_reg_data(15)(23 downto 0) <= run_params;
+    -- Connect write signals
+    daq_enable <= regs_write_arr(0)(REG_DAQ_CONTROL_DAQ_ENABLE_BIT);
+    reset_daqlink_ipb <= regs_write_arr(0)(REG_DAQ_CONTROL_DAQ_LINK_RESET_BIT);
+    reset_local <= regs_write_arr(0)(REG_DAQ_CONTROL_RESET_BIT);
+    tts_override <= regs_write_arr(0)(REG_DAQ_CONTROL_TTS_OVERRIDE_MSB downto REG_DAQ_CONTROL_TTS_OVERRIDE_LSB);
+    input_mask <= regs_write_arr(0)(REG_DAQ_CONTROL_INPUT_ENABLE_MASK_MSB downto REG_DAQ_CONTROL_INPUT_ENABLE_MASK_LSB);
+    dav_timeout <= regs_write_arr(6)(REG_DAQ_CONTROL_DAV_TIMEOUT_MSB downto REG_DAQ_CONTROL_DAV_TIMEOUT_LSB);
+    run_params <= regs_write_arr(9)(REG_DAQ_EXT_CONTROL_RUN_PARAMS_MSB downto REG_DAQ_EXT_CONTROL_RUN_PARAMS_LSB);
+    run_type <= regs_write_arr(9)(REG_DAQ_EXT_CONTROL_RUN_TYPE_MSB downto REG_DAQ_EXT_CONTROL_RUN_TYPE_LSB);
 
-    run_type <= ipb_write_reg_data(15)(27 downto 24);
-    run_params <= ipb_write_reg_data(15)(23 downto 0);    
+    -- Defaults
+    regs_defaults(0)(REG_DAQ_CONTROL_DAQ_ENABLE_BIT) <= REG_DAQ_CONTROL_DAQ_ENABLE_DEFAULT;
+    regs_defaults(0)(REG_DAQ_CONTROL_DAQ_LINK_RESET_BIT) <= REG_DAQ_CONTROL_DAQ_LINK_RESET_DEFAULT;
+    regs_defaults(0)(REG_DAQ_CONTROL_RESET_BIT) <= REG_DAQ_CONTROL_RESET_DEFAULT;
+    regs_defaults(0)(REG_DAQ_CONTROL_TTS_OVERRIDE_MSB downto REG_DAQ_CONTROL_TTS_OVERRIDE_LSB) <= REG_DAQ_CONTROL_TTS_OVERRIDE_DEFAULT;
+    regs_defaults(0)(REG_DAQ_CONTROL_INPUT_ENABLE_MASK_MSB downto REG_DAQ_CONTROL_INPUT_ENABLE_MASK_LSB) <= REG_DAQ_CONTROL_INPUT_ENABLE_MASK_DEFAULT;
+    regs_defaults(6)(REG_DAQ_CONTROL_DAV_TIMEOUT_MSB downto REG_DAQ_CONTROL_DAV_TIMEOUT_LSB) <= REG_DAQ_CONTROL_DAV_TIMEOUT_DEFAULT;
+    regs_defaults(9)(REG_DAQ_EXT_CONTROL_RUN_PARAMS_MSB downto REG_DAQ_EXT_CONTROL_RUN_PARAMS_LSB) <= REG_DAQ_EXT_CONTROL_RUN_PARAMS_DEFAULT;
+    regs_defaults(9)(REG_DAQ_EXT_CONTROL_RUN_TYPE_MSB downto REG_DAQ_EXT_CONTROL_RUN_TYPE_LSB) <= REG_DAQ_EXT_CONTROL_RUN_TYPE_DEFAULT;
 
-    --================================--
-    -- IPbus
-    --================================--
+    --==== Registers end ============================================================================
 
-    process(ipb_clk_i)       
-    begin    
-        if (rising_edge(ipb_clk_i)) then      
-            if (reset_i = '1') then    
-                ipb_miso_o <= (ipb_ack => '0', ipb_err => '0', ipb_rdata => (others => '0'));    
-                ipb_state <= IDLE;
-                ipb_reg_sel <= 0;
-                
-                ipb_write_reg_data <= (others => (others => '0'));
-                ipb_write_reg_data(0)(31 downto 8) <= x"000001"; -- enable the first input by default
-                ipb_write_reg_data(6)(23 downto 0) <= x"03d090"; -- default DAV timeout of 10ms
-                
-                for I in 0 to (number_of_optohybrids - 1) loop
-                    ipb_write_reg_data((I+1)*16 + 3)(23 downto 0) <= x"000c35"; -- default DAV timeout of 10ms
-                end loop;
-            else         
-                case ipb_state is
-                    when IDLE =>                    
-                        ipb_reg_sel <= to_integer(unsigned(ipb_mosi_i.ipb_addr(8 downto 0)));
-                        if (ipb_mosi_i.ipb_strobe = '1') then
-                            ipb_state <= RSPD;
-                        end if;
-                    when RSPD =>
-                        ipb_miso_o <= (ipb_ack => '1', ipb_err => '0', ipb_rdata => ipb_read_reg_data(ipb_reg_sel));
-                        if (ipb_mosi_i.ipb_write = '1') then
-                            ipb_write_reg_data(ipb_reg_sel) <= ipb_mosi_i.ipb_wdata;
-                        end if;
-                        ipb_state <= RST;
-                    when RST =>
-                        ipb_miso_o.ipb_ack <= '0';
-                        ipb_state <= IDLE;
-                    when others => 
-                        ipb_miso_o <= (ipb_ack => '0', ipb_err => '0', ipb_rdata => (others => '0'));    
-                        ipb_state <= IDLE;
-                        ipb_reg_sel <= 0;
-                    end case;
-            end if;        
-        end if;        
-    end process;
     
 end Behavioral;
 

@@ -13,6 +13,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.gem_pkg.all;
+use work.ttc_pkg.all;
 
 entity rate_counter is
     generic(

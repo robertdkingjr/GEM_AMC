@@ -59,6 +59,9 @@ entity system is
     refclk_B_1_p_i : in std_logic_vector (3 downto 1);
     refclk_B_1_n_i : in std_logic_vector (3 downto 1);
 
+    clk_50_o       : out std_logic;
+    clk_200_o      : out std_logic;
+    
     ----------------- for GEM ------------------------
     axi_clk_o         : out std_logic;
     axi_reset_o       : out std_logic;
@@ -74,8 +77,19 @@ entity system is
     gth_tx_data_arr_i : in  t_gt_8b10b_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);  
     gth_rx_data_arr_o : out t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
     gth_rxreset_arr_o : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0); 
-    gth_txreset_arr_o : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0)
+    gth_txreset_arr_o : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0);
     
+    ----------------- AMC13 DAQLink ------------------------
+    amc13_gth_refclk_p             : in  std_logic;
+    amc13_gth_refclk_n             : in  std_logic;
+    amc_13_gth_rx_n                : in  std_logic;
+    amc_13_gth_rx_p                : in  std_logic;
+    amc13_gth_tx_n                 : out std_logic;
+    amc13_gth_tx_p                 : out std_logic;
+    
+    daq_to_daqlink_i               : in t_daq_to_daqlink;
+    daqlink_to_daq_o               : out t_daqlink_to_daq
+        
     );
 end system;
 
@@ -286,6 +300,9 @@ begin
   ipb_axi_bresp            <= ipb_axi_miso_i.bresp;
   ipb_axi_bvalid(0)        <= ipb_axi_miso_i.bvalid;
   
+  clk_50_o  <= s_clk_50;
+  clk_200_o <= s_clk_200;
+  
   i_v7_bd : v7_bd
     port map (
 
@@ -461,6 +478,19 @@ begin
     s_gth_rx_serial_arr(i).gthrxn <= '0';
     s_gth_rx_serial_arr(i).gthrxp <= '1';
   end generate;
+
+  i_daqlink : entity work.daqlink_wrapper
+      port map(
+          daq_to_daqlink => daq_to_daqlink_i,
+          daqlink_to_daq => daqlink_to_daq_o,
+          clk_50_i       => s_clk_50,
+          GTX_REFCLK_p   => amc13_gth_refclk_p,
+          GTX_REFCLK_n   => amc13_gth_refclk_n,
+          GTX_RXN        => amc_13_gth_rx_n,
+          GTX_RXP        => amc_13_gth_rx_p,
+          GTX_TXN        => amc13_gth_tx_n,
+          GTX_TXP        => amc13_gth_tx_p
+      );
 
 end system_arch;
 

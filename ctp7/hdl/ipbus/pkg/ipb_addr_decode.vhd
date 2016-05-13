@@ -106,7 +106,7 @@ package body ipb_addr_decode is
     elsif std_match(addr, "--------0110000000000000--------") then sel := C_IPB_SLV.counters;
     elsif std_match(addr, "--------011100000000000---------") then sel := C_IPB_SLV.daq;
     elsif std_match(addr, "--------10000000000-------------") then sel := C_IPB_SLV.trigger;
-    elsif std_match(addr, "--------100100000000000---------") then sel := C_IPB_SLV.system;
+    elsif std_match(addr, "--------10010000000000000000----") then sel := C_IPB_SLV.system;
     else sel := 999;
     end if;
 

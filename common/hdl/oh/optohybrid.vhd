@@ -24,7 +24,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
 
-library work;
 use work.gth_pkg.all;
 use work.ttc_pkg.all;
 use work.gem_pkg.all;
@@ -53,6 +52,9 @@ entity optohybrid is
         gth_rx_trig_data_i  : in t_gt_8b10b_rx_data_arr(1 downto 0);
         sbit_clusters_o     : out t_oh_sbits;
         sbit_links_status_o : out t_oh_sbit_links;
+        
+        -- Tracking data link
+        tk_data_link_o      : out t_data_link;
         
         -- IPbus
         ipb_reset_i         : in  std_logic;
@@ -87,6 +89,10 @@ begin
 
     gth_tx_data_o <= gth_tx_data;
 
+    tk_data_link_o.clk <= gth_rx_usrclk_i;
+    tk_data_link_o.data_en <= evt_en;
+    tk_data_link_o.data <= evt_data;
+
     -- TODO: transfer between the ttc clk and tx clk domains
     vfat2_t1.lv1a <= ttc_cmds_i.l1a;
     vfat2_t1.bc0  <= ttc_cmds_i.bc0;
@@ -117,8 +123,8 @@ begin
             reset_i     => reset_i,           
             req_en_o    => o2g_req_en,   
             req_data_o  => o2g_req_data,   
-            evt_en_o    => open,
-            evt_data_o  => open,
+            evt_en_o    => evt_en,
+            evt_data_o  => evt_data,
             tk_error_o  => open,
             evt_rcvd_o  => open,
             rx_kchar_i  => gth_rx_data_i.rxcharisk(1 downto 0),   

@@ -386,7 +386,7 @@ create_clock -period 4.166 [get_pins -hier -filter {name=~*gen_gth_single[35].ge
 
 set_clock_groups -asynchronous -group [get_clocks s_clk_40] -group [get_clocks clk_out2_v7_bd_clk_wiz_0_0]
 set_clock_groups -asynchronous -group [get_clocks s_clk_160] -group [get_clocks clk_out2_v7_bd_clk_wiz_0_0]
-#set_clock_groups -asynchronous -group [get_clocks clk_40_ttc_p_i] -group [get_clocks clk_out2_v7_bd_clk_wiz_0_0]
+#set_clock_groups -asynchronous -group [get_clocks i_gem/i_ttc/clk_40_ttc_p_i] -group [get_clocks clk_out2_v7_bd_clk_wiz_0_0]
 
 set_clock_groups -asynchronous -group [get_clocks {i_system/i_gth_wrapper/gen_gth_single[*].*/i_gthe2/?XOUTCLK}] -group [get_clocks clk_out2_v7_bd_clk_wiz_0_0]
 set_clock_groups -asynchronous -group [get_clocks {i_system/i_gth_wrapper/gen_gth_single[*].*/i_gthe2/?XOUTCLK}] -group [get_clocks s_clk_160]
@@ -394,86 +394,19 @@ set_clock_groups -asynchronous -group [get_clocks {i_system/i_gth_wrapper/gen_gt
 
 set_clock_groups -asynchronous -group [get_clocks clk_out2_v7_bd_clk_wiz_0_0] -group [get_clocks clkout0]
 
+set_clock_groups -asynchronous -group [get_clocks {i_system/i_daqlink/gth_amc13_support_i/gth_amc13_init_i/U0/gth_amc13_1_i/gt0_gth_amc13_1_i/gthe2_i/?XOUTCLK}] -group [get_clocks {i_system/i_gth_wrapper/gen_gth_single[*].*/i_gthe2/?XOUTCLK}]
+#set_clock_groups -asynchronous -group [get_clocks {i_system/i_daqlink/gth_amc13_support_i/gth_amc13_init_i/U0/gth_amc13_1_i/gt0_gth_amc13_1_i/gthe2_i/?XOUTCLK}] -group [get_clocks s_clk_160] 
+set_clock_groups -asynchronous -group [get_clocks {i_system/i_daqlink/gth_amc13_support_i/gth_amc13_init_i/U0/gth_amc13_1_i/gt0_gth_amc13_1_i/gthe2_i/?XOUTCLK}] -group [get_clocks s_clk_40] 
+set_clock_groups -asynchronous -group [get_clocks {i_system/i_daqlink/gth_amc13_support_i/gth_amc13_init_i/U0/gth_amc13_1_i/gt0_gth_amc13_1_i/gthe2_i/?XOUTCLK}] -group [get_clocks clk_out2_v7_bd_clk_wiz_0_0] 
+set_clock_groups -asynchronous -group [get_clocks {i_system/i_daqlink/gth_amc13_support_i/gth_amc13_init_i/U0/gth_amc13_1_i/gt0_gth_amc13_1_i/gthe2_i/?XOUTCLK}] -group [get_clocks clkout0]
+
+############# ############# ############# ############# ############# ############# #############
+############# ############# AMC13 GTH Constraints ############# ############# #############
+
+set_property PACKAGE_PIN AL35 [get_ports amc13_gth_refclk_p]
+create_clock -period 8.000 -name amc13_gth_refclk_p -waveform {0.000 4.000} [get_ports amc13_gth_refclk_p]
+set_property LOC GTHE2_CHANNEL_X0Y9 [get_cells i_system/i_daqlink/gth_amc13_support_i/gth_amc13_init_i/U0/gth_amc13_1_i/gt0_gth_amc13_1_i/gthe2_i]
+
 ############# ############# ############# ############# ############# ############# #############
 ############# ############# ############# DEBUG CORES ############# ############# #############
 
-create_debug_core u_ila_0 ila
-set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0]
-set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0]
-set_property C_ADV_TRIGGER false [get_debug_cores u_ila_0]
-set_property C_DATA_DEPTH 1024 [get_debug_cores u_ila_0]
-set_property C_EN_STRG_QUAL false [get_debug_cores u_ila_0]
-set_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_0]
-set_property C_TRIGIN_EN false [get_debug_cores u_ila_0]
-set_property C_TRIGOUT_EN false [get_debug_cores u_ila_0]
-set_property port_width 1 [get_debug_ports u_ila_0/clk]
-connect_debug_port u_ila_0/clk [get_nets [list {i_gem/i_ttc/i_ttc_clocks/ttc_clocks[clk_40]}]]
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe0]
-set_property port_width 1 [get_debug_ports u_ila_0/probe0]
-connect_debug_port u_ila_0/probe0 [get_nets [list i_gem/i_ttc/ipbus_slave_inst/regs_read_ack]]
-create_debug_core u_ila_1 ila
-set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_1]
-set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_1]
-set_property C_ADV_TRIGGER false [get_debug_cores u_ila_1]
-set_property C_DATA_DEPTH 1024 [get_debug_cores u_ila_1]
-set_property C_EN_STRG_QUAL false [get_debug_cores u_ila_1]
-set_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_1]
-set_property C_TRIGIN_EN false [get_debug_cores u_ila_1]
-set_property C_TRIGOUT_EN false [get_debug_cores u_ila_1]
-set_property port_width 1 [get_debug_ports u_ila_1/clk]
-connect_debug_port u_ila_1/clk [get_nets [list i_system/i_v7_bd/clk_wiz_0/inst/clk_out1]]
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1/probe0]
-set_property port_width 32 [get_debug_ports u_ila_1/probe0]
-connect_debug_port u_ila_1/probe0 [get_nets [list {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][0]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][1]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][2]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][3]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][4]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][5]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][6]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][7]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][8]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][9]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][10]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][11]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][12]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][13]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][14]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][15]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][16]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][17]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][18]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][19]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][20]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][21]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][22]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][23]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][24]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][25]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][26]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][27]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][28]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][29]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][30]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_wdata][31]}]]
-create_debug_port u_ila_0 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe1]
-set_property port_width 1 [get_debug_ports u_ila_0/probe1]
-connect_debug_port u_ila_0/probe1 [get_nets [list i_gem/i_ttc/ipbus_slave_inst/regs_read_strb]]
-create_debug_port u_ila_0 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe2]
-set_property port_width 1 [get_debug_ports u_ila_0/probe2]
-connect_debug_port u_ila_0/probe2 [get_nets [list i_gem/i_ttc/ipbus_slave_inst/regs_write_ack]]
-create_debug_port u_ila_0 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe3]
-set_property port_width 1 [get_debug_ports u_ila_0/probe3]
-connect_debug_port u_ila_0/probe3 [get_nets [list i_gem/i_ttc/ipbus_slave_inst/regs_write_strb]]
-create_debug_port u_ila_1 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1/probe1]
-set_property port_width 32 [get_debug_ports u_ila_1/probe1]
-connect_debug_port u_ila_1/probe1 [get_nets [list {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][0]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][1]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][2]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][3]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][4]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][5]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][6]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][7]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][8]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][9]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][10]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][11]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][12]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][13]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][14]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][15]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][16]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][17]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][18]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][19]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][20]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][21]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][22]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][23]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][24]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][25]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][26]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][27]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][28]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][29]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][30]} {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_addr][31]}]]
-create_debug_port u_ila_1 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1/probe2]
-set_property port_width 3 [get_debug_ports u_ila_1/probe2]
-connect_debug_port u_ila_1/probe2 [get_nets [list {i_gem/i_ttc/ipbus_slave_inst/ipb_state[0]} {i_gem/i_ttc/ipbus_slave_inst/ipb_state[1]} {i_gem/i_ttc/ipbus_slave_inst/ipb_state[2]}]]
-create_debug_port u_ila_1 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1/probe3]
-set_property port_width 5 [get_debug_ports u_ila_1/probe3]
-connect_debug_port u_ila_1/probe3 [get_nets [list {i_gem/i_ttc/ipbus_slave_inst/ipb_reg_sel[0]} {i_gem/i_ttc/ipbus_slave_inst/ipb_reg_sel[1]} {i_gem/i_ttc/ipbus_slave_inst/ipb_reg_sel[2]} {i_gem/i_ttc/ipbus_slave_inst/ipb_reg_sel[3]} {i_gem/i_ttc/ipbus_slave_inst/ipb_reg_sel[4]}]]
-create_debug_port u_ila_1 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1/probe4]
-set_property port_width 32 [get_debug_ports u_ila_1/probe4]
-connect_debug_port u_ila_1/probe4 [get_nets [list {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][0]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][1]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][2]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][3]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][4]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][5]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][6]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][7]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][8]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][9]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][10]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][11]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][12]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][13]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][14]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][15]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][16]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][17]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][18]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][19]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][20]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][21]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][22]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][23]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][24]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][25]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][26]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][27]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][28]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][29]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][30]} {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_rdata][31]}]]
-create_debug_port u_ila_1 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1/probe5]
-set_property port_width 1 [get_debug_ports u_ila_1/probe5]
-connect_debug_port u_ila_1/probe5 [get_nets [list i_gem/i_ttc/ipbus_slave_inst/ipb_addr_valid]]
-create_debug_port u_ila_1 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1/probe6]
-set_property port_width 1 [get_debug_ports u_ila_1/probe6]
-connect_debug_port u_ila_1/probe6 [get_nets [list {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_ack]}]]
-create_debug_port u_ila_1 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1/probe7]
-set_property port_width 1 [get_debug_ports u_ila_1/probe7]
-connect_debug_port u_ila_1/probe7 [get_nets [list {i_gem/i_ttc/ipbus_slave_inst/ipb_miso[ipb_err]}]]
-create_debug_port u_ila_1 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1/probe8]
-set_property port_width 1 [get_debug_ports u_ila_1/probe8]
-connect_debug_port u_ila_1/probe8 [get_nets [list {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_strobe]}]]
-create_debug_port u_ila_1 probe
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1/probe9]
-set_property port_width 1 [get_debug_ports u_ila_1/probe9]
-connect_debug_port u_ila_1/probe9 [get_nets [list {i_gem/i_ttc/ipbus_slave_inst/ipb_mosi_debug[ipb_write]}]]
-set_property C_CLK_INPUT_FREQ_HZ 300000000 [get_debug_cores dbg_hub]
-set_property C_ENABLE_CLK_DIVIDER false [get_debug_cores dbg_hub]
-set_property C_USER_SCAN_CHAIN 1 [get_debug_cores dbg_hub]
-connect_debug_port dbg_hub/clk [get_nets axi_clk]

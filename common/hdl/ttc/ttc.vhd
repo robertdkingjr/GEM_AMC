@@ -47,6 +47,12 @@ entity ttc is
         -- DAQ counters (L1A ID, Orbit ID, BX ID)
         ttc_daq_cntrs_o   : out t_ttc_daq_cntrs;
 
+        -- TTC status
+        ttc_status_o      : out t_ttc_status;
+        
+        -- L1A LED
+        l1a_led_o         : out std_logic;
+
         -- IPbus
         ipb_reset_i       : in  std_logic;
         ipb_clk_i         : in  std_logic;
@@ -125,6 +131,8 @@ architecture ttc_arch of ttc is
 
 begin
 
+    ttc_status_o <= ttc_status;
+
     i_reset_sync: 
     entity work.synchronizer
         generic map(
@@ -137,6 +145,18 @@ begin
         );
 
     reset <= reset_global or ttc_ctrl.reset_local;
+
+    i_l1a_led_pulse : entity work.pulse_extend
+        generic map(
+            DELAY_CNT_LENGTH => C_LED_PULSE_LENGTH_TTC_CLK'length
+        )
+        port map(
+            clk_i          => clk_40,
+            rst_i          => reset,
+            pulse_length_i => C_LED_PULSE_LENGTH_TTC_CLK,
+            pulse_i        => l1a_cmd,
+            pulse_o        => l1a_led_o
+        );
 
     i_ttc_clocks:
     entity work.ttc_clocks
@@ -287,6 +307,38 @@ begin
         end if;
     end process p_bx_cnt;
 
+    p_bc0_monitoring:
+    process(clk_40) is
+    begin
+        if (rising_edge(clk_40)) then
+            if (bc0_cmd = '1' and reset = '0') then
+                if (unsigned(bx_cnt) < unsigned(C_TTC_NUM_BXs)) then
+                    ttc_status.bc0_status.err <= '1';
+                    ttc_status.bc0_status.locked <= '0';
+                    ttc_status.bc0_status.udf_cnt <= std_logic_vector(unsigned(ttc_status.bc0_status.udf_cnt) + 1); 
+                    if (ttc_status.bc0_status.unlocked_cnt /= x"ffff") then
+                        ttc_status.bc0_status.unlocked_cnt <= std_logic_vector(unsigned(ttc_status.bc0_status.unlocked_cnt) + 1);
+                    end if; 
+                    if (ttc_status.bc0_status.udf_cnt /= x"ffff") then
+                        ttc_status.bc0_status.udf_cnt <= std_logic_vector(unsigned(ttc_status.bc0_status.udf_cnt) + 1);
+                    end if; 
+                elsif (unsigned(bx_cnt) > unsigned(C_TTC_NUM_BXs)) then
+                    ttc_status.bc0_status.err <= '1';
+                    ttc_status.bc0_status.locked <= '0';
+                    if (ttc_status.bc0_status.unlocked_cnt /= x"ffff") then
+                        ttc_status.bc0_status.unlocked_cnt <= std_logic_vector(unsigned(ttc_status.bc0_status.unlocked_cnt) + 1);
+                    end if; 
+                    if (ttc_status.bc0_status.ovf_cnt /= x"ffff") then
+                        ttc_status.bc0_status.ovf_cnt <= std_logic_vector(unsigned(ttc_status.bc0_status.ovf_cnt) + 1);
+                    end if; 
+                else
+                    ttc_status.bc0_status.err <= '0';
+                    ttc_status.bc0_status.locked <= '1';
+                end if;
+            end if;
+        end if;
+    end process p_bc0_monitoring;
+
 --    p_mini_spy:
 --    process(clk_40) is
 --    begin
@@ -426,9 +478,13 @@ begin
 
     -- Connect write signals
     ttc_ctrl.l1a_enable <= regs_write_arr(0)(REG_TTC_CTRL_L1A_ENABLE_BIT);
+    -- NOTE: this should be a write pulse (not implemented yet in the generate_registers.py)
     ttc_ctrl.mmcm_phase_shift <= regs_write_arr(0)(REG_TTC_CTRL_MMCM_PHASE_SHIFT_BIT);
+    -- NOTE: this should be a write pulse (not implemented yet in the generate_registers.py)
     ttc_ctrl.cnt_reset <= regs_write_arr(0)(REG_TTC_CTRL_CNT_RESET_BIT);
+    -- NOTE: this should be a write pulse (not implemented yet in the generate_registers.py)
     ttc_ctrl.mmcm_reset <= regs_write_arr(0)(REG_TTC_CTRL_MMCM_RESET_BIT);
+    -- NOTE: this should be a write pulse (not implemented yet in the generate_registers.py)
     ttc_ctrl.reset_local <= regs_write_arr(0)(REG_TTC_CTRL_MODULE_RESET_BIT);
     ttc_conf.cmd_bc0 <= regs_write_arr(1)(REG_TTC_CONFIG_CMD_BC0_MSB downto REG_TTC_CONFIG_CMD_BC0_LSB);
     ttc_conf.cmd_ec0 <= regs_write_arr(1)(REG_TTC_CONFIG_CMD_EC0_MSB downto REG_TTC_CONFIG_CMD_EC0_LSB);

@@ -15,10 +15,8 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-library work;
+use work.gem_pkg.all;
 use work.ipbus.all;
-use work.system_package.all;
-use work.user_package.all;
 
 entity track_input_processor is
 port(
@@ -64,6 +62,47 @@ port(
 end track_input_processor;
 
 architecture Behavioral of track_input_processor is
+
+    --================== COMPONENTS ==================--
+
+    component daq_input_fifo is
+        port(
+            rst         : in  std_logic;
+            wr_clk      : in  std_logic;
+            rd_clk      : in  std_logic;
+            din         : in  std_logic_vector(191 downto 0);
+            wr_en       : in  std_logic;
+            rd_en       : in  std_logic;
+            dout        : out std_logic_vector(191 downto 0);
+            full        : out std_logic;
+            almost_full : out std_logic;
+            empty       : out std_logic;
+            almost_empty: out std_logic;
+            valid       : out std_logic;
+            underflow   : out std_logic;
+            prog_full   : out std_logic
+        );
+    end component daq_input_fifo;
+    
+    component daq_event_fifo is
+        port (
+            rst         : in  std_logic;
+            wr_clk      : in  std_logic;
+            rd_clk      : in  std_logic;
+            din         : in  std_logic_vector(59 downto 0);
+            wr_en       : in  std_logic;
+            rd_en       : in  std_logic;
+            dout        : out std_logic_vector(59 downto 0);
+            full        : out std_logic;
+            almost_full : out std_logic;
+            empty       : out std_logic;
+            valid       : out std_logic;
+            underflow   : out std_logic;
+            prog_full   : out std_logic
+        );
+    end component daq_event_fifo;
+        
+    --================== SIGNALS ==================--
 
     -- Constants (TODO: should be moved to package)
     constant vfat_block_marker      : std_logic_vector(47 downto 0) := x"a000c000e000";
@@ -146,35 +185,35 @@ architecture Behavioral of track_input_processor is
     signal eb_max_timer             : unsigned(23 downto 0) := (others => '0');
 
     -- Debug flags for ChipScope
-    attribute MARK_DEBUG : string;
-    attribute MARK_DEBUG of tk_data_link_i              : signal is "TRUE";
-    attribute MARK_DEBUG of eb_timer                    : signal is "TRUE";
-    attribute MARK_DEBUG of eb_last_timer               : signal is "TRUE";
-    attribute MARK_DEBUG of eb_max_timer                : signal is "TRUE";
-    attribute MARK_DEBUG of eb_timeout_flag             : signal is "TRUE";
-    attribute MARK_DEBUG of eb_invalid_vfat_block       : signal is "TRUE";
-    attribute MARK_DEBUG of eb_vfat_words_64            : signal is "TRUE";
-    attribute MARK_DEBUG of eb_vfat_bc                  : signal is "TRUE";
-    attribute MARK_DEBUG of eb_oh_bc                    : signal is "TRUE";
-    attribute MARK_DEBUG of eb_vfat_ec                  : signal is "TRUE";
-    attribute MARK_DEBUG of eb_counters_valid           : signal is "TRUE";
-    attribute MARK_DEBUG of eb_event_num_short          : signal is "TRUE";
-    attribute MARK_DEBUG of ep_vfat_block_en            : signal is "TRUE";
-    attribute MARK_DEBUG of ep_end_of_event             : signal is "TRUE";
-    attribute MARK_DEBUG of ep_last_rx_data_valid       : signal is "TRUE";
-    attribute MARK_DEBUG of tts_state                   : signal is "TRUE";
-    
-    attribute MARK_DEBUG of infifo_din                  : signal is "TRUE";
-    attribute MARK_DEBUG of infifo_wr_en                : signal is "TRUE";
-    attribute MARK_DEBUG of infifo_empty                : signal is "TRUE";
-
-    attribute MARK_DEBUG of evtfifo_din                 : signal is "TRUE";
-    attribute MARK_DEBUG of evtfifo_wr_en               : signal is "TRUE";
-    attribute MARK_DEBUG of evtfifo_empty               : signal is "TRUE";
-    
-    attribute MARK_DEBUG of fifo_rd_clk_i               : signal is "TRUE";
-    attribute MARK_DEBUG of infifo_rd_en_i              : signal is "TRUE";
-    attribute MARK_DEBUG of evtfifo_rd_en_i             : signal is "TRUE";
+--    attribute MARK_DEBUG : string;
+--    attribute MARK_DEBUG of tk_data_link_i              : signal is "TRUE";
+--    attribute MARK_DEBUG of eb_timer                    : signal is "TRUE";
+--    attribute MARK_DEBUG of eb_last_timer               : signal is "TRUE";
+--    attribute MARK_DEBUG of eb_max_timer                : signal is "TRUE";
+--    attribute MARK_DEBUG of eb_timeout_flag             : signal is "TRUE";
+--    attribute MARK_DEBUG of eb_invalid_vfat_block       : signal is "TRUE";
+--    attribute MARK_DEBUG of eb_vfat_words_64            : signal is "TRUE";
+--    attribute MARK_DEBUG of eb_vfat_bc                  : signal is "TRUE";
+--    attribute MARK_DEBUG of eb_oh_bc                    : signal is "TRUE";
+--    attribute MARK_DEBUG of eb_vfat_ec                  : signal is "TRUE";
+--    attribute MARK_DEBUG of eb_counters_valid           : signal is "TRUE";
+--    attribute MARK_DEBUG of eb_event_num_short          : signal is "TRUE";
+--    attribute MARK_DEBUG of ep_vfat_block_en            : signal is "TRUE";
+--    attribute MARK_DEBUG of ep_end_of_event             : signal is "TRUE";
+--    attribute MARK_DEBUG of ep_last_rx_data_valid       : signal is "TRUE";
+--    attribute MARK_DEBUG of tts_state                   : signal is "TRUE";
+--    
+--    attribute MARK_DEBUG of infifo_din                  : signal is "TRUE";
+--    attribute MARK_DEBUG of infifo_wr_en                : signal is "TRUE";
+--    attribute MARK_DEBUG of infifo_empty                : signal is "TRUE";
+--
+--    attribute MARK_DEBUG of evtfifo_din                 : signal is "TRUE";
+--    attribute MARK_DEBUG of evtfifo_wr_en               : signal is "TRUE";
+--    attribute MARK_DEBUG of evtfifo_empty               : signal is "TRUE";
+--    
+--    attribute MARK_DEBUG of fifo_rd_clk_i               : signal is "TRUE";
+--    attribute MARK_DEBUG of infifo_rd_en_i              : signal is "TRUE";
+--    attribute MARK_DEBUG of evtfifo_rd_en_i             : signal is "TRUE";
 
 begin
 
@@ -206,8 +245,8 @@ begin
     --================================--
   
     -- Input FIFO
-    daq_input_fifo_inst : entity work.daq_input_fifo
-    PORT MAP (
+    i_input_fifo : component daq_input_fifo
+    port map (
         rst => reset_i,
         wr_clk => tk_data_link_i.clk,
         rd_clk => fifo_rd_clk_i,
@@ -228,8 +267,8 @@ begin
     infifo_underflow_o <= infifo_underflow;
 
     -- Event FIFO
-    daq_event_fifo_inst : entity work.daq_event_fifo
-    PORT MAP (
+    i_event_fifo : component daq_event_fifo
+    port map (
         rst => reset_i,
         wr_clk => tk_data_link_i.clk,
         rd_clk => fifo_rd_clk_i,

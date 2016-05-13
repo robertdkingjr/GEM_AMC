@@ -19,7 +19,6 @@ use ieee.std_logic_misc.all;
 library UNISIM;
 use UNISIM.VCOMPONENTS.all;
 
-library work;
 use work.gth_pkg.all;
 
 use work.ctp7_utils_pkg.all;
@@ -66,7 +65,16 @@ entity gem_ctp7 is
         refclk_B_0_p_i                 : in  std_logic_vector(3 downto 1);
         refclk_B_0_n_i                 : in  std_logic_vector(3 downto 1);
         refclk_B_1_p_i                 : in  std_logic_vector(3 downto 1);
-        refclk_B_1_n_i                 : in  std_logic_vector(3 downto 1)
+        refclk_B_1_n_i                 : in  std_logic_vector(3 downto 1);
+        
+        -- AMC13 GTH
+        amc13_gth_refclk_p             : in  std_logic;
+        amc13_gth_refclk_n             : in  std_logic;
+        amc_13_gth_rx_n                : in  std_logic;
+        amc_13_gth_rx_p                : in  std_logic;
+        amc13_gth_tx_n                 : out std_logic;
+        amc13_gth_tx_p                 : out std_logic
+        
     );
 end gem_ctp7;
 
@@ -105,6 +113,9 @@ architecture gem_ctp7_arch of gem_ctp7 is
             refclk_B_1_p_i                 : in  std_logic_vector(3 downto 1);
             refclk_B_1_n_i                 : in  std_logic_vector(3 downto 1);
 
+            clk_50_o                       : out std_logic;
+            clk_200_o                      : out std_logic;
+
             ----------------- for GEM ------------------------
             axi_clk_o                      : out std_logic;
             axi_reset_o                    : out std_logic;
@@ -120,13 +131,29 @@ architecture gem_ctp7_arch of gem_ctp7 is
             gth_tx_data_arr_i              : in  t_gt_8b10b_tx_data_arr(g_NUM_OF_GTH_GTs - 1 downto 0);
             gth_rx_data_arr_o              : out t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs - 1 downto 0);
             gth_rxreset_arr_o              : out std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
-            gth_txreset_arr_o              : out std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0)
+            gth_txreset_arr_o              : out std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
+
+            ----------------- AMC13 DAQLink ------------------------
+            amc13_gth_refclk_p             : in  std_logic;
+            amc13_gth_refclk_n             : in  std_logic;
+            amc_13_gth_rx_n                : in  std_logic;
+            amc_13_gth_rx_p                : in  std_logic;
+            amc13_gth_tx_n                 : out std_logic;
+            amc13_gth_tx_p                 : out std_logic;
+            
+            daq_to_daqlink_i               : in t_daq_to_daqlink;
+            daqlink_to_daq_o               : out t_daqlink_to_daq
+    
         );
     end component system;
 
     --============================================================================
     --                                                         Signal declarations
     --============================================================================
+
+    -------------------------- System clocks ---------------------------------
+    signal clk_50       : std_logic;
+    signal clk_200      : std_logic;
 
     -------------------------- AXI-IPbus bridge ---------------------------------
     --AXI
@@ -155,20 +182,24 @@ architecture gem_ctp7_arch of gem_ctp7 is
     -------------------- GTHs mapped to GEM links ---------------------------------
     
     -- 8b10b DAQ + Control GTX / GTH links (3.2Gbs, 16bit @ 160MHz w/ 8b10b encoding)
-    signal gt_8b10b_rx_clk_arr : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
-    signal gt_8b10b_tx_clk_arr : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
-    signal gt_8b10b_rx_data    : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
-    signal gt_8b10b_tx_data    : t_gt_8b10b_tx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gt_8b10b_rx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gt_8b10b_tx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gt_8b10b_rx_data_arr : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gt_8b10b_tx_data_arr : t_gt_8b10b_tx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
 
     -- Trigger RX GTX / GTH links (3.2Gbs, 16bit @ 160MHz w/ 8b10b encoding)
-    signal gt_trig0_rx_clk_arr : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
-    signal gt_trig0_rx_data    : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
-    signal gt_trig1_rx_clk_arr : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
-    signal gt_trig1_rx_data    : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gt_trig0_rx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gt_trig0_rx_data_arr : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gt_trig1_rx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gt_trig1_rx_data_arr : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
 
     -------------------------- DEBUG ----------------------------------
-    signal debug_gth_rx_data : t_gt_8b10b_rx_data;
-    signal debug_gth_tx_data : t_gt_8b10b_tx_data;
+    signal debug_gth_rx_data    : t_gt_8b10b_rx_data;
+    signal debug_gth_tx_data    : t_gt_8b10b_tx_data;
+
+    -------------------- AMC13 DAQLink ---------------------------------
+    signal daq_to_daqlink       : t_daq_to_daqlink;
+    signal daqlink_to_daq       : t_daqlink_to_daq;
 
 --    attribute mark_debug : string;
 --    attribute mark_debug of debug_gth_tx_data : signal is "true";
@@ -186,11 +217,6 @@ begin
     -------------------------- DEBUG ---------------------------------
     debug_gth_rx_data <= gth_rx_data_arr(6);
     debug_gth_tx_data <= gth_tx_data_arr(6);
-
-    -------------------------- I/O ---------------------------------
-
-    LEDs(1) <= '1';
-    LEDs(0) <= '1';
 
     -------------------------- SYSTEM ---------------------------------
 
@@ -219,6 +245,9 @@ begin
             refclk_B_0_n_i                 => refclk_B_0_n_i,
             refclk_B_1_p_i                 => refclk_B_1_p_i,
             refclk_B_1_n_i                 => refclk_B_1_n_i,
+
+            clk_50_o                       => clk_50,
+            clk_200_o                      => clk_200,
             
             axi_clk_o                      => axi_clk,
             axi_reset_o                    => axi_reset,
@@ -232,7 +261,17 @@ begin
             gth_tx_data_arr_i              => gth_tx_data_arr,
             gth_rx_data_arr_o              => gth_rx_data_arr,
             gth_rxreset_arr_o              => gth_rxreset_arr,
-            gth_txreset_arr_o              => gth_txreset_arr
+            gth_txreset_arr_o              => gth_txreset_arr,
+
+            amc13_gth_refclk_p             => amc13_gth_refclk_p,
+            amc13_gth_refclk_n             => amc13_gth_refclk_n,
+            amc_13_gth_rx_n                => amc_13_gth_rx_n,
+            amc_13_gth_rx_p                => amc_13_gth_rx_p,
+            amc13_gth_tx_n                 => amc13_gth_tx_n,
+            amc13_gth_tx_p                 => amc13_gth_tx_p,
+            
+            daq_to_daqlink_i               => daq_to_daqlink,
+            daqlink_to_daq_o               => daqlink_to_daq
         );
 
     -------------------------- IPBus ---------------------------------
@@ -276,7 +315,6 @@ begin
     i_gem : entity work.gem_amc
         generic map(
             g_NUM_OF_OHs         => CFG_NUM_OF_OHs,
-            g_OH_LINK_CONFIG_ARR => CFG_OH_LINK_CONFIG_ARR,
             g_NUM_IPB_SLAVES     => C_NUM_IPB_SLAVES
         )
         port map(
@@ -290,30 +328,40 @@ begin
             
             gt_8b10b_rx_clk_arr_i   => gt_8b10b_rx_clk_arr,
             gt_8b10b_tx_clk_arr_i   => gt_8b10b_tx_clk_arr,
-            gt_8b10b_rx_data_i      => gt_8b10b_rx_data,
-            gt_8b10b_tx_data_o      => gt_8b10b_tx_data,
+            gt_8b10b_rx_data_arr_i  => gt_8b10b_rx_data_arr,
+            gt_8b10b_tx_data_arr_o  => gt_8b10b_tx_data_arr,
             gt_trig0_rx_clk_arr_i   => gt_trig0_rx_clk_arr,
-            gt_trig0_rx_data_i      => gt_trig0_rx_data,
+            gt_trig0_rx_data_arr_i  => gt_trig0_rx_data_arr,
             gt_trig1_rx_clk_arr_i   => gt_trig1_rx_clk_arr,
-            gt_trig1_rx_data_i      => gt_trig1_rx_data,
+            gt_trig1_rx_data_arr_i  => gt_trig1_rx_data_arr,
             
             ipb_reset_i             => ipb_reset,
             ipb_clk_i               => ipb_clk,
             ipb_miso_arr_o          => ipb_miso_arr,
-            ipb_mosi_arr_i          => ipb_mosi_arr
+            ipb_mosi_arr_i          => ipb_mosi_arr,
+
+            led_l1a_o               => LEDs(0),
+            led_trigger_o           => LEDs(1),
+            
+            daq_data_clk_i          => clk_50,
+            daq_data_clk_locked_i   => '1',
+            daq_to_daqlink_o        => daq_to_daqlink,
+            daqlink_to_daq_i        => daqlink_to_daq,
+            
+            board_id_i              => x"beef"
         );
 
     -- GTH mapping to GEM links
     g_gem_links : for i in 0 to CFG_NUM_OF_OHs - 1 generate
-        gt_8b10b_rx_clk_arr(i) <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
-        gt_8b10b_tx_clk_arr(i) <= clk_gth_tx_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
-        gt_8b10b_rx_data(i)    <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
-        gt_8b10b_tx_data(i)    <= gth_tx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
+        gt_8b10b_rx_clk_arr(i)  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
+        gt_8b10b_tx_clk_arr(i)  <= clk_gth_tx_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
+        gt_8b10b_rx_data_arr(i) <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
+        gt_8b10b_tx_data_arr(i) <= gth_tx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
         
-        gt_trig0_rx_clk_arr(i) <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).trig0_rx_link);
-        gt_trig0_rx_data(i)    <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).trig0_rx_link);
-        gt_trig1_rx_clk_arr(i) <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).trig1_rx_link);
-        gt_trig1_rx_data(i)    <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).trig1_rx_link);
+        gt_trig0_rx_clk_arr(i)  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).trig0_rx_link);
+        gt_trig0_rx_data_arr(i) <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).trig0_rx_link);
+        gt_trig1_rx_clk_arr(i)  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).trig1_rx_link);
+        gt_trig1_rx_data_arr(i) <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).trig1_rx_link);
     end generate; 
 
     -------------------------- OptoHybrids --------------------------------- TODO: *** remove ***

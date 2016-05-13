@@ -18,6 +18,11 @@ use IEEE.STD_LOGIC_1164.all;
 --                                                         Package declaration
 --============================================================================
 package ttc_pkg is
+
+    constant C_TTC_CLK_FREQUENCY        : integer := 40_079_000;
+    constant C_TTC_CLK_FREQUENCY_SLV    : std_logic_vector(31 downto 0) := x"02638e98";
+    constant C_TTC_NUM_BXs              : std_logic_vector(11 downto 0) := x"dec";
+
     type t_ttc_clks is record
         clk_40  : std_logic;
         clk_80  : std_logic;

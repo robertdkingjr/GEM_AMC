@@ -13,6 +13,7 @@ use ieee.std_logic_misc.all;
 use ieee.numeric_std.all;
 
 use work.gem_pkg.all;
+use work.ttc_pkg.all;
 
 entity trigger_input_processor is
 port(
@@ -67,7 +68,8 @@ begin
     begin
         if (rising_edge(clk_i)) then
             cluster_cnt := count_ones(valid_clusters);
-            cluster_cnt_strb <= (cluster_cnt => '1', others => '0');
+            cluster_cnt_strb <= (others => '0');
+            cluster_cnt_strb(cluster_cnt) <= '1';
         end if;    
     end process;
     

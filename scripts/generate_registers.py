@@ -352,9 +352,24 @@ def updateModuleFile(module):
             f.write('    -- Connect write signals\n')
             for reg in module.regs:
                 isSingleBit = reg.msb == reg.lsb
+                if reg.isWritePulse == True:
+                    f.write('    -- NOTE: this should be a write pulse (not implemented yet in the generate_registers.py)\n')
                 if 'w' in reg.permission:
                     f.write('    %s <= regs_write_arr(%d)(%s);\n' % (reg.signal, uniqueAddresses.index(reg.address), VHDL_REG_CONSTANT_PREFIX + reg.getVhdlName() + '_BIT' if isSingleBit else VHDL_REG_CONSTANT_PREFIX + reg.getVhdlName() + '_MSB' + ' downto ' + VHDL_REG_CONSTANT_PREFIX + reg.getVhdlName() + '_LSB'))
             f.write('\n')
+
+            # connect write pulse signals
+            # f.write('    -- Connect write pulse signals\n')
+            # for reg in module.regs:
+            #     isSingleBit = reg.msb == reg.lsb
+            #     if 'w' in reg.permission and reg.isWritePulse == True:
+            #         if not isSingleBit:
+            #             raise ValueError("Only single bit registers are supported for write pulse signals: %s" % reg.name)
+            #         if reg.writePulseLength == 0:
+            #             raise ValueError("Found write pulse with pulse length = 0: %s" % reg.name)
+            #         #if reg.writePulseLength == 1:
+            #         #f.write('    %s <= regs_write_arr(%d)(%s);\n' % (reg.signal, uniqueAddresses.index(reg.address), VHDL_REG_CONSTANT_PREFIX + reg.getVhdlName() + '_BIT' if isSingleBit else VHDL_REG_CONSTANT_PREFIX + reg.getVhdlName() + '_MSB' + ' downto ' + VHDL_REG_CONSTANT_PREFIX + reg.getVhdlName() + '_LSB'))
+            # f.write('\n')
 
             # Defaults
             f.write('    -- Defaults\n')
