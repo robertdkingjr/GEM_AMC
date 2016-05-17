@@ -1,5 +1,5 @@
 ifndef PETA_STAGE
-$(error "Error: PETALINUX environment variable not set.  Change to the root of your PetaLinux install, and source the settings.sh file")
+$(error "Error: PETA_STAGE environment variable not set.  Change to the root of your PetaLinux install, and source the settings.sh file")
 endif
 include ../apps.common.mk
 
