@@ -216,7 +216,7 @@
           fw_bus_reset_signal="ipb_reset_i"
           fw_master_bus_signal="ipb_mosi_i"
           fw_slave_bus_signal="ipb_miso_o"
-          fw_reg_addr_msb="3"
+          fw_reg_addr_msb="16"
           fw_reg_addr_lsb="0">
           
         <node id="TK_LINK_RX_POLARITY" address="0x0" mask="0x00ffffff" permission="rw"
@@ -237,15 +237,23 @@
         <node id="RELEASE_BUILD" address="0x3" mask="0x000000ff" permission="r"
               description="Firmware release build version"
               fw_signal="std_logic_vector(to_unsigned(version_build, 8))"/>
-        <node id="RELEASE_YEAR" address="0x4" mask="0xfff00000" permission="r"
-              description="Firmware release year"
-              fw_signal="std_logic_vector(to_unsigned(date_year, 12))"/>
-        <node id="RELEASE_MONTH" address="0x4" mask="0x00000f00" permission="r"
-              description="Firmware release month"
-              fw_signal="std_logic_vector(to_unsigned(date_month, 4))"/>
-        <node id="RELEASE_DAY" address="0x4" mask="0x000000ff" permission="r"
-              description="Firmware release day"
-              fw_signal="std_logic_vector(to_unsigned(date_day, 8))"/>
+        <node id="RELEASE_DATE" address="0x4" mask="0xffffffff" permission="r"
+              description="Firmware release date (read as hex)"
+              fw_signal="firmware_date"/>
+
+
+        <node id="LEGACY_SYSTEM" address="0x10000"
+              description="Legacy system registers (taken from GLIB system core). These should be removed once the software is made compatible with the new system registers.">
+            <node id="BOARD_ID" address="0x0" mask="0xffffffff" permission="r"
+                  description="GLIB Board ID code"
+                  fw_signal="legacy_board_id"/>
+            <node id="SYSTEM_ID" address="0x1" mask="0xffffffff" permission="r"
+                  description="GLIB System ID code"
+                  fw_signal="legacy_sys_id"/>
+            <node id="FIRMWARE_VERSION" address="0x2" mask="0xffffffff" permission="r"
+                  description="GLIB firmware version + firmware date"
+                  fw_signal="legacy_fw_version"/>
+        </node>
     </node>
 
     <!--DAQ module -->

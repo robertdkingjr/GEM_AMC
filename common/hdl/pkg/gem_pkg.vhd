@@ -6,10 +6,19 @@ use work.gem_board_config_package.CFG_NUM_OF_OHs;
 
 package gem_pkg is
 
+    --========================--
+    --==  Firmware version  ==--
+    --========================-- 
+
+    constant C_FIRMWARE_DATE    : std_logic_vector(31 downto 0) := x"20160517";
+    constant C_FIRMWARE_MAJOR   : integer range 0 to 255        := 1;
+    constant C_FIRMWARE_MINOR   : integer range 0 to 255        := 3;
+    constant C_FIRMWARE_BUILD   : integer range 0 to 255        := 4;
+
     --======================--
     --==      General     ==--
     --======================-- 
-    
+        
     constant C_LED_PULSE_LENGTH_TTC_CLK : std_logic_vector(20 downto 0) := std_logic_vector(to_unsigned(1_600_000, 21));
 
     function count_ones(s : std_logic_vector) return integer;

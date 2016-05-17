@@ -634,47 +634,51 @@ package registers is
     -- This module is controlling GEM AMC System wide settings
     --============================================================================
 
-    constant REG_GEM_SYSTEM_NUM_REGS : integer := 5;
-    constant REG_GEM_SYSTEM_ADDRESS_MSB : integer := 3;
+    constant REG_GEM_SYSTEM_NUM_REGS : integer := 8;
+    constant REG_GEM_SYSTEM_ADDRESS_MSB : integer := 16;
     constant REG_GEM_SYSTEM_ADDRESS_LSB : integer := 0;
-    constant REG_GEM_SYSTEM_TK_LINK_RX_POLARITY_ADDR    : std_logic_vector(3 downto 0) := x"0";
+    constant REG_GEM_SYSTEM_TK_LINK_RX_POLARITY_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0000";
     constant REG_GEM_SYSTEM_TK_LINK_RX_POLARITY_MSB    : integer := 23;
     constant REG_GEM_SYSTEM_TK_LINK_RX_POLARITY_LSB     : integer := 0;
     constant REG_GEM_SYSTEM_TK_LINK_RX_POLARITY_DEFAULT : std_logic_vector(23 downto 0) := x"000000";
 
-    constant REG_GEM_SYSTEM_TK_LINK_TX_POLARITY_ADDR    : std_logic_vector(3 downto 0) := x"1";
+    constant REG_GEM_SYSTEM_TK_LINK_TX_POLARITY_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0001";
     constant REG_GEM_SYSTEM_TK_LINK_TX_POLARITY_MSB    : integer := 23;
     constant REG_GEM_SYSTEM_TK_LINK_TX_POLARITY_LSB     : integer := 0;
     constant REG_GEM_SYSTEM_TK_LINK_TX_POLARITY_DEFAULT : std_logic_vector(23 downto 0) := x"000000";
 
-    constant REG_GEM_SYSTEM_BOARD_ID_ADDR    : std_logic_vector(3 downto 0) := x"2";
+    constant REG_GEM_SYSTEM_BOARD_ID_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0002";
     constant REG_GEM_SYSTEM_BOARD_ID_MSB    : integer := 15;
     constant REG_GEM_SYSTEM_BOARD_ID_LSB     : integer := 0;
     constant REG_GEM_SYSTEM_BOARD_ID_DEFAULT : std_logic_vector(15 downto 0) := x"beef";
 
-    constant REG_GEM_SYSTEM_RELEASE_BUILD_ADDR    : std_logic_vector(3 downto 0) := x"3";
+    constant REG_GEM_SYSTEM_RELEASE_BUILD_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0003";
     constant REG_GEM_SYSTEM_RELEASE_BUILD_MSB    : integer := 7;
     constant REG_GEM_SYSTEM_RELEASE_BUILD_LSB     : integer := 0;
 
-    constant REG_GEM_SYSTEM_RELEASE_MINOR_ADDR    : std_logic_vector(3 downto 0) := x"3";
+    constant REG_GEM_SYSTEM_RELEASE_MINOR_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0003";
     constant REG_GEM_SYSTEM_RELEASE_MINOR_MSB    : integer := 15;
     constant REG_GEM_SYSTEM_RELEASE_MINOR_LSB     : integer := 8;
 
-    constant REG_GEM_SYSTEM_RELEASE_MAJOR_ADDR    : std_logic_vector(3 downto 0) := x"3";
+    constant REG_GEM_SYSTEM_RELEASE_MAJOR_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0003";
     constant REG_GEM_SYSTEM_RELEASE_MAJOR_MSB    : integer := 23;
     constant REG_GEM_SYSTEM_RELEASE_MAJOR_LSB     : integer := 16;
 
-    constant REG_GEM_SYSTEM_RELEASE_DAY_ADDR    : std_logic_vector(3 downto 0) := x"4";
-    constant REG_GEM_SYSTEM_RELEASE_DAY_MSB    : integer := 7;
-    constant REG_GEM_SYSTEM_RELEASE_DAY_LSB     : integer := 0;
+    constant REG_GEM_SYSTEM_RELEASE_DATE_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0004";
+    constant REG_GEM_SYSTEM_RELEASE_DATE_MSB    : integer := 31;
+    constant REG_GEM_SYSTEM_RELEASE_DATE_LSB     : integer := 0;
 
-    constant REG_GEM_SYSTEM_RELEASE_MONTH_ADDR    : std_logic_vector(3 downto 0) := x"4";
-    constant REG_GEM_SYSTEM_RELEASE_MONTH_MSB    : integer := 11;
-    constant REG_GEM_SYSTEM_RELEASE_MONTH_LSB     : integer := 8;
+    constant REG_GEM_SYSTEM_LEGACY_SYSTEM_BOARD_ID_ADDR    : std_logic_vector(16 downto 0) := '1' & x"0000";
+    constant REG_GEM_SYSTEM_LEGACY_SYSTEM_BOARD_ID_MSB    : integer := 31;
+    constant REG_GEM_SYSTEM_LEGACY_SYSTEM_BOARD_ID_LSB     : integer := 0;
 
-    constant REG_GEM_SYSTEM_RELEASE_YEAR_ADDR    : std_logic_vector(3 downto 0) := x"4";
-    constant REG_GEM_SYSTEM_RELEASE_YEAR_MSB    : integer := 31;
-    constant REG_GEM_SYSTEM_RELEASE_YEAR_LSB     : integer := 20;
+    constant REG_GEM_SYSTEM_LEGACY_SYSTEM_SYSTEM_ID_ADDR    : std_logic_vector(16 downto 0) := '1' & x"0001";
+    constant REG_GEM_SYSTEM_LEGACY_SYSTEM_SYSTEM_ID_MSB    : integer := 31;
+    constant REG_GEM_SYSTEM_LEGACY_SYSTEM_SYSTEM_ID_LSB     : integer := 0;
+
+    constant REG_GEM_SYSTEM_LEGACY_SYSTEM_FIRMWARE_VERSION_ADDR    : std_logic_vector(16 downto 0) := '1' & x"0002";
+    constant REG_GEM_SYSTEM_LEGACY_SYSTEM_FIRMWARE_VERSION_MSB    : integer := 31;
+    constant REG_GEM_SYSTEM_LEGACY_SYSTEM_FIRMWARE_VERSION_LSB     : integer := 0;
 
 
     --============================================================================

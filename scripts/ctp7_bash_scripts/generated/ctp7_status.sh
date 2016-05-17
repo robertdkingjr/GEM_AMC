@@ -163,9 +163,10 @@ if [ "$MODULE" = "GEM_SYSTEM" ]; then
     printf 'GEM_AMC.GEM_SYSTEM.RELEASE_BUILD              = 0x%x\n' $(( (`mpeek 0x6640000c` & 0x000000ff) >> 0 ))
     printf 'GEM_AMC.GEM_SYSTEM.RELEASE_MINOR              = 0x%x\n' $(( (`mpeek 0x6640000c` & 0x0000ff00) >> 8 ))
     printf 'GEM_AMC.GEM_SYSTEM.RELEASE_MAJOR              = 0x%x\n' $(( (`mpeek 0x6640000c` & 0x00ff0000) >> 16 ))
-    printf 'GEM_AMC.GEM_SYSTEM.RELEASE_DAY                = 0x%x\n' $(( (`mpeek 0x66400010` & 0x000000ff) >> 0 ))
-    printf 'GEM_AMC.GEM_SYSTEM.RELEASE_MONTH              = 0x%x\n' $(( (`mpeek 0x66400010` & 0x00000f00) >> 8 ))
-    printf 'GEM_AMC.GEM_SYSTEM.RELEASE_YEAR               = 0x%x\n' $(( (`mpeek 0x66400010` & 0xfff00000) >> 20 ))
+    printf 'GEM_AMC.GEM_SYSTEM.RELEASE_DATE               = 0x%x\n' `mpeek 0x66400010` 
+    printf 'GEM_AMC.GEM_SYSTEM.LEGACY_SYSTEM.BOARD_ID     = 0x%x\n' `mpeek 0x66440000` 
+    printf 'GEM_AMC.GEM_SYSTEM.LEGACY_SYSTEM.SYSTEM_ID    = 0x%x\n' `mpeek 0x66440004` 
+    printf 'GEM_AMC.GEM_SYSTEM.LEGACY_SYSTEM.FIRMWARE_VERSION = 0x%x\n' `mpeek 0x66440008` 
 fi
 
 if [ "$MODULE" = "DAQ" ]; then
