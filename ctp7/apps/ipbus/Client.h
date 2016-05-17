@@ -64,6 +64,8 @@ class Client {
 		void process_cfgwrite_txn(IPBusTxnHdr transaction_header, std::deque<uint32_t> &request, std::deque<uint32_t> &response);
 
 		void process_status_packet(std::deque<uint32_t> &request, std::deque<uint32_t> &response);
+
+    uint32_t modifyAddress(const uint32_t & base_addr_);
 };
 
 #endif

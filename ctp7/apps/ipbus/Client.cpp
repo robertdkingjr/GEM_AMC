@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <stdio.h>
 #include <libmemsvc.h>
+#include <iostream>
 
 #define MAX_OBUF (512*1024) 
 
@@ -194,6 +195,10 @@ void Client::process_read_txn(IPBusTxnHdr transaction_header, std::deque<uint32_
 		return;
 	}
 	uint32_t base_addr = request.front(); request.pop_front();
+  std::cout<< "Original address " <<std::hex << base_addr << std::dec << std::endl;
+  uint32_t modified_addr = this->modifyAddress(base_addr);
+  std::cout<< "Modified address " <<std::hex << modified_addr << std::dec << std::endl;
+  base_addr = modified_addr;
 
 	uint32_t data[transaction_header.words];
 	if (memsvc_read(memsvc, base_addr, transaction_header.words, data) == 0) {
@@ -391,4 +396,29 @@ void Client::process_cfgwrite_txn(IPBusTxnHdr transaction_header, std::deque<uin
 void Client::process_status_packet(std::deque<uint32_t> &request, std::deque<uint32_t> &response)
 {
 	// Not implemented.  All memory access tests pass without this functionality.
+}
+
+uint32_t Client::modifyAddress(const uint32_t & base_addr_)
+{
+  uint32_t buf = base_addr_ >> 28;
+  uint32_t res = 0x0d01b0eb;
+  uint32_t buf2 = 0x0d01b0eb;
+  if (buf == 0x4) {
+    uint32_t m_base_addr_ = 0x00200000 + base_addr_;
+    std::cout << "OH module!" << std::endl;
+    buf = (0xf00fffff & m_base_addr_);
+    std::cout <<" first step OH " << std::hex << buf << std::endl;
+    buf = buf | (0x0f000000 & (m_base_addr_ << 4));
+    std::cout <<" second step OH " << std::hex << buf << std::endl;
+    buf = buf | (0x00f00000 & (m_base_addr_ >> 4));
+    std::cout <<" third step OH " << std::hex << buf << std::endl;
+    buf2 = buf >> 20; 
+    res = (0x00000fff & buf) | (buf2 << 12);
+  } else {
+    buf = buf << 20;
+    res = (0x000fffff & base_addr_) | buf;
+  }
+  res = res << 2;
+  res += 0x64000000;
+  return res;
 }
