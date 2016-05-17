@@ -522,8 +522,102 @@
         </node>
     </node>
     
+    <!-- OH link module -->
+    <node id="OH_LINKS"  address="0x00600000"
+          description="OH Link monitoring registers"
+          fw_is_module="true"
+          fw_module_file="../common/hdl/oh/oh_link_regs.vhd"
+          fw_user_clock_signal="clk_i"
+          fw_bus_clock_signal="ipb_clk_i"
+          fw_bus_reset_signal="ipb_reset_i"
+          fw_master_bus_signal="ipb_mosi_i"
+          fw_slave_bus_signal="ipb_miso_o"
+          fw_reg_addr_msb="12"
+          fw_reg_addr_lsb="0">
+        <node id="CTRL" address="0x0" description="OH Link control">
+            <node id="CNT_RESET" address="0x0" mask="0x80000000" permission="w" description="Counter reset"
+                  fw_signal="reset_local" fw_is_write_pulse="true" fw_write_pulse_length="1"/>
+            <node id="DEBUG_CLK_CNT_RESET" address="0x0" mask="0x40000000" permission="w" description="Debug clocks counter reset"
+                  fw_signal="debug_clk_reset" fw_is_write_pulse="true" fw_write_pulse_length="1"/>
+        </node>
+
+        <node id="OH${OH_IDX}" address="0x100" description="Links for OH ${OH_IDX}"
+              generate="true" generate_size="4" generate_address_step="0x100" generate_idx_var="OH_IDX">
+            <node id="TRACK_LINK_ERROR_CNT" address="0x0" mask="0xffffffff" permission="r"
+                  description="Number of times this link didn't see the correct comma character at the correct time"
+                  fw_signal="tk_error_cnt_arr(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="100"/>
+            <node id="VFAT_BLOCK_CNT" address="0x1" mask="0xffffffff" permission="r"
+                  description="Number VFAT blocks received"
+                  fw_signal="evt_rcvd_cnt_arr(${OH_IDX})"/>
+
+            <node id="TRACK_LINK_TX_SYNC_OVF_CNT" address="0x2" mask="0xffffffff" permission="r"
+                  description="Number of overflow occurences in the track tx synchronization FIFO (should be 0, otherwise there's something wrong with clocks)"
+                  fw_signal="sync_tk_tx_ovf_arr(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="1"/>
+            <node id="TRACK_LINK_TX_SYNC_UNF_CNT" address="0x3" mask="0xffffffff" permission="r"
+                  description="Number of underflow occurences in the track tx synchronization FIFO (should be 0, otherwise there's something wrong with clocks)"
+                  fw_signal="sync_tk_tx_unf_arr(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="1"/>
+            <node id="TRACK_LINK_RX_SYNC_OVF_CNT" address="0x4" mask="0xffffffff" permission="r"
+                  description="Number of overflow occurences in the track rx synchronization FIFO (should be 0, otherwise there's something wrong with clocks)"
+                  fw_signal="sync_tk_rx_ovf_arr(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="1"/>
+            <node id="TRACK_LINK_RX_SYNC_UNF_CNT" address="0x5" mask="0xffffffff" permission="r"
+                  description="Number of underflow occurences in the track rx synchronization FIFO (should be 0, otherwise there's something wrong with clocks)"
+                  fw_signal="sync_tk_rx_unf_arr(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="1"/>
+            <node id="TRIG0_LINK_RX_SYNC_OVF_CNT" address="0x6" mask="0xffffffff" permission="r"
+                  description="Number of overflow occurences in the trigger link0 rx synchronization FIFO (should be 0, otherwise there's something wrong with clocks)"
+                  fw_signal="sync_tr0_rx_ovf_arr(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="1"/>
+            <node id="TRIG0_LINK_RX_SYNC_UNF_CNT" address="0x7" mask="0xffffffff" permission="r"
+                  description="Number of underflow occurences in the trigger link0 rx synchronization FIFO (should be 0, otherwise there's something wrong with clocks)"
+                  fw_signal="sync_tr0_rx_unf_arr(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="1"/>
+            <node id="TRIG1_LINK_RX_SYNC_OVF_CNT" address="0x8" mask="0xffffffff" permission="r"
+                  description="Number of overflow occurences in the trigger link1 rx synchronization FIFO (should be 0, otherwise there's something wrong with clocks)"
+                  fw_signal="sync_tr1_rx_ovf_arr(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="1"/>
+            <node id="TRIG1_LINK_RX_SYNC_UNF_CNT" address="0x9" mask="0xffffffff" permission="r"
+                  description="Number of underflow occurences in the trigger link1 rx synchronization FIFO (should be 0, otherwise there's something wrong with clocks)"
+                  fw_signal="sync_tr1_rx_unf_arr(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="1"/>
+
+            <node id="TRACK_LINK_NOT_IN_TABLE_CNT" address="0xa" mask="0xffffffff" permission="r"
+                  description="Number of not-in-table errors in the tracking rx link"
+                  fw_signal="tk_not_in_table_arr(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="1000"/>
+            <node id="TRACK_LINK_DISPERR_CNT" address="0xb" mask="0xffffffff" permission="r"
+                  description="Number of dispersion errors in the tracking rx link"
+                  fw_signal="tk_disperr_arr(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="1000"/>
+            <node id="TRIG0_LINK_NOT_IN_TABLE_CNT" address="0xc" mask="0xffffffff" permission="r"
+                  description="Number of not-in-table errors in the trigger link0 rx"
+                  fw_signal="tr0_not_in_table_arr(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="1000"/>
+            <node id="TRIG0_LINK_DISPERR_CNT" address="0xd" mask="0xffffffff" permission="r"
+                  description="Number of dispersion errors in the trigger link0 rx"
+                  fw_signal="tr0_disperr_arr(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="1000"/>
+            <node id="TRIG1_LINK_NOT_IN_TABLE_CNT" address="0xe" mask="0xffffffff" permission="r"
+                  description="Number of not-in-table errors in the trigger link1 rx"
+                  fw_signal="tr1_not_in_table_arr(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="1000"/>
+            <node id="TRIG1_LINK_DISPERR_CNT" address="0xf" mask="0xffffffff" permission="r"
+                  description="Number of dispersion errors in the trigger link1 rx"
+                  fw_signal="tr1_disperr_arr(${OH_IDX})"
+                  sw_monitor_warn_min_threshold="1000"/>
+
+            <node id="DEBUG_CLK_CNT" address="0x10" mask="0xffffffff" permission="r"
+                  description="Clock debug counter -- the lowest 16 bits are counting track/control RX clocks and the top 16 bits are counting the 160MHz TTC clocks"
+                  fw_signal="debug_clk_cnt_arr(${OH_IDX})"/>
+
+        </node>
+    </node>
+
     <!--OptoHybrid module -->
-    <node id="OptoHybrid"  address="0x00400000"
+    <node id="OH"  address="0x00400000"
           description="Optohybrid Registers"
           fw_is_module="true"
           fw_is_module_external="true">

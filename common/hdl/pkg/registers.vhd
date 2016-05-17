@@ -980,4 +980,292 @@ package registers is
     constant REG_DAQ_OH3_LASTBLOCK6_LSB     : integer := 0;
 
 
+    --============================================================================
+    --       >>> OH_LINKS Module <<<    base address: 0x00600000
+    --
+    -- OH Link monitoring registers
+    --============================================================================
+
+    constant REG_OH_LINKS_NUM_REGS : integer := 69;
+    constant REG_OH_LINKS_ADDRESS_MSB : integer := 12;
+    constant REG_OH_LINKS_ADDRESS_LSB : integer := 0;
+    constant REG_OH_LINKS_CTRL_DEBUG_CLK_CNT_RESET_ADDR    : std_logic_vector(12 downto 0) := '0' & x"000";
+    constant REG_OH_LINKS_CTRL_DEBUG_CLK_CNT_RESET_BIT    : integer := 30;
+
+    constant REG_OH_LINKS_CTRL_CNT_RESET_ADDR    : std_logic_vector(12 downto 0) := '0' & x"000";
+    constant REG_OH_LINKS_CTRL_CNT_RESET_BIT    : integer := 31;
+
+    constant REG_OH_LINKS_OH0_TRACK_LINK_ERROR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"100";
+    constant REG_OH_LINKS_OH0_TRACK_LINK_ERROR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_TRACK_LINK_ERROR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_VFAT_BLOCK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"101";
+    constant REG_OH_LINKS_OH0_VFAT_BLOCK_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_VFAT_BLOCK_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_TRACK_LINK_TX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"102";
+    constant REG_OH_LINKS_OH0_TRACK_LINK_TX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_TRACK_LINK_TX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_TRACK_LINK_TX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"103";
+    constant REG_OH_LINKS_OH0_TRACK_LINK_TX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_TRACK_LINK_TX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_TRACK_LINK_RX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"104";
+    constant REG_OH_LINKS_OH0_TRACK_LINK_RX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_TRACK_LINK_RX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_TRACK_LINK_RX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"105";
+    constant REG_OH_LINKS_OH0_TRACK_LINK_RX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_TRACK_LINK_RX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_TRIG0_LINK_RX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"106";
+    constant REG_OH_LINKS_OH0_TRIG0_LINK_RX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_TRIG0_LINK_RX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_TRIG0_LINK_RX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"107";
+    constant REG_OH_LINKS_OH0_TRIG0_LINK_RX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_TRIG0_LINK_RX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_TRIG1_LINK_RX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"108";
+    constant REG_OH_LINKS_OH0_TRIG1_LINK_RX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_TRIG1_LINK_RX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_TRIG1_LINK_RX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"109";
+    constant REG_OH_LINKS_OH0_TRIG1_LINK_RX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_TRIG1_LINK_RX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_TRACK_LINK_NOT_IN_TABLE_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"10a";
+    constant REG_OH_LINKS_OH0_TRACK_LINK_NOT_IN_TABLE_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_TRACK_LINK_NOT_IN_TABLE_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_TRACK_LINK_DISPERR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"10b";
+    constant REG_OH_LINKS_OH0_TRACK_LINK_DISPERR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_TRACK_LINK_DISPERR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_TRIG0_LINK_NOT_IN_TABLE_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"10c";
+    constant REG_OH_LINKS_OH0_TRIG0_LINK_NOT_IN_TABLE_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_TRIG0_LINK_NOT_IN_TABLE_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_TRIG0_LINK_DISPERR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"10d";
+    constant REG_OH_LINKS_OH0_TRIG0_LINK_DISPERR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_TRIG0_LINK_DISPERR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_TRIG1_LINK_NOT_IN_TABLE_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"10e";
+    constant REG_OH_LINKS_OH0_TRIG1_LINK_NOT_IN_TABLE_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_TRIG1_LINK_NOT_IN_TABLE_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_TRIG1_LINK_DISPERR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"10f";
+    constant REG_OH_LINKS_OH0_TRIG1_LINK_DISPERR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_TRIG1_LINK_DISPERR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH0_DEBUG_CLK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"110";
+    constant REG_OH_LINKS_OH0_DEBUG_CLK_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH0_DEBUG_CLK_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_TRACK_LINK_ERROR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"200";
+    constant REG_OH_LINKS_OH1_TRACK_LINK_ERROR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_TRACK_LINK_ERROR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_VFAT_BLOCK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"201";
+    constant REG_OH_LINKS_OH1_VFAT_BLOCK_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_VFAT_BLOCK_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_TRACK_LINK_TX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"202";
+    constant REG_OH_LINKS_OH1_TRACK_LINK_TX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_TRACK_LINK_TX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_TRACK_LINK_TX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"203";
+    constant REG_OH_LINKS_OH1_TRACK_LINK_TX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_TRACK_LINK_TX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_TRACK_LINK_RX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"204";
+    constant REG_OH_LINKS_OH1_TRACK_LINK_RX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_TRACK_LINK_RX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_TRACK_LINK_RX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"205";
+    constant REG_OH_LINKS_OH1_TRACK_LINK_RX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_TRACK_LINK_RX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_TRIG0_LINK_RX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"206";
+    constant REG_OH_LINKS_OH1_TRIG0_LINK_RX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_TRIG0_LINK_RX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_TRIG0_LINK_RX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"207";
+    constant REG_OH_LINKS_OH1_TRIG0_LINK_RX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_TRIG0_LINK_RX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_TRIG1_LINK_RX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"208";
+    constant REG_OH_LINKS_OH1_TRIG1_LINK_RX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_TRIG1_LINK_RX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_TRIG1_LINK_RX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"209";
+    constant REG_OH_LINKS_OH1_TRIG1_LINK_RX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_TRIG1_LINK_RX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_TRACK_LINK_NOT_IN_TABLE_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"20a";
+    constant REG_OH_LINKS_OH1_TRACK_LINK_NOT_IN_TABLE_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_TRACK_LINK_NOT_IN_TABLE_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_TRACK_LINK_DISPERR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"20b";
+    constant REG_OH_LINKS_OH1_TRACK_LINK_DISPERR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_TRACK_LINK_DISPERR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_TRIG0_LINK_NOT_IN_TABLE_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"20c";
+    constant REG_OH_LINKS_OH1_TRIG0_LINK_NOT_IN_TABLE_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_TRIG0_LINK_NOT_IN_TABLE_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_TRIG0_LINK_DISPERR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"20d";
+    constant REG_OH_LINKS_OH1_TRIG0_LINK_DISPERR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_TRIG0_LINK_DISPERR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_TRIG1_LINK_NOT_IN_TABLE_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"20e";
+    constant REG_OH_LINKS_OH1_TRIG1_LINK_NOT_IN_TABLE_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_TRIG1_LINK_NOT_IN_TABLE_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_TRIG1_LINK_DISPERR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"20f";
+    constant REG_OH_LINKS_OH1_TRIG1_LINK_DISPERR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_TRIG1_LINK_DISPERR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH1_DEBUG_CLK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"210";
+    constant REG_OH_LINKS_OH1_DEBUG_CLK_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH1_DEBUG_CLK_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_TRACK_LINK_ERROR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"300";
+    constant REG_OH_LINKS_OH2_TRACK_LINK_ERROR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_TRACK_LINK_ERROR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_VFAT_BLOCK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"301";
+    constant REG_OH_LINKS_OH2_VFAT_BLOCK_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_VFAT_BLOCK_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_TRACK_LINK_TX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"302";
+    constant REG_OH_LINKS_OH2_TRACK_LINK_TX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_TRACK_LINK_TX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_TRACK_LINK_TX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"303";
+    constant REG_OH_LINKS_OH2_TRACK_LINK_TX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_TRACK_LINK_TX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_TRACK_LINK_RX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"304";
+    constant REG_OH_LINKS_OH2_TRACK_LINK_RX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_TRACK_LINK_RX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_TRACK_LINK_RX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"305";
+    constant REG_OH_LINKS_OH2_TRACK_LINK_RX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_TRACK_LINK_RX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_TRIG0_LINK_RX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"306";
+    constant REG_OH_LINKS_OH2_TRIG0_LINK_RX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_TRIG0_LINK_RX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_TRIG0_LINK_RX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"307";
+    constant REG_OH_LINKS_OH2_TRIG0_LINK_RX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_TRIG0_LINK_RX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_TRIG1_LINK_RX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"308";
+    constant REG_OH_LINKS_OH2_TRIG1_LINK_RX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_TRIG1_LINK_RX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_TRIG1_LINK_RX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"309";
+    constant REG_OH_LINKS_OH2_TRIG1_LINK_RX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_TRIG1_LINK_RX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_TRACK_LINK_NOT_IN_TABLE_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"30a";
+    constant REG_OH_LINKS_OH2_TRACK_LINK_NOT_IN_TABLE_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_TRACK_LINK_NOT_IN_TABLE_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_TRACK_LINK_DISPERR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"30b";
+    constant REG_OH_LINKS_OH2_TRACK_LINK_DISPERR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_TRACK_LINK_DISPERR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_TRIG0_LINK_NOT_IN_TABLE_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"30c";
+    constant REG_OH_LINKS_OH2_TRIG0_LINK_NOT_IN_TABLE_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_TRIG0_LINK_NOT_IN_TABLE_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_TRIG0_LINK_DISPERR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"30d";
+    constant REG_OH_LINKS_OH2_TRIG0_LINK_DISPERR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_TRIG0_LINK_DISPERR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_TRIG1_LINK_NOT_IN_TABLE_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"30e";
+    constant REG_OH_LINKS_OH2_TRIG1_LINK_NOT_IN_TABLE_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_TRIG1_LINK_NOT_IN_TABLE_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_TRIG1_LINK_DISPERR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"30f";
+    constant REG_OH_LINKS_OH2_TRIG1_LINK_DISPERR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_TRIG1_LINK_DISPERR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH2_DEBUG_CLK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"310";
+    constant REG_OH_LINKS_OH2_DEBUG_CLK_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH2_DEBUG_CLK_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_TRACK_LINK_ERROR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"400";
+    constant REG_OH_LINKS_OH3_TRACK_LINK_ERROR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_TRACK_LINK_ERROR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_VFAT_BLOCK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"401";
+    constant REG_OH_LINKS_OH3_VFAT_BLOCK_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_VFAT_BLOCK_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_TRACK_LINK_TX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"402";
+    constant REG_OH_LINKS_OH3_TRACK_LINK_TX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_TRACK_LINK_TX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_TRACK_LINK_TX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"403";
+    constant REG_OH_LINKS_OH3_TRACK_LINK_TX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_TRACK_LINK_TX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_TRACK_LINK_RX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"404";
+    constant REG_OH_LINKS_OH3_TRACK_LINK_RX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_TRACK_LINK_RX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_TRACK_LINK_RX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"405";
+    constant REG_OH_LINKS_OH3_TRACK_LINK_RX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_TRACK_LINK_RX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_TRIG0_LINK_RX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"406";
+    constant REG_OH_LINKS_OH3_TRIG0_LINK_RX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_TRIG0_LINK_RX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_TRIG0_LINK_RX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"407";
+    constant REG_OH_LINKS_OH3_TRIG0_LINK_RX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_TRIG0_LINK_RX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_TRIG1_LINK_RX_SYNC_OVF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"408";
+    constant REG_OH_LINKS_OH3_TRIG1_LINK_RX_SYNC_OVF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_TRIG1_LINK_RX_SYNC_OVF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_TRIG1_LINK_RX_SYNC_UNF_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"409";
+    constant REG_OH_LINKS_OH3_TRIG1_LINK_RX_SYNC_UNF_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_TRIG1_LINK_RX_SYNC_UNF_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_TRACK_LINK_NOT_IN_TABLE_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"40a";
+    constant REG_OH_LINKS_OH3_TRACK_LINK_NOT_IN_TABLE_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_TRACK_LINK_NOT_IN_TABLE_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_TRACK_LINK_DISPERR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"40b";
+    constant REG_OH_LINKS_OH3_TRACK_LINK_DISPERR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_TRACK_LINK_DISPERR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_TRIG0_LINK_NOT_IN_TABLE_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"40c";
+    constant REG_OH_LINKS_OH3_TRIG0_LINK_NOT_IN_TABLE_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_TRIG0_LINK_NOT_IN_TABLE_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_TRIG0_LINK_DISPERR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"40d";
+    constant REG_OH_LINKS_OH3_TRIG0_LINK_DISPERR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_TRIG0_LINK_DISPERR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_TRIG1_LINK_NOT_IN_TABLE_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"40e";
+    constant REG_OH_LINKS_OH3_TRIG1_LINK_NOT_IN_TABLE_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_TRIG1_LINK_NOT_IN_TABLE_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_TRIG1_LINK_DISPERR_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"40f";
+    constant REG_OH_LINKS_OH3_TRIG1_LINK_DISPERR_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_TRIG1_LINK_DISPERR_CNT_LSB     : integer := 0;
+
+    constant REG_OH_LINKS_OH3_DEBUG_CLK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"410";
+    constant REG_OH_LINKS_OH3_DEBUG_CLK_CNT_MSB    : integer := 31;
+    constant REG_OH_LINKS_OH3_DEBUG_CLK_CNT_LSB     : integer := 0;
+
+
 end registers;

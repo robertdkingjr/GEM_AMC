@@ -61,12 +61,12 @@ begin
     -- version and date
     
     version_major <= 1;
-    version_minor <= 2;
-    version_build <= 0;
+    version_minor <= 3;
+    version_build <= 2;
     
     date_year     <= 2016;
     date_month    <= 5;
-    date_day      <= 13;
+    date_day      <= 15;
     
     -- polarity
     tk_rx_polarity_o <= tk_rx_polarity;

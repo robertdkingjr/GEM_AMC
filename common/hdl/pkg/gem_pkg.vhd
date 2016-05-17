@@ -180,7 +180,35 @@ package gem_pkg is
     end record;
 
     type t_chamber_evtfifo_rd_array is array(integer range <>) of t_chamber_evtfifo_rd;
+
+    --====================--
+    --==     OH Link    ==--
+    --====================--
+
+    type t_sync_fifo_status is record
+        ovf         : std_logic;
+        unf         : std_logic;
+    end record;
     
+    type t_gt_status is record
+        not_in_table    : std_logic;
+        disperr         : std_logic;
+    end record;
+
+    type t_oh_link_status is record
+        tk_error            : std_logic;
+        evt_rcvd            : std_logic;
+        tk_tx_sync_status   : t_sync_fifo_status;      
+        tk_rx_sync_status   : t_sync_fifo_status;      
+        tr0_rx_sync_status  : t_sync_fifo_status;      
+        tr1_rx_sync_status  : t_sync_fifo_status;
+        tk_rx_gt_status     : t_gt_status;     
+        tr0_rx_gt_status    : t_gt_status;     
+        tr1_rx_gt_status    : t_gt_status;     
+    end record;
+    
+    type t_oh_link_status_arr is array(integer range <>) of t_oh_link_status;    
+        
     --================--
     --== T1 command ==--
     --================--

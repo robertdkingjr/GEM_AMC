@@ -16,8 +16,9 @@ use work.gem_pkg.all;
 entity gt_tx_link_ila_wrapper is
   port (
       
-      clk_i   : in std_logic;
-      tx_i    : in t_gt_8b10b_tx_data
+      clk_i             : in std_logic;
+      kchar_i           : in std_logic_vector(1 downto 0);
+      data_i            : in std_logic_vector(15 downto 0)
   );
 end gt_tx_link_ila_wrapper;
 
@@ -26,10 +27,9 @@ architecture Behavioral of gt_tx_link_ila_wrapper is
     component gt_tx_link_ila is
         PORT(
             clk    : IN STD_LOGIC;
-            probe0 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-            probe1 : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
-            probe2 : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
-            probe3 : IN STD_LOGIC_VECTOR(3 DOWNTO 0));
+            probe0 : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+            probe1 : IN STD_LOGIC_VECTOR(1 DOWNTO 0)
+        );
     end component gt_tx_link_ila;
         
 begin
@@ -37,10 +37,8 @@ begin
     i_gt_tx_link_ila : component gt_tx_link_ila
         port map(
             clk    => clk_i,
-            probe0 => tx_i.txdata,
-            probe1 => tx_i.txcharisk,
-            probe2 => tx_i.txchardispmode,
-            probe3 => tx_i.txchardispval
+            probe0 => data_i,
+            probe1 => kchar_i
         );
         
 end Behavioral;

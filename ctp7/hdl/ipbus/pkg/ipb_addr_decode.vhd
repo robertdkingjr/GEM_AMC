@@ -7,13 +7,13 @@ package ipb_addr_decode is
 
     type t_integer_arr is array (natural range <>) of integer;
     type t_ipb_slv is record
-        oh_reg   : t_integer_arr(0 to 15);
-        oh_evt   : t_integer_arr(0 to 15);
-        counters : integer;
-        daq      : integer;
-        ttc      : integer;
-        trigger  : integer;
-        system   : integer;
+        oh_reg           : t_integer_arr(0 to 15);
+        oh_evt           : t_integer_arr(0 to 15);
+        oh_links         : integer;
+        daq              : integer;
+        ttc              : integer;
+        trigger          : integer;
+        system           : integer;
     end record;
 
     constant C_NUM_IPB_SLAVES : integer := 37;
@@ -22,7 +22,7 @@ package ipb_addr_decode is
     constant C_IPB_SLV : t_ipb_slv := (oh_reg => (0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30),
         oh_evt => (1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31),
         ttc => 32,
-        counters => 33,
+        oh_links => 33,
         daq => 34,
         trigger => 35,
         system => 36);
@@ -103,7 +103,7 @@ package body ipb_addr_decode is
     elsif std_match(addr, "--------0101111100000000000000--") then sel := C_IPB_SLV.oh_reg(15);
 
     -- other AMC modules
-    elsif std_match(addr, "--------0110000000000000--------") then sel := C_IPB_SLV.counters;
+    elsif std_match(addr, "--------01100000000-------------") then sel := C_IPB_SLV.oh_links;
     elsif std_match(addr, "--------011100000000000---------") then sel := C_IPB_SLV.daq;
     elsif std_match(addr, "--------10000000000-------------") then sel := C_IPB_SLV.trigger;
     elsif std_match(addr, "--------10010000000000000000----") then sel := C_IPB_SLV.system;
