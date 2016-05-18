@@ -223,6 +223,11 @@ void Client::process_write_txn(IPBusTxnHdr transaction_header, std::deque<uint32
 	}
 	uint32_t base_addr = request.front(); request.pop_front();
 
+  std::cout<< "Original address " <<std::hex << base_addr << std::dec << std::endl;
+  uint32_t modified_addr = this->modifyAddress(base_addr);
+  std::cout<< "Modified address " <<std::hex << modified_addr << std::dec << std::endl;
+  base_addr = modified_addr;
+
 	uint32_t data[transaction_header.words];
 	for (int i = 0; i < transaction_header.words; ++i) {
 		if (!request.size()) {
@@ -251,6 +256,10 @@ void Client::process_niread_txn(IPBusTxnHdr transaction_header, std::deque<uint3
 		return;
 	}
 	uint32_t base_addr = request.front(); request.pop_front();
+  std::cout<< "Original address " <<std::hex << base_addr << std::dec << std::endl;
+  uint32_t modified_addr = this->modifyAddress(base_addr);
+  std::cout<< "Modified address " <<std::hex << modified_addr << std::dec << std::endl;
+  base_addr = modified_addr;
 
 	std::deque<uint32_t> rspdata;
 	for (int i = 0; i < transaction_header.words; ++i) {
@@ -280,6 +289,11 @@ void Client::process_niwrite_txn(IPBusTxnHdr transaction_header, std::deque<uint
 	}
 	uint32_t base_addr = request.front(); request.pop_front();
 
+  std::cout<< "Original address " <<std::hex << base_addr << std::dec << std::endl;
+  uint32_t modified_addr = this->modifyAddress(base_addr);
+  std::cout<< "Modified address " <<std::hex << modified_addr << std::dec << std::endl;
+  base_addr = modified_addr;
+
 	for (int i = 0; i < transaction_header.words; ++i) {
 		uint32_t data = request.front(); request.pop_front();
 		if (memsvc_write(memsvc, base_addr, 1, &data) != 0) {
@@ -303,6 +317,11 @@ void Client::process_rmwbits_txn(IPBusTxnHdr transaction_header, std::deque<uint
 		return;
 	}
 	uint32_t base_addr = request.front(); request.pop_front();
+
+  std::cout<< "Original address " <<std::hex << base_addr << std::dec << std::endl;
+  uint32_t modified_addr = this->modifyAddress(base_addr);
+  std::cout<< "Modified address " <<std::hex << modified_addr << std::dec << std::endl;
+  base_addr = modified_addr;
 	uint32_t and_term = request.front(); request.pop_front();
 	uint32_t or_term = request.front(); request.pop_front();
 
@@ -334,6 +353,11 @@ void Client::process_rmwsum_txn(IPBusTxnHdr transaction_header, std::deque<uint3
 		return;
 	}
 	uint32_t base_addr = request.front(); request.pop_front();
+
+  std::cout<< "Original address " <<std::hex << base_addr << std::dec << std::endl;
+  uint32_t modified_addr = this->modifyAddress(base_addr);
+  std::cout<< "Modified address " <<std::hex << modified_addr << std::dec << std::endl;
+  base_addr = modified_addr;
 	uint32_t addend = request.front(); request.pop_front();
 
 	uint32_t predata;
