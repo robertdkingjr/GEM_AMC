@@ -787,7 +787,7 @@
                   </node>
             </node> <!-- end of CONTROL -->
     
-            <node id="STATUS"  address="0xc000000"
+            <node id="STATUS"  address="0xc000"
                     description="Status registers of the OptoHybrid">
 
                 <node id="FW"  address="0x0"  permission="r"
