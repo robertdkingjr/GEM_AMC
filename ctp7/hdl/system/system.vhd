@@ -136,11 +136,11 @@ architecture system_arch of system is
       axi_clk_o         : out STD_LOGIC;
       axi_reset_o       : out STD_LOGIC_VECTOR ( 0 to 0 );
       
-      ipb_axi_araddr    : out STD_LOGIC_VECTOR ( 31 downto 0 );
+      ipb_axi_araddr    : out STD_LOGIC_VECTOR ( 27 downto 0 );
       ipb_axi_arprot    : out STD_LOGIC_VECTOR ( 2 downto 0 );
       ipb_axi_arready   : in STD_LOGIC_VECTOR ( 0 to 0 );
       ipb_axi_arvalid   : out STD_LOGIC_VECTOR ( 0 to 0 );
-      ipb_axi_awaddr    : out STD_LOGIC_VECTOR ( 31 downto 0 );
+      ipb_axi_awaddr    : out STD_LOGIC_VECTOR ( 27 downto 0 );
       ipb_axi_awprot    : out STD_LOGIC_VECTOR ( 2 downto 0 );
       ipb_axi_awready   : in STD_LOGIC_VECTOR ( 0 to 0 );
       ipb_axi_awvalid   : out STD_LOGIC_VECTOR ( 0 to 0 );
@@ -338,11 +338,11 @@ begin
       axi_clk_o         => axi_clk,
       axi_reset_o       => axi_reset,
       
-      ipb_axi_araddr    => ipb_axi_araddr,
+      ipb_axi_araddr    => ipb_axi_araddr(27 downto 0),
       ipb_axi_arprot    => ipb_axi_arprot,
       ipb_axi_arready   => ipb_axi_arready,
       ipb_axi_arvalid   => ipb_axi_arvalid,
-      ipb_axi_awaddr    => ipb_axi_awaddr,
+      ipb_axi_awaddr    => ipb_axi_awaddr(27 downto 0),
       ipb_axi_awprot    => ipb_axi_awprot,
       ipb_axi_awready   => ipb_axi_awready,
       ipb_axi_awvalid   => ipb_axi_awvalid,

@@ -6,10 +6,19 @@ use work.gem_board_config_package.CFG_NUM_OF_OHs;
 
 package gem_pkg is
 
+    --========================--
+    --==  Firmware version  ==--
+    --========================-- 
+
+    constant C_FIRMWARE_DATE    : std_logic_vector(31 downto 0) := x"20160517";
+    constant C_FIRMWARE_MAJOR   : integer range 0 to 255        := 1;
+    constant C_FIRMWARE_MINOR   : integer range 0 to 255        := 3;
+    constant C_FIRMWARE_BUILD   : integer range 0 to 255        := 4;
+
     --======================--
     --==      General     ==--
     --======================-- 
-    
+        
     constant C_LED_PULSE_LENGTH_TTC_CLK : std_logic_vector(20 downto 0) := std_logic_vector(to_unsigned(1_600_000, 21));
 
     function count_ones(s : std_logic_vector) return integer;
@@ -180,7 +189,35 @@ package gem_pkg is
     end record;
 
     type t_chamber_evtfifo_rd_array is array(integer range <>) of t_chamber_evtfifo_rd;
+
+    --====================--
+    --==     OH Link    ==--
+    --====================--
+
+    type t_sync_fifo_status is record
+        ovf         : std_logic;
+        unf         : std_logic;
+    end record;
     
+    type t_gt_status is record
+        not_in_table    : std_logic;
+        disperr         : std_logic;
+    end record;
+
+    type t_oh_link_status is record
+        tk_error            : std_logic;
+        evt_rcvd            : std_logic;
+        tk_tx_sync_status   : t_sync_fifo_status;      
+        tk_rx_sync_status   : t_sync_fifo_status;      
+        tr0_rx_sync_status  : t_sync_fifo_status;      
+        tr1_rx_sync_status  : t_sync_fifo_status;
+        tk_rx_gt_status     : t_gt_status;     
+        tr0_rx_gt_status    : t_gt_status;     
+        tr1_rx_gt_status    : t_gt_status;     
+    end record;
+    
+    type t_oh_link_status_arr is array(integer range <>) of t_oh_link_status;    
+        
     --================--
     --== T1 command ==--
     --================--

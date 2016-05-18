@@ -35,32 +35,39 @@ entity optohybrid is
     );
     port(
         -- reset
-        reset_i             : in  std_logic;
+        reset_i                 : in  std_logic;
 
         -- TTC
-        ttc_clk_i           : in  t_ttc_clks;
-        ttc_cmds_i          : in  t_ttc_cmds;
+        ttc_clk_i               : in  t_ttc_clks;
+        ttc_cmds_i              : in  t_ttc_cmds;
         
         -- Control and tracking data link 
-        gth_rx_usrclk_i     : in  std_logic;
-        gth_tx_usrclk_i     : in  std_logic;
-        gth_rx_data_i       : in  t_gt_8b10b_rx_data;
-        gth_tx_data_o       : out t_gt_8b10b_tx_data;
+        gth_rx_usrclk_i         : in  std_logic;
+        gth_tx_usrclk_i         : in  std_logic;
+        gth_rx_data_i           : in  t_gt_8b10b_rx_data;
+        gth_tx_data_o           : out t_gt_8b10b_tx_data;
         
         -- Trigger links
-        gth_rx_trig_usrclk_i: in  std_logic_vector(1 downto 0);
-        gth_rx_trig_data_i  : in t_gt_8b10b_rx_data_arr(1 downto 0);
-        sbit_clusters_o     : out t_oh_sbits;
-        sbit_links_status_o : out t_oh_sbit_links;
+        gth_rx_trig_usrclk_i    : in  std_logic_vector(1 downto 0);
+        gth_rx_trig_data_i      : in t_gt_8b10b_rx_data_arr(1 downto 0);
+        sbit_clusters_o         : out t_oh_sbits;
+        sbit_links_status_o     : out t_oh_sbit_links;
         
         -- Tracking data link
-        tk_data_link_o      : out t_data_link;
+        tk_data_link_o          : out t_data_link;
         
-        -- IPbus
-        ipb_reset_i         : in  std_logic;
-        ipb_clk_i           : in  std_logic;
-        ipb_reg_miso_o      : out ipb_rbus;
-        ipb_reg_mosi_i      : in  ipb_wbus
+        -- OH reg forwarding IPbus
+        oh_reg_ipb_reset_i      : in  std_logic;
+        oh_reg_ipb_clk_i        : in  std_logic;
+        oh_reg_ipb_reg_miso_o   : out ipb_rbus;
+        oh_reg_ipb_reg_mosi_i   : in  ipb_wbus;
+
+        link_status_o           : out t_oh_link_status;
+        
+        -- temporary for debugging the clocks
+        debug_reset_cnt_i       : in std_logic;
+        debug_clk_cnt_o         : out std_logic_vector(31 downto 0)
+        
     );
 end optohybrid;
 
@@ -106,36 +113,24 @@ architecture optohybrid_arch of optohybrid is
 
     signal sync_tk_rx_din   : std_logic_vector(23 downto 0);
     signal sync_tk_rx_dout  : std_logic_vector(23 downto 0);
-    signal sync_tk_rx_full  : std_logic;
     signal sync_tk_rx_ovf   : std_logic;
-    signal sync_tk_rx_empty : std_logic;
-    signal sync_tk_rx_valid : std_logic;
     signal sync_tk_rx_unf   : std_logic;
 
     signal sync_tk_tx_din   : std_logic_vector(23 downto 0);
     signal sync_tk_tx_dout  : std_logic_vector(23 downto 0);
-    signal sync_tk_tx_full  : std_logic;
     signal sync_tk_tx_ovf   : std_logic;
-    signal sync_tk_tx_empty : std_logic;
-    signal sync_tk_tx_valid : std_logic;
     signal sync_tk_tx_unf   : std_logic;
 
     --== Trigger RX sync FIFOs ==--
 
     signal sync_tr0_rx_din   : std_logic_vector(23 downto 0);
     signal sync_tr0_rx_dout  : std_logic_vector(23 downto 0);
-    signal sync_tr0_rx_full  : std_logic;
     signal sync_tr0_rx_ovf   : std_logic;
-    signal sync_tr0_rx_empty : std_logic;
-    signal sync_tr0_rx_valid : std_logic;
     signal sync_tr0_rx_unf   : std_logic;
 
     signal sync_tr1_rx_din   : std_logic_vector(23 downto 0);
     signal sync_tr1_rx_dout  : std_logic_vector(23 downto 0);
-    signal sync_tr1_rx_full  : std_logic;
     signal sync_tr1_rx_ovf   : std_logic;
-    signal sync_tr1_rx_empty : std_logic;
-    signal sync_tr1_rx_valid : std_logic;
     signal sync_tr1_rx_unf   : std_logic;
 
     --== constant signals ==--
@@ -143,6 +138,14 @@ architecture optohybrid_arch of optohybrid is
     signal tied_to_ground   : std_logic;
     signal tied_to_vcc      : std_logic;    
 
+    --== debug signals ==--
+    
+    signal debug_tr_tx_link : t_gt_8b10b_tx_data;
+    signal debug_tr_rx_link : t_gt_8b10b_rx_data;
+
+    signal debug_tk_rx_clk_cnt : std_logic_vector(15 downto 0);
+    signal debug_ttc_clk_cnt   : std_logic_vector(15 downto 0);
+    
 begin
 
     gth_tx_data_o <= gth_tx_data;
@@ -154,6 +157,22 @@ begin
     vfat2_t1.lv1a <= ttc_cmds_i.l1a;
     vfat2_t1.bc0  <= ttc_cmds_i.bc0;
 
+    link_status_o.tk_tx_sync_status.ovf <= sync_tk_tx_ovf;
+    link_status_o.tk_tx_sync_status.unf <= sync_tk_tx_unf;
+    link_status_o.tk_rx_sync_status.ovf <= sync_tk_rx_ovf;
+    link_status_o.tk_rx_sync_status.unf <= sync_tk_rx_unf;
+    link_status_o.tr0_rx_sync_status.ovf <= sync_tr0_rx_ovf;
+    link_status_o.tr0_rx_sync_status.unf <= sync_tr0_rx_unf;
+    link_status_o.tr1_rx_sync_status.ovf <= sync_tr1_rx_ovf;
+    link_status_o.tr1_rx_sync_status.unf <= sync_tr1_rx_unf;
+
+    link_status_o.tk_rx_gt_status.not_in_table  <= sync_tk_rx_dout(21)  or sync_tk_rx_dout(20);
+    link_status_o.tk_rx_gt_status.disperr       <= sync_tk_rx_dout(23)  or sync_tk_rx_dout(22);
+    link_status_o.tr0_rx_gt_status.not_in_table <= sync_tr0_rx_dout(21) or sync_tr0_rx_dout(20);
+    link_status_o.tr0_rx_gt_status.disperr      <= sync_tr0_rx_dout(23) or sync_tr0_rx_dout(22);
+    link_status_o.tr1_rx_gt_status.not_in_table <= sync_tr1_rx_dout(21) or sync_tr1_rx_dout(20);
+    link_status_o.tr1_rx_gt_status.disperr      <= sync_tr1_rx_dout(23) or sync_tr1_rx_dout(22);
+    
     -- constant signals
     tied_to_ground <= '0';
     tied_to_vcc <= '1';
@@ -162,7 +181,7 @@ begin
     --==      Sync FIFOs      ==--
     --==========================--
 
-    ---==== Trancking / Control RX link ====---
+    ---==== Tracking / Control RX link ====---
     sync_tk_rx_din <= gth_rx_data_i.rxdisperr(1 downto 0) & gth_rx_data_i.rxnotintable(1 downto 0) & gth_rx_data_i.rxchariscomma(1 downto 0) & gth_rx_data_i.rxcharisk(1 downto 0) & gth_rx_data_i.rxdata(15 downto 0);
     i_sync_rx_tracking : component sync_fifo_8b10b_16
         port map(
@@ -173,14 +192,14 @@ begin
             wr_en     => tied_to_vcc,
             rd_en     => tied_to_vcc,
             dout      => sync_tk_rx_dout,
-            full      => sync_tk_rx_full,
+            full      => open,
             overflow  => sync_tk_rx_ovf,
-            empty     => sync_tk_rx_empty,
-            valid     => sync_tk_rx_valid,
+            empty     => open,
+            valid     => open,
             underflow => sync_tk_rx_unf
         );
 
-    ---==== Trancking / Control TX link ====---
+    ---==== Tracking / Control TX link ====---
     i_sync_tx_tracking : component sync_fifo_8b10b_16
         port map(
             rst       => reset_i,
@@ -190,10 +209,10 @@ begin
             wr_en     => tied_to_vcc,
             rd_en     => tied_to_vcc,
             dout      => sync_tk_tx_dout,
-            full      => sync_tk_tx_full,
+            full      => open,
             overflow  => sync_tk_tx_ovf,
-            empty     => sync_tk_tx_empty,
-            valid     => sync_tk_tx_valid,
+            empty     => open,
+            valid     => open,
             underflow => sync_tk_tx_unf
         );
         
@@ -211,10 +230,10 @@ begin
             wr_en     => tied_to_vcc,
             rd_en     => tied_to_vcc,
             dout      => sync_tr0_rx_dout,
-            full      => sync_tr0_rx_full,
+            full      => open,
             overflow  => sync_tr0_rx_ovf,
-            empty     => sync_tr0_rx_empty,
-            valid     => sync_tr0_rx_valid,
+            empty     => open,
+            valid     => open,
             underflow => sync_tr0_rx_unf
         );
 
@@ -229,10 +248,10 @@ begin
             wr_en     => tied_to_vcc,
             rd_en     => tied_to_vcc,
             dout      => sync_tr1_rx_dout,
-            full      => sync_tr1_rx_full,
+            full      => open,
             overflow  => sync_tr1_rx_ovf,
-            empty     => sync_tr1_rx_empty,
-            valid     => sync_tr1_rx_valid,
+            empty     => open,
+            valid     => open,
             underflow => sync_tr1_rx_unf
         );
 
@@ -264,8 +283,8 @@ begin
             req_data_o  => o2g_req_data,   
             evt_en_o    => evt_en,
             evt_data_o  => evt_data,
-            tk_error_o  => open,
-            evt_rcvd_o  => open,
+            tk_error_o  => link_status_o.tk_error,
+            evt_rcvd_o  => link_status_o.evt_rcvd,
             rx_kchar_i  => sync_tk_rx_dout(17 downto 16),   
             rx_data_i   => sync_tk_rx_dout(15 downto 0)        
         );
@@ -276,12 +295,12 @@ begin
     
     i_link_request : entity work.link_request
         port map(
-            ipb_clk_i       => ipb_clk_i,
+            ipb_clk_i       => oh_reg_ipb_clk_i,
             gtx_rx_clk_i    => ttc_clk_i.clk_160,
             gtx_tx_clk_i    => ttc_clk_i.clk_160,
-            reset_i         => ipb_reset_i,        
-            ipb_mosi_i      => ipb_reg_mosi_i,
-            ipb_miso_o      => ipb_reg_miso_o,        
+            reset_i         => oh_reg_ipb_reset_i,        
+            ipb_mosi_i      => oh_reg_ipb_reg_mosi_i,
+            ipb_miso_o      => oh_reg_ipb_reg_miso_o,        
             tx_en_i         => g2o_req_en,
             tx_valid_o      => g2o_req_valid,
             tx_data_o       => g2o_req_data,        
@@ -322,24 +341,63 @@ begin
         );
 
 
+    --============================--
+    --==        Debug clocks    ==--
+    --============================--
 
+    i_tk_rx_clk_counter : entity work.counter
+        generic map(
+            g_COUNTER_WIDTH => 16,
+            g_ALLOW_ROLLOVER => "TRUE"
+        )
+        port map(
+            ref_clk_i => gth_rx_usrclk_i,
+            reset_i   => debug_reset_cnt_i,
+            en_i      => '1',
+            count_o   => debug_tk_rx_clk_cnt
+        );
+        
+    i_ttc_clk_counter : entity work.counter
+        generic map(
+            g_COUNTER_WIDTH  => 16,
+            g_ALLOW_ROLLOVER => "TRUE"
+        )
+        port map(
+            ref_clk_i => ttc_clk_i.clk_160,
+            reset_i   => debug_reset_cnt_i,
+            en_i      => '1',
+            count_o   => debug_ttc_clk_cnt
+        );
+        
+    debug_clk_cnt_o(15 downto 0) <= debug_tk_rx_clk_cnt;
+    debug_clk_cnt_o(31 downto 16) <= debug_ttc_clk_cnt;
+        
     --============================--
     --==        Debug           ==--
     --============================--
     
---    gen_debug:
---    if g_DEBUG = "TRUE" generate
---        gt_rx_link_ila_inst : entity work.gt_rx_link_ila_wrapper
---            port map(
---                clk_i => gth_rx_usrclk_i,
---                rx_i  => gth_rx_data_i
---            );
---        gt_tx_link_ila_inst : entity work.gt_tx_link_ila_wrapper
---            port map(
---                clk_i => gth_tx_usrclk_i,
---                tx_i  => gth_tx_data
---            );
---    end generate;
-     
+    gen_debug:
+    if g_DEBUG = "TRUE" generate
+        
+        --debug_tr_tx_link.txcharisk(1 downto 0) <= sync_tk_tx_din(17 downto 16); 
+
+        gt_tx_link_ila_inst : entity work.gt_tx_link_ila_wrapper
+            port map(
+                clk_i => ttc_clk_i.clk_160,
+                kchar_i => sync_tk_tx_din(17 downto 16),
+                data_i => sync_tk_tx_din(15 downto 0)
+            );
+        
+        sync_tk_rx_din <= gth_rx_data_i.rxdisperr(1 downto 0) & gth_rx_data_i.rxnotintable(1 downto 0) & gth_rx_data_i.rxchariscomma(1 downto 0) & gth_rx_data_i.rxcharisk(1 downto 0) & gth_rx_data_i.rxdata(15 downto 0);
+        gt_rx_link_ila_inst : entity work.gt_rx_link_ila_wrapper
+            port map(
+                clk_i => ttc_clk_i.clk_160,
+                kchar_i => sync_tk_rx_dout(17 downto 16),
+                comma_i => sync_tk_rx_dout(19 downto 18),
+                not_in_table_i => sync_tk_rx_dout(21 downto 20),
+                disperr_i => sync_tk_rx_dout(23 downto 22),
+                data_i => sync_tk_rx_dout(15 downto 0)
+            );
+    end generate;     
      
 end optohybrid_arch;

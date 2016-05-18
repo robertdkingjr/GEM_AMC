@@ -1,10 +1,10 @@
 #!/bin/sh
 
 MODULE=$1
-if [ -z "$INTERVAL" ]; then
+if [ -z "$MODULE" ]; then
     echo "Usage: this_script.sh <module_name>"
     echo "Available modules:"
-    echo "TTC"    echo "TRIGGER"    echo "GEM_SYSTEM"    echo "DAQ"    echo "OptoHybrid"    exit
+    echo "TTC"    echo "TRIGGER"    echo "GEM_SYSTEM"    echo "DAQ"    echo "OH_LINKS"    echo "OH"    exit
 fi
 
 if [ "$MODULE" = "TTC" ]; then
@@ -163,9 +163,10 @@ if [ "$MODULE" = "GEM_SYSTEM" ]; then
     printf 'GEM_AMC.GEM_SYSTEM.RELEASE_BUILD              = 0x%x\n' $(( (`mpeek 0x6640000c` & 0x000000ff) >> 0 ))
     printf 'GEM_AMC.GEM_SYSTEM.RELEASE_MINOR              = 0x%x\n' $(( (`mpeek 0x6640000c` & 0x0000ff00) >> 8 ))
     printf 'GEM_AMC.GEM_SYSTEM.RELEASE_MAJOR              = 0x%x\n' $(( (`mpeek 0x6640000c` & 0x00ff0000) >> 16 ))
-    printf 'GEM_AMC.GEM_SYSTEM.RELEASE_DAY                = 0x%x\n' $(( (`mpeek 0x66400010` & 0x000000ff) >> 0 ))
-    printf 'GEM_AMC.GEM_SYSTEM.RELEASE_MONTH              = 0x%x\n' $(( (`mpeek 0x66400010` & 0x00000f00) >> 8 ))
-    printf 'GEM_AMC.GEM_SYSTEM.RELEASE_YEAR               = 0x%x\n' $(( (`mpeek 0x66400010` & 0xfff00000) >> 20 ))
+    printf 'GEM_AMC.GEM_SYSTEM.RELEASE_DATE               = 0x%x\n' `mpeek 0x66400010` 
+    printf 'GEM_AMC.GEM_SYSTEM.LEGACY_SYSTEM.BOARD_ID     = 0x%x\n' `mpeek 0x66440000` 
+    printf 'GEM_AMC.GEM_SYSTEM.LEGACY_SYSTEM.SYSTEM_ID    = 0x%x\n' `mpeek 0x66440004` 
+    printf 'GEM_AMC.GEM_SYSTEM.LEGACY_SYSTEM.FIRMWARE_VERSION = 0x%x\n' `mpeek 0x66440008` 
 fi
 
 if [ "$MODULE" = "DAQ" ]; then
@@ -244,42 +245,113 @@ if [ "$MODULE" = "DAQ" ]; then
     printf 'GEM_AMC.DAQ.OH3.LASTBLOCK6                    = 0x%x\n' `mpeek 0x65c0013c` 
 fi
 
-if [ "$MODULE" = "OptoHybrid" ]; then
-    printf 'GEM_AMC.OptoHybrid.OH0.FW_DATE                = 0x%x\n' `mpeek 0x65030000` 
-    printf 'GEM_AMC.OptoHybrid.OH1.FW_DATE                = 0x%x\n' `mpeek 0x65070000` 
-    printf 'GEM_AMC.OptoHybrid.OH2.FW_DATE                = 0x%x\n' `mpeek 0x650b0000` 
-    printf 'GEM_AMC.OptoHybrid.OH3.FW_DATE                = 0x%x\n' `mpeek 0x650f0000` 
-    printf 'GEM_AMC.OptoHybrid.OH0.CONTROL.VFAT.MASK      = 0x%x\n' `mpeek 0x91000000` 
-    printf 'GEM_AMC.OptoHybrid.OH0.CONTROL.TRIGGER.SOURCE = 0x%x\n' $(( (`mpeek 0x91000004` & 0x00000007) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH0.CONTROL.TRIGGER.LOOPBACK = 0x%x\n' $(( (`mpeek 0x91000008` & 0x0000001f) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH0.CONTROL.CLOCK.REF_CLK  = 0x%x\n' $(( (`mpeek 0x91000010` & 0x00000003) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH1.CONTROL.VFAT.MASK      = 0x%x\n' `mpeek 0x91040000` 
-    printf 'GEM_AMC.OptoHybrid.OH1.CONTROL.TRIGGER.SOURCE = 0x%x\n' $(( (`mpeek 0x91040004` & 0x00000007) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH1.CONTROL.TRIGGER.LOOPBACK = 0x%x\n' $(( (`mpeek 0x91040008` & 0x0000001f) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH1.CONTROL.CLOCK.REF_CLK  = 0x%x\n' $(( (`mpeek 0x91040010` & 0x00000003) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH2.CONTROL.VFAT.MASK      = 0x%x\n' `mpeek 0x91080000` 
-    printf 'GEM_AMC.OptoHybrid.OH2.CONTROL.TRIGGER.SOURCE = 0x%x\n' $(( (`mpeek 0x91080004` & 0x00000007) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH2.CONTROL.TRIGGER.LOOPBACK = 0x%x\n' $(( (`mpeek 0x91080008` & 0x0000001f) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH2.CONTROL.CLOCK.REF_CLK  = 0x%x\n' $(( (`mpeek 0x91080010` & 0x00000003) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH3.CONTROL.VFAT.MASK      = 0x%x\n' `mpeek 0x910c0000` 
-    printf 'GEM_AMC.OptoHybrid.OH3.CONTROL.TRIGGER.SOURCE = 0x%x\n' $(( (`mpeek 0x910c0004` & 0x00000007) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH3.CONTROL.TRIGGER.LOOPBACK = 0x%x\n' $(( (`mpeek 0x910c0008` & 0x0000001f) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH3.CONTROL.CLOCK.REF_CLK  = 0x%x\n' $(( (`mpeek 0x910c0010` & 0x00000003) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH0.STATUS.FPGA_PLL_LOCK   = 0x%x\n' $(( (`mpeek 0x95000004` & 0x00000001) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH0.STATUS.EXT_PLL_LOCK    = 0x%x\n' $(( (`mpeek 0x95000008` & 0x00000001) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH0.STATUS.CDCE_LOCK       = 0x%x\n' $(( (`mpeek 0x9500000c` & 0x00000001) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH0.STATUS.GTX_LOCK        = 0x%x\n' $(( (`mpeek 0x95000010` & 0x00000001) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH1.STATUS.FPGA_PLL_LOCK   = 0x%x\n' $(( (`mpeek 0x95040004` & 0x00000001) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH1.STATUS.EXT_PLL_LOCK    = 0x%x\n' $(( (`mpeek 0x95040008` & 0x00000001) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH1.STATUS.CDCE_LOCK       = 0x%x\n' $(( (`mpeek 0x9504000c` & 0x00000001) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH1.STATUS.GTX_LOCK        = 0x%x\n' $(( (`mpeek 0x95040010` & 0x00000001) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH2.STATUS.FPGA_PLL_LOCK   = 0x%x\n' $(( (`mpeek 0x95080004` & 0x00000001) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH2.STATUS.EXT_PLL_LOCK    = 0x%x\n' $(( (`mpeek 0x95080008` & 0x00000001) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH2.STATUS.CDCE_LOCK       = 0x%x\n' $(( (`mpeek 0x9508000c` & 0x00000001) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH2.STATUS.GTX_LOCK        = 0x%x\n' $(( (`mpeek 0x95080010` & 0x00000001) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH3.STATUS.FPGA_PLL_LOCK   = 0x%x\n' $(( (`mpeek 0x950c0004` & 0x00000001) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH3.STATUS.EXT_PLL_LOCK    = 0x%x\n' $(( (`mpeek 0x950c0008` & 0x00000001) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH3.STATUS.CDCE_LOCK       = 0x%x\n' $(( (`mpeek 0x950c000c` & 0x00000001) >> 0 ))
-    printf 'GEM_AMC.OptoHybrid.OH3.STATUS.GTX_LOCK        = 0x%x\n' $(( (`mpeek 0x950c0010` & 0x00000001) >> 0 ))
+if [ "$MODULE" = "OH_LINKS" ]; then
+    printf 'GEM_AMC.OH_LINKS.OH0.TRACK_LINK_ERROR_CNT     = 0x%x\n' `mpeek 0x65800400` 
+    printf 'GEM_AMC.OH_LINKS.OH0.VFAT_BLOCK_CNT           = 0x%x\n' `mpeek 0x65800404` 
+    printf 'GEM_AMC.OH_LINKS.OH0.TRACK_LINK_TX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65800408` 
+    printf 'GEM_AMC.OH_LINKS.OH0.TRACK_LINK_TX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x6580040c` 
+    printf 'GEM_AMC.OH_LINKS.OH0.TRACK_LINK_RX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65800410` 
+    printf 'GEM_AMC.OH_LINKS.OH0.TRACK_LINK_RX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x65800414` 
+    printf 'GEM_AMC.OH_LINKS.OH0.TRIG0_LINK_RX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65800418` 
+    printf 'GEM_AMC.OH_LINKS.OH0.TRIG0_LINK_RX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x6580041c` 
+    printf 'GEM_AMC.OH_LINKS.OH0.TRIG1_LINK_RX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65800420` 
+    printf 'GEM_AMC.OH_LINKS.OH0.TRIG1_LINK_RX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x65800424` 
+    printf 'GEM_AMC.OH_LINKS.OH0.TRACK_LINK_NOT_IN_TABLE_CNT = 0x%x\n' `mpeek 0x65800428` 
+    printf 'GEM_AMC.OH_LINKS.OH0.TRACK_LINK_DISPERR_CNT   = 0x%x\n' `mpeek 0x6580042c` 
+    printf 'GEM_AMC.OH_LINKS.OH0.TRIG0_LINK_NOT_IN_TABLE_CNT = 0x%x\n' `mpeek 0x65800430` 
+    printf 'GEM_AMC.OH_LINKS.OH0.TRIG0_LINK_DISPERR_CNT   = 0x%x\n' `mpeek 0x65800434` 
+    printf 'GEM_AMC.OH_LINKS.OH0.TRIG1_LINK_NOT_IN_TABLE_CNT = 0x%x\n' `mpeek 0x65800438` 
+    printf 'GEM_AMC.OH_LINKS.OH0.TRIG1_LINK_DISPERR_CNT   = 0x%x\n' `mpeek 0x6580043c` 
+    printf 'GEM_AMC.OH_LINKS.OH0.DEBUG_CLK_CNT            = 0x%x\n' `mpeek 0x65800440` 
+    printf 'GEM_AMC.OH_LINKS.OH1.TRACK_LINK_ERROR_CNT     = 0x%x\n' `mpeek 0x65800800` 
+    printf 'GEM_AMC.OH_LINKS.OH1.VFAT_BLOCK_CNT           = 0x%x\n' `mpeek 0x65800804` 
+    printf 'GEM_AMC.OH_LINKS.OH1.TRACK_LINK_TX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65800808` 
+    printf 'GEM_AMC.OH_LINKS.OH1.TRACK_LINK_TX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x6580080c` 
+    printf 'GEM_AMC.OH_LINKS.OH1.TRACK_LINK_RX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65800810` 
+    printf 'GEM_AMC.OH_LINKS.OH1.TRACK_LINK_RX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x65800814` 
+    printf 'GEM_AMC.OH_LINKS.OH1.TRIG0_LINK_RX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65800818` 
+    printf 'GEM_AMC.OH_LINKS.OH1.TRIG0_LINK_RX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x6580081c` 
+    printf 'GEM_AMC.OH_LINKS.OH1.TRIG1_LINK_RX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65800820` 
+    printf 'GEM_AMC.OH_LINKS.OH1.TRIG1_LINK_RX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x65800824` 
+    printf 'GEM_AMC.OH_LINKS.OH1.TRACK_LINK_NOT_IN_TABLE_CNT = 0x%x\n' `mpeek 0x65800828` 
+    printf 'GEM_AMC.OH_LINKS.OH1.TRACK_LINK_DISPERR_CNT   = 0x%x\n' `mpeek 0x6580082c` 
+    printf 'GEM_AMC.OH_LINKS.OH1.TRIG0_LINK_NOT_IN_TABLE_CNT = 0x%x\n' `mpeek 0x65800830` 
+    printf 'GEM_AMC.OH_LINKS.OH1.TRIG0_LINK_DISPERR_CNT   = 0x%x\n' `mpeek 0x65800834` 
+    printf 'GEM_AMC.OH_LINKS.OH1.TRIG1_LINK_NOT_IN_TABLE_CNT = 0x%x\n' `mpeek 0x65800838` 
+    printf 'GEM_AMC.OH_LINKS.OH1.TRIG1_LINK_DISPERR_CNT   = 0x%x\n' `mpeek 0x6580083c` 
+    printf 'GEM_AMC.OH_LINKS.OH1.DEBUG_CLK_CNT            = 0x%x\n' `mpeek 0x65800840` 
+    printf 'GEM_AMC.OH_LINKS.OH2.TRACK_LINK_ERROR_CNT     = 0x%x\n' `mpeek 0x65800c00` 
+    printf 'GEM_AMC.OH_LINKS.OH2.VFAT_BLOCK_CNT           = 0x%x\n' `mpeek 0x65800c04` 
+    printf 'GEM_AMC.OH_LINKS.OH2.TRACK_LINK_TX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65800c08` 
+    printf 'GEM_AMC.OH_LINKS.OH2.TRACK_LINK_TX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x65800c0c` 
+    printf 'GEM_AMC.OH_LINKS.OH2.TRACK_LINK_RX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65800c10` 
+    printf 'GEM_AMC.OH_LINKS.OH2.TRACK_LINK_RX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x65800c14` 
+    printf 'GEM_AMC.OH_LINKS.OH2.TRIG0_LINK_RX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65800c18` 
+    printf 'GEM_AMC.OH_LINKS.OH2.TRIG0_LINK_RX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x65800c1c` 
+    printf 'GEM_AMC.OH_LINKS.OH2.TRIG1_LINK_RX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65800c20` 
+    printf 'GEM_AMC.OH_LINKS.OH2.TRIG1_LINK_RX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x65800c24` 
+    printf 'GEM_AMC.OH_LINKS.OH2.TRACK_LINK_NOT_IN_TABLE_CNT = 0x%x\n' `mpeek 0x65800c28` 
+    printf 'GEM_AMC.OH_LINKS.OH2.TRACK_LINK_DISPERR_CNT   = 0x%x\n' `mpeek 0x65800c2c` 
+    printf 'GEM_AMC.OH_LINKS.OH2.TRIG0_LINK_NOT_IN_TABLE_CNT = 0x%x\n' `mpeek 0x65800c30` 
+    printf 'GEM_AMC.OH_LINKS.OH2.TRIG0_LINK_DISPERR_CNT   = 0x%x\n' `mpeek 0x65800c34` 
+    printf 'GEM_AMC.OH_LINKS.OH2.TRIG1_LINK_NOT_IN_TABLE_CNT = 0x%x\n' `mpeek 0x65800c38` 
+    printf 'GEM_AMC.OH_LINKS.OH2.TRIG1_LINK_DISPERR_CNT   = 0x%x\n' `mpeek 0x65800c3c` 
+    printf 'GEM_AMC.OH_LINKS.OH2.DEBUG_CLK_CNT            = 0x%x\n' `mpeek 0x65800c40` 
+    printf 'GEM_AMC.OH_LINKS.OH3.TRACK_LINK_ERROR_CNT     = 0x%x\n' `mpeek 0x65801000` 
+    printf 'GEM_AMC.OH_LINKS.OH3.VFAT_BLOCK_CNT           = 0x%x\n' `mpeek 0x65801004` 
+    printf 'GEM_AMC.OH_LINKS.OH3.TRACK_LINK_TX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65801008` 
+    printf 'GEM_AMC.OH_LINKS.OH3.TRACK_LINK_TX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x6580100c` 
+    printf 'GEM_AMC.OH_LINKS.OH3.TRACK_LINK_RX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65801010` 
+    printf 'GEM_AMC.OH_LINKS.OH3.TRACK_LINK_RX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x65801014` 
+    printf 'GEM_AMC.OH_LINKS.OH3.TRIG0_LINK_RX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65801018` 
+    printf 'GEM_AMC.OH_LINKS.OH3.TRIG0_LINK_RX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x6580101c` 
+    printf 'GEM_AMC.OH_LINKS.OH3.TRIG1_LINK_RX_SYNC_OVF_CNT = 0x%x\n' `mpeek 0x65801020` 
+    printf 'GEM_AMC.OH_LINKS.OH3.TRIG1_LINK_RX_SYNC_UNF_CNT = 0x%x\n' `mpeek 0x65801024` 
+    printf 'GEM_AMC.OH_LINKS.OH3.TRACK_LINK_NOT_IN_TABLE_CNT = 0x%x\n' `mpeek 0x65801028` 
+    printf 'GEM_AMC.OH_LINKS.OH3.TRACK_LINK_DISPERR_CNT   = 0x%x\n' `mpeek 0x6580102c` 
+    printf 'GEM_AMC.OH_LINKS.OH3.TRIG0_LINK_NOT_IN_TABLE_CNT = 0x%x\n' `mpeek 0x65801030` 
+    printf 'GEM_AMC.OH_LINKS.OH3.TRIG0_LINK_DISPERR_CNT   = 0x%x\n' `mpeek 0x65801034` 
+    printf 'GEM_AMC.OH_LINKS.OH3.TRIG1_LINK_NOT_IN_TABLE_CNT = 0x%x\n' `mpeek 0x65801038` 
+    printf 'GEM_AMC.OH_LINKS.OH3.TRIG1_LINK_DISPERR_CNT   = 0x%x\n' `mpeek 0x6580103c` 
+    printf 'GEM_AMC.OH_LINKS.OH3.DEBUG_CLK_CNT            = 0x%x\n' `mpeek 0x65801040` 
+fi
+
+if [ "$MODULE" = "OH" ]; then
+    printf 'GEM_AMC.OH.OH0.FW_DATE                        = 0x%x\n' `mpeek 0x65030000` 
+    printf 'GEM_AMC.OH.OH1.FW_DATE                        = 0x%x\n' `mpeek 0x65070000` 
+    printf 'GEM_AMC.OH.OH2.FW_DATE                        = 0x%x\n' `mpeek 0x650b0000` 
+    printf 'GEM_AMC.OH.OH3.FW_DATE                        = 0x%x\n' `mpeek 0x650f0000` 
+    printf 'GEM_AMC.OH.OH0.CONTROL.VFAT.MASK              = 0x%x\n' `mpeek 0x91000000` 
+    printf 'GEM_AMC.OH.OH0.CONTROL.TRIGGER.SOURCE         = 0x%x\n' $(( (`mpeek 0x91000004` & 0x00000007) >> 0 ))
+    printf 'GEM_AMC.OH.OH0.CONTROL.TRIGGER.LOOPBACK       = 0x%x\n' $(( (`mpeek 0x91000008` & 0x0000001f) >> 0 ))
+    printf 'GEM_AMC.OH.OH0.CONTROL.CLOCK.REF_CLK          = 0x%x\n' $(( (`mpeek 0x91000010` & 0x00000003) >> 0 ))
+    printf 'GEM_AMC.OH.OH1.CONTROL.VFAT.MASK              = 0x%x\n' `mpeek 0x91040000` 
+    printf 'GEM_AMC.OH.OH1.CONTROL.TRIGGER.SOURCE         = 0x%x\n' $(( (`mpeek 0x91040004` & 0x00000007) >> 0 ))
+    printf 'GEM_AMC.OH.OH1.CONTROL.TRIGGER.LOOPBACK       = 0x%x\n' $(( (`mpeek 0x91040008` & 0x0000001f) >> 0 ))
+    printf 'GEM_AMC.OH.OH1.CONTROL.CLOCK.REF_CLK          = 0x%x\n' $(( (`mpeek 0x91040010` & 0x00000003) >> 0 ))
+    printf 'GEM_AMC.OH.OH2.CONTROL.VFAT.MASK              = 0x%x\n' `mpeek 0x91080000` 
+    printf 'GEM_AMC.OH.OH2.CONTROL.TRIGGER.SOURCE         = 0x%x\n' $(( (`mpeek 0x91080004` & 0x00000007) >> 0 ))
+    printf 'GEM_AMC.OH.OH2.CONTROL.TRIGGER.LOOPBACK       = 0x%x\n' $(( (`mpeek 0x91080008` & 0x0000001f) >> 0 ))
+    printf 'GEM_AMC.OH.OH2.CONTROL.CLOCK.REF_CLK          = 0x%x\n' $(( (`mpeek 0x91080010` & 0x00000003) >> 0 ))
+    printf 'GEM_AMC.OH.OH3.CONTROL.VFAT.MASK              = 0x%x\n' `mpeek 0x910c0000` 
+    printf 'GEM_AMC.OH.OH3.CONTROL.TRIGGER.SOURCE         = 0x%x\n' $(( (`mpeek 0x910c0004` & 0x00000007) >> 0 ))
+    printf 'GEM_AMC.OH.OH3.CONTROL.TRIGGER.LOOPBACK       = 0x%x\n' $(( (`mpeek 0x910c0008` & 0x0000001f) >> 0 ))
+    printf 'GEM_AMC.OH.OH3.CONTROL.CLOCK.REF_CLK          = 0x%x\n' $(( (`mpeek 0x910c0010` & 0x00000003) >> 0 ))
+    printf 'GEM_AMC.OH.OH0.STATUS.FPGA_PLL_LOCK           = 0x%x\n' $(( (`mpeek 0x95000004` & 0x00000001) >> 0 ))
+    printf 'GEM_AMC.OH.OH0.STATUS.EXT_PLL_LOCK            = 0x%x\n' $(( (`mpeek 0x95000008` & 0x00000001) >> 0 ))
+    printf 'GEM_AMC.OH.OH0.STATUS.CDCE_LOCK               = 0x%x\n' $(( (`mpeek 0x9500000c` & 0x00000001) >> 0 ))
+    printf 'GEM_AMC.OH.OH0.STATUS.GTX_LOCK                = 0x%x\n' $(( (`mpeek 0x95000010` & 0x00000001) >> 0 ))
+    printf 'GEM_AMC.OH.OH1.STATUS.FPGA_PLL_LOCK           = 0x%x\n' $(( (`mpeek 0x95040004` & 0x00000001) >> 0 ))
+    printf 'GEM_AMC.OH.OH1.STATUS.EXT_PLL_LOCK            = 0x%x\n' $(( (`mpeek 0x95040008` & 0x00000001) >> 0 ))
+    printf 'GEM_AMC.OH.OH1.STATUS.CDCE_LOCK               = 0x%x\n' $(( (`mpeek 0x9504000c` & 0x00000001) >> 0 ))
+    printf 'GEM_AMC.OH.OH1.STATUS.GTX_LOCK                = 0x%x\n' $(( (`mpeek 0x95040010` & 0x00000001) >> 0 ))
+    printf 'GEM_AMC.OH.OH2.STATUS.FPGA_PLL_LOCK           = 0x%x\n' $(( (`mpeek 0x95080004` & 0x00000001) >> 0 ))
+    printf 'GEM_AMC.OH.OH2.STATUS.EXT_PLL_LOCK            = 0x%x\n' $(( (`mpeek 0x95080008` & 0x00000001) >> 0 ))
+    printf 'GEM_AMC.OH.OH2.STATUS.CDCE_LOCK               = 0x%x\n' $(( (`mpeek 0x9508000c` & 0x00000001) >> 0 ))
+    printf 'GEM_AMC.OH.OH2.STATUS.GTX_LOCK                = 0x%x\n' $(( (`mpeek 0x95080010` & 0x00000001) >> 0 ))
+    printf 'GEM_AMC.OH.OH3.STATUS.FPGA_PLL_LOCK           = 0x%x\n' $(( (`mpeek 0x950c0004` & 0x00000001) >> 0 ))
+    printf 'GEM_AMC.OH.OH3.STATUS.EXT_PLL_LOCK            = 0x%x\n' $(( (`mpeek 0x950c0008` & 0x00000001) >> 0 ))
+    printf 'GEM_AMC.OH.OH3.STATUS.CDCE_LOCK               = 0x%x\n' $(( (`mpeek 0x950c000c` & 0x00000001) >> 0 ))
+    printf 'GEM_AMC.OH.OH3.STATUS.GTX_LOCK                = 0x%x\n' $(( (`mpeek 0x950c0010` & 0x00000001) >> 0 ))
 fi
 
