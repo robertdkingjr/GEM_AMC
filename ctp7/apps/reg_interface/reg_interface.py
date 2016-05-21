@@ -16,14 +16,12 @@ class Prompt(Cmd):
 
 
     def do_read(self, args):
-        """Reads register. USAGE: read <register name>"""
+        """Reads register. USAGE: read <register name>. OUTPUT <address> <mask> <permission> <name> <value>"""
         reg = getNode(args)
         if reg is not None: 
-            address = reg.address
-            address = address << 2
-            address = address + 0x64000000
+            address = reg.real_address
             if 'r' in str(reg.permission):
-                print hex(address),'\t',reg.name,'\t',readReg(reg)
+                print hex(address),'{0:#010x}'.format(reg.mask),reg.permission,'\t',reg.name,'\t',readReg(reg)
             elif reg.isModule: print 'This is a module!'
             else: print hex(address),'\t',reg.name,'\t','No read permission!' 
         else:
@@ -42,8 +40,8 @@ class Prompt(Cmd):
         if not text:
             completions = REGS
         else:
-            completions = [ f for f in REGS
-                            if f.startswith(text) ]
+            
+            completions = [ f for f in REGS if f.startswith(text) ]
         return completions
 
     def do_write(self, args):
@@ -52,17 +50,19 @@ class Prompt(Cmd):
         if len(arglist)==2:
             reg = getNode(arglist[0])
             if reg is not None:
-                value = int(arglist[1])
-                address = reg.address
-                address = address << 2
-                address = address + 0x64000000
+                try: value = parseInt(arglist[1])
+                except: 
+                    print 'Write Value must be a number!'
+                    return
+                address = reg.real_address
                 print 'Register:',reg.name
                 print 'Address:',hex(address)
-                print 'Value:',value
+                print 'Mask :','{0:#010x}'.format(reg.mask)
+                print 'Value:','{0:#010x}'.format(value)
                 if 'w' in str(reg.permission):
-                    os.system('mpoke '+str(hex(address))+' '+str(value))
-                    print 'Register Written.'
-                else: print 'No write permission!'
+                    print writeReg(reg,value)
+                else: print 'No write permission!'    
+                
             else: print arglist[0],'not found!'
         else: print "Incorrect number of arguments!"
 
@@ -95,7 +95,7 @@ class Prompt(Cmd):
                     address = reg.address
                     address = address << 2
                     address = address + 0x64000000
-                    print hex(address).rstrip('L'),'\t',tabPad(reg.name,56),readReg(reg)
+                    print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7),readReg(reg)
         else: print args,'not found!'
 
     def complete_readGroup(self, text, line, begidx, endidx):
@@ -121,7 +121,7 @@ class Prompt(Cmd):
                 address = reg.address
                 address = address << 2
                 address = address + 0x64000000
-                print hex(address),'\t',tabPad(reg.name,32),readReg(reg)
+                print hex(address),reg.permission,'\t',tabPad(reg.name,4),readReg(reg)
 
     def do_readKW(self, args):
         """Read all registers containing KeyWord. USAGE: readKW <KeyWord>"""
@@ -131,9 +131,9 @@ class Prompt(Cmd):
                 address = address << 2
                 address = address + 0x64000000
                 if 'r' in str(reg.permission):
-                    print hex(address),'\t',tabPad(reg.name,56),readReg(reg)
-                elif reg.isModule: print hex(address),'\t',tabPad(reg.name,56),'Module!'
-                else: print hex(address),'\t',tabPad(reg.name,56),'No read permission!' 
+                    print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7),readReg(reg)
+                elif reg.isModule: print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7) #,'Module!'
+                else: print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7) #,'No read permission!' 
         else: print args,'not found!'
 
     def do_readAll(self, args):
@@ -143,14 +143,33 @@ class Prompt(Cmd):
             address = address << 2
             address = address + 0x64000000
             if 'r' in str(reg.permission):
-                print hex(address).rstrip('L'),'\t',tabPad(reg.name,56),readReg(reg)
+                print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7),readReg(reg) 
             #elif reg.isModule: print reg.name,'is a module!'
-            #else: print hex(address),'\t',tabPad(reg.name,56),'No read permission!' 
+            #else: print hex(address),'\t',tabPad(reg.name,7),'No read permission!' 
 
     def do_exit(self, args):
         """Exit program"""
         return True
 
+    def do_readAddress(self, args):
+        try: reg = getNodeFromAddress(parseInt(args))
+        except: 
+            print 'Error retrieving node.'
+            return
+        if reg is not None: 
+            address = reg.real_address
+            if 'r' in str(reg.permission):
+                print hex(address),'{0:#010x}'.format(reg.mask),reg.permission,'\t',reg.name,'\t',readReg(reg)
+            elif reg.isModule: print 'This is a module!'
+            else: print hex(address),'\t',reg.name,'\t','No read permission!' 
+        else:
+            print args,'not found!' 
+
+    def do_readRawAddress(self, args):
+        """Not fully implemented. """
+        try: print readRawAddress(args)
+        except: print 'Error reading address.'
+            
 
 if __name__ == '__main__':
     parseXML()
