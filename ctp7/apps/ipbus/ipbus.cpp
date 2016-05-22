@@ -1,4 +1,4 @@
-#define MAX_CLIENTS 50
+#define MAX_CLIENTS 1000
 //#define IP_ACL_FILE "/mnt/persistent/config/rpcsvc.acl"
 
 #include <arpa/inet.h>
@@ -12,6 +12,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <vector>
+#include <iostream>
 
 #include "ipacl.h"
 #include "Client.h"
@@ -54,7 +55,9 @@ int main(int argc, char *argv[])
 		if (clients.size() < MAX_CLIENTS) {
 			FD_SET(listenfd, &rfds);
 			maxfd = listenfd;
-		}
+		} else {
+      exit(1);
+    }
 		for (auto it = clients.begin(), eit = clients.end(); it != eit; ++it) {
 			if (it->write_ready()) {
 				FD_SET(it->fd, &wfds);
