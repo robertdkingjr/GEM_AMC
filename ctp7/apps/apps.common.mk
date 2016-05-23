@@ -9,6 +9,9 @@ CFLAGS= -fomit-frame-pointer -pipe -fno-common -fno-builtin \
 LDLIBS= -L$(PETA_STAGE)/lib \
 	-L$(PETA_STAGE)/usr/lib
 
+LDFLAGS= -L$(PETA_STAGE)/lib \
+	-L$(PETA_STAGE)/usr/lib
+
 CXX=arm-xilinx-linux-gnueabi-g++
 CC=arm-xilinx-linux-gnueabi-gcc
 

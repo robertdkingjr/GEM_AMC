@@ -2,12 +2,14 @@
 
 import uhal
 
-hw = uhal.getDevice('testctp7','ipbustcp-2.0://eagle45:60002','file://addresses.xml');
+#hw = uhal.getDevice('testctp7','ipbustcp-2.0://eagle45:60002','file://addresses.xml');
+#hw = uhal.getDevice('testctp7','chtcp-2.0://localhost:10203?target=192.168.250.53:60002','file://addresses.xml');
 #hw.getNode('BOARD_ID').write(77)
+hw = uhal.getDevice('testctp7','ipbustcp-2.0://eagle45:60002','file://addresses.xml');
 reg = hw.getNode('BOARD_ID').read()
 hw.dispatch()
 print 'BOARD_ID',reg.value(),'expect:BEEF!!!!!'
-print
+print 
 
 #hw.getNode('MEM').writeBlock([1,2,3,4])
 #reg = hw.getNode('MEM').readBlock(4)
