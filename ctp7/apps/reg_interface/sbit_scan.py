@@ -7,8 +7,6 @@ NUM_STRIPS = 128
 # 0x66400008
 # GEM_AMC.GEM_SYSTEM.BOARD_ID
 
-REG_PATH = 'GEM_AMC.OH.OH0.GEB.VFATS.VFAT13.' #fill with arg later
-
 #DEFAULTS
 CONTREG0=55
 CONTREG1=0
@@ -43,6 +41,7 @@ def main():
 
     REG_PATH = 'GEM_AMC.OH.OH0.GEB.VFATS.VFAT'+str(vfat_slot)+'.'
 
+    subheading('Parsing address table.')
     parseXML()
     heading('Beginning SBit Scan')
     # Mask VFATs
@@ -52,24 +51,24 @@ def main():
     
     vmask = (0xffffffff) ^ (0x1 << int(vfat_slot))
 
-    writeReg(SBitMask,vmask)
+    print writeReg(SBitMask,vmask)
 
 
     heading('SET VFAT SETTINGS')
     # Set default VFAT values & Threshold,VCal,RunMode
-    writeReg(getNode(REG_PATH+'ContReg0'),CONTREG0)
-    writeReg(getNode(REG_PATH+'ContReg1'),CONTREG1)
-    writeReg(getNode(REG_PATH+'ContReg2'),CONTREG2)
-    writeReg(getNode(REG_PATH+'ContReg3'),CONTREG3)
-    writeReg(getNode(REG_PATH+'IPreampIn'),IPREAMPIN)
-    writeReg(getNode(REG_PATH+'IPreampFeed'),IPREAMPFEED)
-    writeReg(getNode(REG_PATH+'IPreampOut'),IPREAMPOUT)
-    writeReg(getNode(REG_PATH+'IShaper'),ISHAPER)
-    writeReg(getNode(REG_PATH+'IShaperFeed'),ISHAPERFEED)
-    writeReg(getNode(REG_PATH+'IComp'),ICOMP)
-    writeReg(getNode(REG_PATH+'VThreshold1'),VTHRESHOLD1)
-    writeReg(getNode(REG_PATH+'VCal'),VCAL)
-    writeReg(getNode('GEM_AMC.OH.OH0.CONTROL.TRIGGER'),1)
+    print writeReg(getNode(REG_PATH+'ContReg0'),CONTREG0)
+    print writeReg(getNode(REG_PATH+'ContReg1'),CONTREG1)
+    print writeReg(getNode(REG_PATH+'ContReg2'),CONTREG2)
+    print writeReg(getNode(REG_PATH+'ContReg3'),CONTREG3)
+    print writeReg(getNode(REG_PATH+'IPreampIn'),IPREAMPIN)
+    print writeReg(getNode(REG_PATH+'IPreampFeed'),IPREAMPFEED)
+    print writeReg(getNode(REG_PATH+'IPreampOut'),IPREAMPOUT)
+    print writeReg(getNode(REG_PATH+'IShaper'),ISHAPER)
+    print writeReg(getNode(REG_PATH+'IShaperFeed'),ISHAPERFEED)
+    print writeReg(getNode(REG_PATH+'IComp'),ICOMP)
+    print writeReg(getNode(REG_PATH+'VThreshold1'),VTHRESHOLD1)
+    print writeReg(getNode(REG_PATH+'VCal'),VCAL)
+    print writeReg(getNode('GEM_AMC.OH.OH0.CONTROL.TRIGGER'),1)
 
 
     heading('RESET TRIGGER COUNTERS')
@@ -97,10 +96,10 @@ def main():
     # Begin Loop
     nFailures=0
 
-    writeReg(getNode('GEM_AMC.OH.OH0.T1Controller.MODE'), 0) 
-    writeReg(getNode('GEM_AMC.OH.OH0.T1Controller.TYPE'), 1) 
-    writeReg(getNode('GEM_AMC.OH.OH0.T1Controller.INTERVAL'), 1000) 
-    writeReg(getNode('GEM_AMC.OH.OH0.T1Controller.NUMBER'), pulses)
+    print writeReg(getNode('GEM_AMC.OH.OH0.T1Controller.MODE'), 0) 
+    print writeReg(getNode('GEM_AMC.OH.OH0.T1Controller.TYPE'), 1) 
+    print writeReg(getNode('GEM_AMC.OH.OH0.T1Controller.INTERVAL'), 1000) 
+    print writeReg(getNode('GEM_AMC.OH.OH0.T1Controller.NUMBER'), pulses)
 
 
     triggerResults = []
@@ -108,12 +107,12 @@ def main():
     try:
         for strip in range(1,NUM_STRIPS+1): 
             
-            #heading('Strip '+str(strip))
+            subheading('Strip '+str(strip))
 
             if strip>1: kill_strip=strip-1
             else: kill_strip=1
-            writeReg(getNode(REG_PATH+'VFATChannels.ChanReg'+str(kill_strip)),0)
-            writeReg(getNode(REG_PATH+'VFATChannels.ChanReg'+str(strip)),64)
+            print writeReg(getNode(REG_PATH+'VFATChannels.ChanReg'+str(kill_strip)),0)
+            print writeReg(getNode(REG_PATH+'VFATChannels.ChanReg'+str(strip)),64)
             
             
             print 'Resetting Trigger Counters...'
@@ -134,9 +133,9 @@ def main():
             else: print 'Trigger Counts clear.'
 
 
-            #heading('SENDING CALPULSES')
+            subheading('Sending Calpulses')
     # Send CalPulses
-            writeReg(getNode('GEM_AMC.OH.OH0.T1Controller.TOGGLE'),0xffffffff)
+            print writeReg(getNode('GEM_AMC.OH.OH0.T1Controller.TOGGLE'),0xffffffff)
             sleep(5)
         # Verify Triggers
             triggers = readReg(getNode('GEM_AMC.TRIGGER.OH0.TRIGGER_CNT'))
@@ -160,8 +159,10 @@ def main():
 
 
 def heading(string):
-    print '\n>>> '+str(string)+' <<<\n'
+    print '\n\n>>>> '+str(string).upper()+' <<<<\n\n'
 
+def subheading(string):
+	print '\n---- '+str(string)+' ----\n'
 
 if __name__ == '__main__':
     main()
