@@ -231,7 +231,7 @@ def scan_vfat(vfat_slot, outfile):
                     if 'r' in str(reg.permission):
                         print displayReg(reg),'=',parseInt(str(readReg(reg)))
 
-       print writeReg(getNode(REG_PATH + 'VFATChannels.ChanReg' + str(strip)), 0)
+        print writeReg(getNode(REG_PATH + 'VFATChannels.ChanReg' + str(strip)), 0)
 
     except:
         print 'Unknown Error'
