@@ -372,21 +372,29 @@
                                that its internal buffers are almost full. No events will be sent
                                when this bit is 1 (though events can still be built and
                                stored in the Input and Event FIFOs)"
-                  fw_signal="daq_almost_full"/>
-            <node id="TTC_BC0_LOCKED"       address="0x0"  mask="0x00000010" permission="r"
+                  fw_signal="daq_almost_full"
+                  sw_monitor_error_min_threshold="1"/>
+            <node id="DAQ_OUTPUT_FIFO_HAD_OVERFLOW"       address="0x0"  mask="0x00000010" permission="r"
+                  description="This bit is set if DAQ output FIFO has ever been full (critical -- data loss)"
+                  fw_signal="err_daqfifo_full"
+                  sw_monitor_error_min_threshold="1"/>
+            <node id="TTC_BC0_LOCKED"       address="0x0"  mask="0x00000012" permission="r"
                   description="This bit is set if BC0 is currently locked (last BC0 arrived at the expected time)"
                   fw_signal="ttc_status_i.bc0_status.locked"/>
             <node id="L1A_FIFO_HAD_OVERFLOW"       address="0x0"  mask="0x00800000" permission="r"
                   description="This bit is latched whenever L1A FIFO overflow is asserted.
                                This means that one or more L1As were lost, so we are
                                out-of-sync: resync or reset is needed"
-                  fw_signal="err_l1afifo_full"/>
+                  fw_signal="err_l1afifo_full"
+                  sw_monitor_error_min_threshold="1"/>
             <node id="L1A_FIFO_IS_UNDERFLOW"       address="0x0"  mask="0x01000000" permission="r"
                   description="L1A FIFO is in underflow at this moment (this bit is not latched)"
-                  fw_signal="l1afifo_underflow"/>
+                  fw_signal="l1afifo_underflow"
+                  sw_monitor_error_min_threshold="1"/>
             <node id="L1A_FIFO_IS_FULL"       address="0x0"  mask="0x02000000" permission="r"
                   description="L1A FIFO is full at this moment (this bit is not latched)"
-                  fw_signal="l1afifo_full"/>
+                  fw_signal="l1afifo_full"
+                  sw_monitor_error_min_threshold="1"/>
             <node id="L1A_FIFO_IS_NEAR_FULL"       address="0x0"  mask="0x04000000" permission="r"
                   description="This bit gets asserted when L1A FIFO gets 75% full and deasserted when it gets down to 50%"
                   fw_signal="l1afifo_near_full"/>
