@@ -73,6 +73,19 @@ def scan_vfat(vfat_slot, outfile):
     parseXML()
     heading('Beginning SBit Scan')
 
+
+    # Check for VFAT present
+    vfat_id1 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH0.GEB.VFATS.VFAT'+vfat_slot+'.ChipID1')))
+    vfat_id2 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH0.GEB.VFATS.VFAT'+vfat_slot+'.ChipID0')))
+    vfat_id = (vfat_id1 << 8) + vfat_id2
+    subheading('VFATID: '+hex(vfat_id))
+    if vfat_id == 0:
+        print Colors.RED
+        print 'No VFAT chip detected at this slot!'
+        print Colors.ENDC
+        return
+
+
     # Mask VFATs
     heading('MASK VFATS')
     SBitMask = getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.CONTROL.VFAT.SBIT_MASK')
@@ -117,8 +130,9 @@ def scan_vfat(vfat_slot, outfile):
         print 'SBits:',nSbits
         return
     if parseInt(str(nSbits)) != 0: #Hot channels?
-        print Colors.RED,'Trigger Counter Reset did not clear Trigger Counts!',Colors.ENDC
-        print 'SBits:',nSbits,'=',parseInt(nSbits),'\n'
+        print Colors.RED
+        print 'Trigger Counter Reset did not clear Trigger Counts!',Colors.ENDC
+        print 'Triggers:',nSbits,'=',parseInt(nSbits),'\n'
 
         for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.CLUSTER'):
             if 'r' in str(reg.permission):
@@ -178,6 +192,26 @@ def scan_vfat(vfat_slot, outfile):
             except:
                 print 'SBits:',nSbits
                 return
+
+            if parseInt(str(nSbits)) != 0: #Hot channels?
+                print Colors.RED
+                print 'Trigger Counter Reset did not clear Trigger Counts!',Colors.ENDC
+                print 'Triggers:',nSbits,'=',parseInt(nSbits),'\n'
+        
+                for reg in getNodesContaining('TRIGGER.OH0.CLUSTER'):
+                    if 'r' in str(reg.permission):
+                        print displayReg(reg),'=',parseInt(str(readReg(reg)))
+                print '\n'
+                for reg in getNodesContaining('TRIGGER.OH0.DEBUG_LAST_CLUSTER'):
+                    if 'r' in str(reg.permission):
+                        print displayReg(reg,'hexbin')
+                # for reg in getNodesContaining('OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+vfat_slot):
+                #     if 'r' in str(reg.permission):
+                #         actual_value = 0x000000ff & parseInt(readReg(reg))
+                #         print displayReg(reg),'=',parseInt(actual_value)
+                return
+            else: print 'Trigger Counts clear.'
+
             if parseInt(str(nSbits)) != 0: 
                 print 'Trigger Counter Reset did not clear Trigger Counts!'
                 print 'SBits:',nSbits,'=',parseInt(nSbits),'\n'
@@ -226,7 +260,7 @@ def scan_vfat(vfat_slot, outfile):
 
     finally:
         heading('Summary')
-        subheading('VFAT Slot '+str(vfat_slot))
+        subheading('VFAT Slot '+str(vfat_slot)+' ID '+hex(vfat_id))
         outfile.write('VFAT Slot '+str(vfat_slot) + '\n')
         for result in range(len(triggerResults)):
             if triggerResults[result][1] != 4*pulses:
