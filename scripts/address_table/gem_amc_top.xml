@@ -378,7 +378,7 @@
                   description="This bit is set if DAQ output FIFO has ever been full (critical -- data loss)"
                   fw_signal="err_daqfifo_full"
                   sw_monitor_error_min_threshold="1"/>
-            <node id="TTC_BC0_LOCKED"       address="0x0"  mask="0x00000012" permission="r"
+            <node id="TTC_BC0_LOCKED"       address="0x0"  mask="0x00000020" permission="r"
                   description="This bit is set if BC0 is currently locked (last BC0 arrived at the expected time)"
                   fw_signal="ttc_status_i.bc0_status.locked"/>
             <node id="L1A_FIFO_HAD_OVERFLOW"       address="0x0"  mask="0x00800000" permission="r"
@@ -2006,30 +2006,30 @@
           fw_is_module="true"
           fw_is_module_external="true">
           
-        <node id="SYSTEM"  address="0x00000000"  description="GLIB system registers">
+        <node id="SYSTEM"  address="0x00000000"  permission="r" description="GLIB system registers">
           <node id="BOARD_ID" address="0x0" description="GLIB board ID code">
-            <node id="CHAR1"  mask="0xff000000"  permission="r"/>
-            <node id="CHAR2"  mask="0x00ff0000"  permission="r"/>
-            <node id="CHAR3"  mask="0x0000ff00"  permission="r"/>
-            <node id="CHAR4"  mask="0x000000ff"  permission="r"/>              
+            <node id="CHAR1"  mask="0xff000000"  permission="r" address="0x00000000"/>
+            <node id="CHAR2"  mask="0x00ff0000"  permission="r" address="0x00000000"/>
+            <node id="CHAR3"  mask="0x0000ff00"  permission="r" address="0x00000000"/>
+            <node id="CHAR4"  mask="0x000000ff"  permission="r" address="0x00000000"/>              
           </node> <!--end board_id -->
           
-          <node id="SYSTEM_ID"  address="0x1" description="GLIB system ID code">
-            <node id="CHAR1"  mask="0xff000000"  permission="r"/>
-            <node id="CHAR2"  mask="0x00ff0000"  permission="r"/>
-            <node id="CHAR3"  mask="0x0000ff00"  permission="r"/>
-            <node id="CHAR4"  mask="0x000000ff"  permission="r"/>
+          <node id="SYSTEM_ID"  address="0x1" permission="r" description="GLIB system ID code">
+            <node id="CHAR1"  mask="0xff000000"  permission="r" address="0x00000000"/>
+            <node id="CHAR2"  mask="0x00ff0000"  permission="r" address="0x00000000"/>
+            <node id="CHAR3"  mask="0x0000ff00"  permission="r" address="0x00000000"/>
+            <node id="CHAR4"  mask="0x000000ff"  permission="r" address="0x00000000"/>
           </node> <!--end system_id -->
           
           <node id="FIRMWARE"  address="0x2"  permission="r" description="GLIB firmware date (dd.mm.yy) and version number (x.y.z)">
-            <node id="ID"     mask="0xffff0000"    permission="r"/>
-            <node id="MAJOR"  mask="0xf0000000"    permission="r"/>
-            <node id="MINOR"  mask="0x0f000000"    permission="r"/>
-            <node id="BUILD"  mask="0x00ff0000"    permission="r"/>
-            <node id="DATE"   mask="0x0000ffff"    permission="r"/>
-            <node id="YY"     mask="0x0000fe00"    permission="r"/>
-            <node id="MM"     mask="0x000001e0"    permission="r"/>
-            <node id="DD"     mask="0x0000001f"    permission="r"/>
+            <node id="ID"     mask="0xffff0000"    permission="r" address="0x00000000"/>
+            <node id="MAJOR"  mask="0xf0000000"    permission="r" address="0x00000000"/>
+            <node id="MINOR"  mask="0x0f000000"    permission="r" address="0x00000000"/>
+            <node id="BUILD"  mask="0x00ff0000"    permission="r" address="0x00000000"/>
+            <node id="DATE"   mask="0x0000ffff"    permission="r" address="0x00000000"/>
+            <node id="YY"     mask="0x0000fe00"    permission="r" address="0x00000000"/>
+            <node id="MM"     mask="0x000001e0"    permission="r" address="0x00000000"/>
+            <node id="DD"     mask="0x0000001f"    permission="r" address="0x00000000"/>
           </node> <!--end firmware_id -->
           
           <node id="TEST"  address="0x0"    mask="0xffffffff"  permission="r" description="Register for testing purposes only"/>
