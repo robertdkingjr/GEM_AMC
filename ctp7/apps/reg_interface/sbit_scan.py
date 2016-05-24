@@ -141,10 +141,6 @@ def scan_vfat(vfat_slot, outfile):
         for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.DEBUG_LAST_CLUSTER'):
             if 'r' in str(reg.permission):
                 print displayReg(reg,'hexbin')
-        # for reg in getNodesContaining('OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+vfat_slot):
-        #     if 'r' in str(reg.permission):
-        #         actual_value = 0x000000ff & parseInt(readReg(reg))
-        #         print displayReg(reg),'=',parseInt(actual_value)
         return
     else: print 'Trigger Counts clear.'
 
@@ -205,16 +201,6 @@ def scan_vfat(vfat_slot, outfile):
                 for reg in getNodesContaining('TRIGGER.OH0.DEBUG_LAST_CLUSTER'):
                     if 'r' in str(reg.permission):
                         print displayReg(reg,'hexbin')
-                # for reg in getNodesContaining('OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+vfat_slot):
-                #     if 'r' in str(reg.permission):
-                #         actual_value = 0x000000ff & parseInt(readReg(reg))
-                #         print displayReg(reg),'=',parseInt(actual_value)
-                return
-            else: print 'Trigger Counts clear.'
-
-            if parseInt(str(nSbits)) != 0: 
-                print 'Trigger Counter Reset did not clear Trigger Counts!'
-                print 'SBits:',nSbits,'=',parseInt(nSbits),'\n'
                 return
             else: print 'Trigger Counts clear.'
 
@@ -245,14 +231,7 @@ def scan_vfat(vfat_slot, outfile):
                     if 'r' in str(reg.permission):
                         print displayReg(reg),'=',parseInt(str(readReg(reg)))
 
-            # subheading('VFAT'+vfat_slot+' Registers')
-            # for reg in getNodesContaining('OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+vfat_slot):
-            #     if 'r' in str(reg.permission):
-            #         actual_value = 0x000000ff & parseInt(readReg(reg))
-            #         print displayReg(reg),'=',parseInt(actual_value)
-
-
-            print writeReg(getNode(REG_PATH + 'VFATChannels.ChanReg' + str(strip)), 0)
+       print writeReg(getNode(REG_PATH + 'VFATChannels.ChanReg' + str(strip)), 0)
 
     except:
         print 'Unknown Error'
