@@ -360,7 +360,7 @@ begin
             if (reset_daq = '1') then
                 err_daqfifo_full <= '0';
             else
-                daqfifo_rd_en <= (not daq_almost_full) and (not daqfifo_empty) and (not err_daqfifo_full);
+                daqfifo_rd_en <= (not daq_almost_full) and (not daqfifo_empty) and daq_ready;
                 if (daqfifo_full = '1') then
                     err_daqfifo_full <= '1';
                 end if; 
