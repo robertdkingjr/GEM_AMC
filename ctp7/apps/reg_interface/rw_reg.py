@@ -160,7 +160,7 @@ def readReg(reg):
     final_int =  parseInt(str(final_value))
     return '{0:#010x}'.format(final_int)
 
-def displayReg(reg):
+def displayReg(reg,option=None):
     address = reg.real_address
     if 'r' not in reg.permission:
         return 'No read permission!'
@@ -178,7 +178,9 @@ def displayReg(reg):
         final_value = (parseInt(str(reg.mask))&parseInt(value)) >> shift_amount
     else: final_value = value
     final_int =  parseInt(str(final_value))
-    return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)
+
+    if option=='hexbin': return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)+' = '+'{0:032b}'.format(final_int)
+    else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)
 
 def writeReg(reg, value):
     try: address = reg.real_address
@@ -241,10 +243,11 @@ def parseError(e):
     else:
         return "Unknown error: "+str(e)
 
-def parseInt(string):
-    if string is None:
+def parseInt(s):
+    if s is None:
         return None
-    elif string.startswith('0x'):
+    string = str(s)
+    if string.startswith('0x'):
         return int(string, 16)
     elif string.startswith('0b'):
         return int(string, 2)

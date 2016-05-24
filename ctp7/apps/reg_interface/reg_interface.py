@@ -76,9 +76,7 @@ class Prompt(Cmd):
         """Read all registers containing KeyWord. USAGE: readKW <KeyWord>"""
         if getNodesContaining(args) is not None and args!='':
             for reg in getNodesContaining(args):
-                address = reg.address
-                address = address << 2
-                address = address + 0x64000000
+                address = reg.real_address
                 if 'r' in str(reg.permission):
                     print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7),readReg(reg)
                 elif reg.isModule: print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7) #,'Module!'
