@@ -2,11 +2,12 @@ from rw_reg import *
 from time import *
 
 QUICKTEST = True
+SINGLEVFAT = True
 
 SBitMaskAddress = 0x6502c010
 NUM_STRIPS = 128
 NUM_PADS = 8
-OH_NUM = 2
+OH_NUM = 0
 
 #VFAT DEFAULTS
 CONTREG0=55
@@ -28,27 +29,36 @@ OUTPUT_FILE='./results.txt'
 pulses = 1
 
 class Colors:
-	WHITE   = '\033[97m'
-	CYAN    = '\033[96m'
-	MAGENTA = '\033[95m'
-	BLUE    = '\033[94m'
-	YELLOW  = '\033[93m'
-	GREEN   = '\033[92m'
-	RED     = '\033[91m'
-	ENDC    = '\033[0m'
+    WHITE   = '\033[97m'
+    CYAN    = '\033[96m'
+    MAGENTA = '\033[95m'
+    BLUE    = '\033[94m'
+    YELLOW  = '\033[93m'
+    GREEN   = '\033[92m'
+    RED     = '\033[91m'
+    ENDC    = '\033[0m'
 
 def main():
     resultFileName = raw_input('Enter result filename (default = ' + OUTPUT_FILE + '): ') or OUTPUT_FILE
 
     f = open(resultFileName, 'w')
 
-    for vfat in range(0, 24):
-        scan_vfat(vfat, f)
-
+    if not SINGLEVFAT:
+        for vfat in range(0, 24):
+            scan_vfat(vfat, f)
+    else:
+        vfat_slot = raw_input('Enter VFAT slot: ')
+        try:
+            if int(vfat_slot) > 23 or int(vfat_slot) < 0:
+                print 'Invalid VFAT slot!'
+                return
+        except:
+            print 'Invalid input!'
+            return
+        scan_vfat(vfat_slot, f)
     f.close()
 
 def scan_vfat(vfat_slot, outfile):
-#    vfat_slot = raw_input('Enter VFAT slot: ')
     try:
         if int(vfat_slot) > 23 or int(vfat_slot) < 0:
             print 'Invalid VFAT slot!'
@@ -96,7 +106,7 @@ def scan_vfat(vfat_slot, outfile):
         return
     print writeReg(TCReset,1)
     print writeReg(TCReset,0)
-    
+
 
     # Verify Reset
     subheading('Verifying...')
@@ -109,7 +119,7 @@ def scan_vfat(vfat_slot, outfile):
     if parseInt(str(nSbits)) != 0: #Hot channels?
         print Colors.RED,'Trigger Counter Reset did not clear Trigger Counts!',Colors.ENDC
         print 'SBits:',nSbits,'=',parseInt(nSbits),'\n'
-        
+
         for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.CLUSTER'):
             if 'r' in str(reg.permission):
                 print displayReg(reg),'=',parseInt(str(readReg(reg)))
@@ -133,7 +143,7 @@ def scan_vfat(vfat_slot, outfile):
     print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.NUMBER'), pulses)
 
 
-  
+
     # LOOP
     heading('LOOPING OVER CHANNELS')
     triggerResults = []
@@ -148,13 +158,13 @@ def scan_vfat(vfat_slot, outfile):
 
 
     try:
-        for strip in strips: 
+        for strip in strips:
             subheading('Strip '+str(strip))
 
             if previousStrip<1 or previousStrip>128: previousStrip=1
             print writeReg(getNode(REG_PATH+'VFATChannels.ChanReg'+str(strip)),64)
             previousStrip = strip
-            
+
             subheading('Resetting Trigger Counters...')
             print writeReg(TCReset,1)
             print writeReg(TCReset,0)
@@ -219,7 +229,10 @@ def scan_vfat(vfat_slot, outfile):
         subheading('VFAT Slot '+str(vfat_slot))
         outfile.write('VFAT Slot '+str(vfat_slot) + '\n')
         for result in range(len(triggerResults)):
-            print 'Strip',triggerResults[result][0],'\t','Expected:',pulses,'Received:',triggerResults[result][1]
+            if triggerResults[result][1] != 4*pulses:
+                print Colors.RED+'Strip',triggerResults[result][0],'\t','Expected:',pulses,'Received:',triggerResults[result][1],Colors.ENDC
+            else:
+                print 'Strip',triggerResults[result][0],'\t','Expected:',pulses,'Received:',triggerResults[result][1]
             outfile.write('%s%03d%s%s%s %s%s\n' % ('Strip',triggerResults[result][0],'\t','Expected:',pulses,'Received:',triggerResults[result][1]))
         print '\n\n'
         outfile.write('\n\n')
@@ -240,4 +253,3 @@ def printCyan(string):
 
 if __name__ == '__main__':
     main()
-
