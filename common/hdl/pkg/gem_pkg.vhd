@@ -10,10 +10,10 @@ package gem_pkg is
     --==  Firmware version  ==--
     --========================-- 
 
-    constant C_FIRMWARE_DATE    : std_logic_vector(31 downto 0) := x"20160517";
+    constant C_FIRMWARE_DATE    : std_logic_vector(31 downto 0) := x"20160524";
     constant C_FIRMWARE_MAJOR   : integer range 0 to 255        := 1;
     constant C_FIRMWARE_MINOR   : integer range 0 to 255        := 3;
-    constant C_FIRMWARE_BUILD   : integer range 0 to 255        := 4;
+    constant C_FIRMWARE_BUILD   : integer range 0 to 255        := 6;
 
     --======================--
     --==      General     ==--

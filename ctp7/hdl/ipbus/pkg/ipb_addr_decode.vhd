@@ -8,7 +8,7 @@ package ipb_addr_decode is
     type t_integer_arr is array (natural range <>) of integer;
     type t_ipb_slv is record
         oh_reg           : t_integer_arr(0 to 15);
-        oh_evt           : t_integer_arr(0 to 15);
+        oh_evt         : t_integer_arr(0 to 15);
         oh_links         : integer;
         daq              : integer;
         ttc              : integer;
@@ -28,22 +28,6 @@ package ipb_addr_decode is
         system => 36);
 
     function ipb_addr_sel(signal addr : in std_logic_vector(31 downto 0)) return integer;
-
-    -------------------------------------- TTC Module ----------------------------------------
-    constant IPB_TTC_NUM_REGS : integer := 10;
-    
-    constant IPB_TTC_ADDR_CTRL        : integer := 0; -- TTC control register (allows things like resets, l1a_enable, MMCM phase shift, counter clears)
-    constant IPB_TTC_ADDR_CTRL_CMD_0  : integer := 1; -- TTC command decoding config 0 -- codes for BC0, EC0, RESYNC, OC0
-    constant IPB_TTC_ADDR_CTRL_CMD_1  : integer := 2; -- TTC command decoding config 1 -- codes for HARD_RESET, CALPULSE, START, STOP
-    constant IPB_TTC_ADDR_CTRL_CMD_2  : integer := 3; -- TTC command decoding config 2 -- codes for future commands (right now includes TEST_SYNC, taken from the trigger guys, but not implemented)
-    
-    constant IPB_TTC_ADDR_STATUS      : integer := 1;
-    
-    constant C_ADDR_STAT        : integer := 0;
-    constant C_ADDR_MMCM_CTRL        : integer := 0;
-    constant C_ADDR_MMCM_STAT        : integer := 0;
-    constant C_ADDR_CNT        : integer := 0;
-    constant C_ADDR_L1A_ID        : integer := 0;
     
 end ipb_addr_decode;
 
@@ -66,41 +50,42 @@ package body ipb_addr_decode is
     -- TTC
     if    std_match(addr, "--------0011000000000000000-----") then sel := C_IPB_SLV.ttc;
 
-	  -- OH register access request forwarding (minimal change from GLIB, but limited to 16 OHs): [26:22] - OH number, [21:18] - OH module, [17:2] - address within module 
-    elsif std_match(addr, "--------01000000----------------") then sel := C_IPB_SLV.oh_reg(0);
-    elsif std_match(addr, "--------01000001----------------") then sel := C_IPB_SLV.oh_reg(1);
-    elsif std_match(addr, "--------01000010----------------") then sel := C_IPB_SLV.oh_reg(2);
-    elsif std_match(addr, "--------01000011----------------") then sel := C_IPB_SLV.oh_reg(3);
-    elsif std_match(addr, "--------01000100----------------") then sel := C_IPB_SLV.oh_reg(4);
-    elsif std_match(addr, "--------01000101----------------") then sel := C_IPB_SLV.oh_reg(5);
-    elsif std_match(addr, "--------01000110----------------") then sel := C_IPB_SLV.oh_reg(6);
-    elsif std_match(addr, "--------01000111----------------") then sel := C_IPB_SLV.oh_reg(7);
-    elsif std_match(addr, "--------01001000----------------") then sel := C_IPB_SLV.oh_reg(8);
-    elsif std_match(addr, "--------01001001----------------") then sel := C_IPB_SLV.oh_reg(9);
-    elsif std_match(addr, "--------01001010----------------") then sel := C_IPB_SLV.oh_reg(10);
-    elsif std_match(addr, "--------01001011----------------") then sel := C_IPB_SLV.oh_reg(11);
-    elsif std_match(addr, "--------01001100----------------") then sel := C_IPB_SLV.oh_reg(12);
-    elsif std_match(addr, "--------01001101----------------") then sel := C_IPB_SLV.oh_reg(13);
-    elsif std_match(addr, "--------01001110----------------") then sel := C_IPB_SLV.oh_reg(14);
-    elsif std_match(addr, "--------01001111----------------") then sel := C_IPB_SLV.oh_reg(15);
+	  -- OH register access request forwarding (minimal change from GLIB, but limited to 16 OHs): [26:22] - OH number, [21:18] - OH module, [17:2] - address within module
+	  -- One exception is the VFAT 
+    elsif std_match(addr, "--------010-0000----------------") then sel := C_IPB_SLV.oh_reg(0);
+    elsif std_match(addr, "--------010-0001----------------") then sel := C_IPB_SLV.oh_reg(1);
+    elsif std_match(addr, "--------010-0010----------------") then sel := C_IPB_SLV.oh_reg(2);
+    elsif std_match(addr, "--------010-0011----------------") then sel := C_IPB_SLV.oh_reg(3);
+    elsif std_match(addr, "--------010-0100----------------") then sel := C_IPB_SLV.oh_reg(4);
+    elsif std_match(addr, "--------010-0101----------------") then sel := C_IPB_SLV.oh_reg(5);
+    elsif std_match(addr, "--------010-0110----------------") then sel := C_IPB_SLV.oh_reg(6);
+    elsif std_match(addr, "--------010-0111----------------") then sel := C_IPB_SLV.oh_reg(7);
+    elsif std_match(addr, "--------010-1000----------------") then sel := C_IPB_SLV.oh_reg(8);
+    elsif std_match(addr, "--------010-1001----------------") then sel := C_IPB_SLV.oh_reg(9);
+    elsif std_match(addr, "--------010-1010----------------") then sel := C_IPB_SLV.oh_reg(10);
+    elsif std_match(addr, "--------010-1011----------------") then sel := C_IPB_SLV.oh_reg(11);
+    elsif std_match(addr, "--------010-1100----------------") then sel := C_IPB_SLV.oh_reg(12);
+    elsif std_match(addr, "--------010-1101----------------") then sel := C_IPB_SLV.oh_reg(13);
+    elsif std_match(addr, "--------010-1110----------------") then sel := C_IPB_SLV.oh_reg(14);
+    elsif std_match(addr, "--------010-1111----------------") then sel := C_IPB_SLV.oh_reg(15);
 
-    -- event data
-    elsif std_match(addr, "--------0101000000000000000000--") then sel := C_IPB_SLV.oh_reg(0);
-    elsif std_match(addr, "--------0101000100000000000000--") then sel := C_IPB_SLV.oh_reg(1);
-    elsif std_match(addr, "--------0101001000000000000000--") then sel := C_IPB_SLV.oh_reg(2);
-    elsif std_match(addr, "--------0101001100000000000000--") then sel := C_IPB_SLV.oh_reg(3);
-    elsif std_match(addr, "--------0101010000000000000000--") then sel := C_IPB_SLV.oh_reg(4);
-    elsif std_match(addr, "--------0101010100000000000000--") then sel := C_IPB_SLV.oh_reg(5);
-    elsif std_match(addr, "--------0101011000000000000000--") then sel := C_IPB_SLV.oh_reg(6);
-    elsif std_match(addr, "--------0101011100000000000000--") then sel := C_IPB_SLV.oh_reg(7);
-    elsif std_match(addr, "--------0101100000000000000000--") then sel := C_IPB_SLV.oh_reg(8);
-    elsif std_match(addr, "--------0101100100000000000000--") then sel := C_IPB_SLV.oh_reg(9);
-    elsif std_match(addr, "--------0101101000000000000000--") then sel := C_IPB_SLV.oh_reg(10);
-    elsif std_match(addr, "--------0101101100000000000000--") then sel := C_IPB_SLV.oh_reg(11);
-    elsif std_match(addr, "--------0101110000000000000000--") then sel := C_IPB_SLV.oh_reg(12);
-    elsif std_match(addr, "--------0101110100000000000000--") then sel := C_IPB_SLV.oh_reg(13);
-    elsif std_match(addr, "--------0101111000000000000000--") then sel := C_IPB_SLV.oh_reg(14);
-    elsif std_match(addr, "--------0101111100000000000000--") then sel := C_IPB_SLV.oh_reg(15);
+    -- VFAT register forwarding
+    elsif std_match(addr, "--------01010000000-------------") then sel := C_IPB_SLV.oh_evt(0);
+    elsif std_match(addr, "--------01010001000-------------") then sel := C_IPB_SLV.oh_evt(1);
+    elsif std_match(addr, "--------01010010000-------------") then sel := C_IPB_SLV.oh_evt(2);
+    elsif std_match(addr, "--------01010011000-------------") then sel := C_IPB_SLV.oh_evt(3);
+    elsif std_match(addr, "--------01010100000-------------") then sel := C_IPB_SLV.oh_evt(4);
+    elsif std_match(addr, "--------01010101000-------------") then sel := C_IPB_SLV.oh_evt(5);
+    elsif std_match(addr, "--------01010110000-------------") then sel := C_IPB_SLV.oh_evt(6);
+    elsif std_match(addr, "--------01010111000-------------") then sel := C_IPB_SLV.oh_evt(7);
+    elsif std_match(addr, "--------01011000000-------------") then sel := C_IPB_SLV.oh_evt(8);
+    elsif std_match(addr, "--------01011001000-------------") then sel := C_IPB_SLV.oh_evt(9);
+    elsif std_match(addr, "--------01011010000-------------") then sel := C_IPB_SLV.oh_evt(10);
+    elsif std_match(addr, "--------01011011000-------------") then sel := C_IPB_SLV.oh_evt(11);
+    elsif std_match(addr, "--------01011100000-------------") then sel := C_IPB_SLV.oh_evt(12);
+    elsif std_match(addr, "--------01011101000-------------") then sel := C_IPB_SLV.oh_evt(13);
+    elsif std_match(addr, "--------01011110000-------------") then sel := C_IPB_SLV.oh_evt(14);
+    elsif std_match(addr, "--------01011111000-------------") then sel := C_IPB_SLV.oh_evt(15);
 
     -- other AMC modules
     elsif std_match(addr, "--------01100000000-------------") then sel := C_IPB_SLV.oh_links;

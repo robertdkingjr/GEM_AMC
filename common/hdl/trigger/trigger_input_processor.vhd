@@ -34,7 +34,9 @@ port(
     link_underflow_cnt_o: out std_logic_vector(31 downto 0);
     sync_word_cnt_o     : out std_logic_vector(31 downto 0);
     cluster_cnt_rate_o  : out t_std32_array(8 downto 0);
-    trigger_rate        : out std_logic_vector(31 downto 0)
+    cluster_cnt_o       : out t_std32_array(8 downto 0);
+    trigger_rate_o      : out std_logic_vector(31 downto 0);
+    trigger_cnt_o       : out std_logic_vector(31 downto 0)
     
 );
 end trigger_input_processor;
@@ -75,6 +77,8 @@ begin
     
     g_cluster_size_rate_cnt:
     for i in 0 to 8 generate
+
+        -- cluster size rate
         i_cluster_size_rate: entity work.rate_counter
         generic map(
             g_CLK_FREQUENCY => C_TTC_CLK_FREQUENCY_SLV,
@@ -86,6 +90,19 @@ begin
             en_i    => cluster_cnt_strb(i),
             rate_o  => cluster_cnt_rate_o(i)
         );
+        
+        -- cluster size count
+        i_cluster_size_cnt: entity work.counter
+            generic map(
+                g_COUNTER_WIDTH  => 32,
+                g_ALLOW_ROLLOVER => "FALSE"
+            )
+            port map(
+                ref_clk_i => clk_i,
+                reset_i   => reset_i or reset_cnt_i,
+                en_i      => cluster_cnt_strb(i),
+                count_o   => cluster_cnt_o(i)
+            );
     end generate;
     
     i_trigger_rate_cnt: entity work.rate_counter
@@ -97,8 +114,20 @@ begin
         clk_i   => clk_i,
         reset_i => reset_i or reset_cnt_i,
         en_i    => trigger,
-        rate_o  => trigger_rate
+        rate_o  => trigger_rate_o
     );
+    
+    i_trigger_cnt: entity work.counter
+        generic map(
+            g_COUNTER_WIDTH  => 32,
+            g_ALLOW_ROLLOVER => "FALSE"
+        )
+        port map(
+            ref_clk_i => clk_i,
+            reset_i   => reset_i or reset_cnt_i,
+            en_i      => trigger,
+            count_o   => trigger_cnt_o
+        );
     
     g_link_status_counters:
     for i in 0 to 1 generate
