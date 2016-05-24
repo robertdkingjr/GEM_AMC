@@ -83,6 +83,21 @@ architecture Behavioral of daq is
         );
     end component daq_l1a_fifo;  
 
+    component daq_output_fifo
+        port (
+            clk       : IN  STD_LOGIC;
+            rst       : IN  STD_LOGIC;
+            din       : IN  STD_LOGIC_VECTOR(65 DOWNTO 0);
+            wr_en     : IN  STD_LOGIC;
+            rd_en     : IN  STD_LOGIC;
+            dout      : OUT STD_LOGIC_VECTOR(65 DOWNTO 0);
+            full      : OUT STD_LOGIC;
+            empty     : OUT STD_LOGIC;
+            valid     : OUT STD_LOGIC;            
+            prog_full : OUT STD_LOGIC
+        );
+    end component;
+
     --================== SIGNALS ==================--
 
     -- Reset
@@ -104,9 +119,12 @@ architecture Behavioral of daq is
     signal daq_disper_err_cnt   : std_logic_vector(15 downto 0) := (others => '0');
     signal daq_notintable_err_cnt: std_logic_vector(15 downto 0) := (others => '0');
 
+    -- DAQ Error Flags
+    signal err_l1afifo_full     : std_logic := '0';
+    signal err_daqfifo_full     : std_logic := '0';
+
     -- TTS
     signal tts_state            : std_logic_vector(3 downto 0) := "1000";
-    signal tts_input_state_or   : std_logic_vector(3 downto 0);
     signal tts_critical_error   : std_logic := '0'; -- critical error detected - RESYNC/RESET NEEDED
     signal tts_warning          : std_logic := '0'; -- overflow warning - STOP TRIGGERS
     signal tts_out_of_sync      : std_logic := '0'; -- out-of-sync - RESYNC NEEDED
@@ -116,6 +134,15 @@ architecture Behavioral of daq is
     signal tts_chmb_critical    : std_logic := '0'; -- input critical error detected - RESYNC/RESET NEEDED
     signal tts_chmb_warning     : std_logic := '0'; -- input overflow warning - STOP TRIGGERS
     signal tts_chmb_out_of_sync : std_logic := '0'; -- input out-of-sync - RESYNC NEEDED
+
+    signal tts_start_cntdwn_chmb: unsigned(7 downto 0) := x"ff";
+    signal tts_start_cntdwn     : unsigned(7 downto 0) := x"ff";
+
+    -- Error signals transfered to TTS clk domain
+    signal tts_chmb_critical_tts_clk    : std_logic := '0'; -- tts_chmb_critical transfered to TTS clock domain
+    signal tts_chmb_warning_tts_clk     : std_logic := '0'; -- tts_chmb_warning transfered to TTS clock domain
+    signal tts_chmb_out_of_sync_tts_clk : std_logic := '0'; -- tts_chmb_out_of_sync transfered to TTS clock domain
+    signal err_daqfifo_full_tts_clk     : std_logic := '0'; -- err_daqfifo_full transfered to TTS clock domain
     
     -- DAQ conf
     signal daq_enable           : std_logic := '1'; -- enable sending data to DAQLink
@@ -151,9 +178,16 @@ architecture Behavioral of daq is
     signal l1afifo_underflow    : std_logic;
     signal l1afifo_near_full    : std_logic;
     
-    -- DAQ Error Flags
-    signal err_l1afifo_full     : std_logic := '0';
-    
+    -- DAQ output FIFO
+    signal daqfifo_din          : std_logic_vector(65 downto 0) := (others => '0');
+    signal daqfifo_wr_en        : std_logic := '0';
+    signal daqfifo_rd_en        : std_logic := '0';
+    signal daqfifo_dout         : std_logic_vector(65 downto 0);
+    signal daqfifo_full         : std_logic;
+    signal daqfifo_empty        : std_logic;
+    signal daqfifo_valid        : std_logic;
+    signal daqfifo_near_full    : std_logic;
+            
     -- Timeouts
     signal dav_timer            : unsigned(23 downto 0) := (others => '0'); -- TODO: probably don't need this to be so large.. (need to test)
     signal max_dav_timer        : unsigned(23 downto 0) := (others => '0'); -- TODO: probably don't need this to be so large.. (need to test)
@@ -258,10 +292,10 @@ begin
     daq_to_daqlink_o.tts_clk <= ttc_clks_i.clk_40;
     daq_to_daqlink_o.tts_state <= tts_state;
     daq_to_daqlink_o.event_clk <= daq_clk_i; -- TODO: check if the TTS state is transfered to the TTC clock domain correctly, if not, maybe use a different clock
-    daq_to_daqlink_o.event_data <= daq_event_data;
-    daq_to_daqlink_o.event_header <= daq_event_header;
-    daq_to_daqlink_o.event_trailer <= daq_event_trailer;
-    daq_to_daqlink_o.event_valid <= daq_event_write_en;
+    daq_to_daqlink_o.event_data <= daqfifo_dout(63 downto 0);
+    daq_to_daqlink_o.event_header <= daqfifo_dout(65);
+    daq_to_daqlink_o.event_trailer <= daqfifo_dout(64);
+    daq_to_daqlink_o.event_valid <= daqfifo_valid;
 
     daq_ready <= daqlink_to_daq_i.ready;
     daq_almost_full <= daqlink_to_daq_i.almost_full;
@@ -294,6 +328,42 @@ begin
               countdown := countdown - 1;
             else
               reset_pwrup <= '0';
+            end if;
+        end if;
+    end process;
+
+    --================================--
+    -- DAQ output FIFO
+    --================================--
+    
+    i_daq_fifo : component daq_output_fifo
+    port map(
+        clk       => daq_clk_i,
+        rst       => reset_daq,
+        din       => daqfifo_din,
+        wr_en     => daqfifo_wr_en,
+        rd_en     => daqfifo_rd_en,
+        dout      => daqfifo_dout,
+        full      => daqfifo_full,
+        empty     => daqfifo_empty,
+        valid     => daqfifo_valid,
+        prog_full => daqfifo_near_full
+    );
+
+    daqfifo_din <= daq_event_header & daq_event_trailer & daq_event_data;
+    daqfifo_wr_en <= daq_event_write_en;
+    
+    -- daq fifo read logic
+    process(daq_clk_i)
+    begin
+        if (rising_edge(daq_clk_i)) then
+            if (reset_daq = '1') then
+                err_daqfifo_full <= '0';
+            else
+                daqfifo_rd_en <= (not daq_almost_full) and (not daqfifo_empty) and (not err_daqfifo_full);
+                if (daqfifo_full = '1') then
+                    err_daqfifo_full <= '1';
+                end if; 
             end if;
         end if;
     end process;
@@ -392,22 +462,54 @@ begin
     -- TTS
     --================================--
 
-    -- TODO: need to do TTS error reporting on common clock (either TTC clk or DAQ clk)
     process (tk_data_links_i(0).clk)
     begin
         if (rising_edge(tk_data_links_i(0).clk)) then
-            for I in 0 to (g_NUM_OF_OHs - 1) loop
-                tts_chmb_critical <= tts_chmb_critical or (chmb_tts_states(I)(2) and input_mask(I) and not reset_daq);
-                tts_chmb_out_of_sync <= tts_chmb_out_of_sync or (chmb_tts_states(I)(1) and input_mask(I));
-                tts_chmb_warning <= tts_chmb_warning or (chmb_tts_states(I)(0) and input_mask(I));
-            end loop;
+            if (reset_daq = '1') then
+                tts_chmb_critical <= '0';
+                tts_chmb_out_of_sync <= '0';
+                tts_chmb_warning <= '0';
+                tts_start_cntdwn_chmb <= x"ff";
+            else
+                if (tts_start_cntdwn_chmb /= x"00") then
+                    for I in 0 to (g_NUM_OF_OHs - 1) loop
+                        tts_chmb_critical <= tts_chmb_critical or (chmb_tts_states(I)(2) and input_mask(I));
+                        tts_chmb_out_of_sync <= tts_chmb_out_of_sync or (chmb_tts_states(I)(1) and input_mask(I));
+                        tts_chmb_warning <= tts_chmb_warning or (chmb_tts_states(I)(0) and input_mask(I));
+                    end loop;                
+                else
+                    tts_start_cntdwn_chmb <= tts_start_cntdwn_chmb - 1;
+                end if;
+            end if;
         end if;
     end process;
 
-    tts_critical_error <= err_l1afifo_full or tts_chmb_critical;
-    tts_out_of_sync <= tts_chmb_out_of_sync;
-    tts_warning <= l1afifo_near_full or tts_chmb_warning;
-    tts_busy <= reset_daq;
+    i_tts_sync_chmb_error   : entity work.synchronizer generic map(N_STAGES => 2) port map(async_i => tts_chmb_critical,    clk_i => ttc_clks_i.clk_40, sync_o  => tts_chmb_critical_tts_clk);
+    i_tts_sync_chmb_warn    : entity work.synchronizer generic map(N_STAGES => 2) port map(async_i => tts_chmb_warning,     clk_i => ttc_clks_i.clk_40, sync_o  => tts_chmb_warning_tts_clk);
+    i_tts_sync_chmb_oos     : entity work.synchronizer generic map(N_STAGES => 2) port map(async_i => tts_chmb_out_of_sync, clk_i => ttc_clks_i.clk_40, sync_o  => tts_chmb_out_of_sync_tts_clk);
+    i_tts_sync_daqfifo_full : entity work.synchronizer generic map(N_STAGES => 2) port map(async_i => err_daqfifo_full,     clk_i => ttc_clks_i.clk_40, sync_o  => err_daqfifo_full_tts_clk);
+
+    process (ttc_clks_i.clk_40)
+    begin
+        if (rising_edge(ttc_clks_i.clk_40)) then
+            if (reset_daq = '1') then
+                tts_critical_error <= '0';
+                tts_out_of_sync <= '0';
+                tts_warning <= '0';
+                tts_busy <= '1';
+                tts_start_cntdwn <= x"ff";
+            else
+                if (tts_start_cntdwn /= x"00") then
+                    tts_busy <= '0';
+                    tts_critical_error <= err_l1afifo_full or tts_chmb_critical_tts_clk or err_daqfifo_full_tts_clk;
+                    tts_out_of_sync <= tts_chmb_out_of_sync_tts_clk;
+                    tts_warning <= l1afifo_near_full or tts_chmb_warning_tts_clk;
+                else
+                    tts_start_cntdwn <= tts_start_cntdwn - 1;
+                end if;
+            end if;
+        end if;
+    end process;
 
     tts_state <= tts_override when (tts_override /= x"0") else
                  x"8" when (daq_enable = '0') else
@@ -491,7 +593,7 @@ begin
                     
                     -- have an L1A and data from all enabled inputs is ready (or these inputs have timed out)
                     if (l1afifo_empty = '0' and ((input_mask(g_NUM_OF_OHs - 1 downto 0) and ((not chmb_evtfifos_empty) or dav_timeout_flags(g_NUM_OF_OHs - 1 downto 0))) = input_mask(g_NUM_OF_OHs - 1 downto 0))) then
-                        if (daq_ready = '1' and daq_almost_full = '0' and daq_enable = '1') then -- everybody ready?.... GO! :)
+                        if (daq_ready = '1' and daqfifo_near_full = '0' and daq_enable = '1') then -- everybody ready?.... GO! :)
                             -- start the DAQ state machine
                             daq_state <= x"1";
                             
