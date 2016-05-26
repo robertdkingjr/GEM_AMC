@@ -110,6 +110,8 @@ architecture ttc_arch of ttc is
     constant C_NUM_OF_DECODED_TTC_CMDS : integer := 10;
     signal ttc_cmds_arr              : std_logic_vector(C_NUM_OF_DECODED_TTC_CMDS - 1 downto 0);
     signal ttc_cmds_cnt_arr          : t_slv_arr_32(C_NUM_OF_DECODED_TTC_CMDS - 1 downto 0);
+    
+    signal l1a_rate          : std_logic_vector(31 downto 0); 
 
     -- ttc mini spy
     signal ttc_spy_buffer    : std_logic_vector(31 downto 0) := (others => '1');
@@ -375,6 +377,19 @@ begin
         end process;
     end generate;
 
+    -- L1A rate counter
+    i_l1a_rate_counter : entity work.rate_counter
+    generic map(
+        g_CLK_FREQUENCY => C_TTC_CLK_FREQUENCY_SLV,
+        g_COUNTER_WIDTH => 32
+    )
+    port map(
+        clk_i   => clk_40,
+        reset_i => reset,
+        en_i    => l1a_cmd,
+        rate_o  => l1a_rate
+    );
+
     -- wiring
     ttc_daq_cntrs_o.orbit <= orbit_cnt;
     ttc_daq_cntrs_o.l1id  <= l1id_cnt;
@@ -444,6 +459,7 @@ begin
     regs_addresses(18)(REG_TTC_ADDRESS_MSB downto REG_TTC_ADDRESS_LSB) <= "01" & x"2";
     regs_addresses(19)(REG_TTC_ADDRESS_MSB downto REG_TTC_ADDRESS_LSB) <= "01" & x"3";
     regs_addresses(20)(REG_TTC_ADDRESS_MSB downto REG_TTC_ADDRESS_LSB) <= "01" & x"4";
+    regs_addresses(21)(REG_TTC_ADDRESS_MSB downto REG_TTC_ADDRESS_LSB) <= "01" & x"5";
 
     -- Connect read signals
     regs_read_arr(0)(REG_TTC_CTRL_L1A_ENABLE_BIT) <= ttc_ctrl.l1a_enable;
@@ -474,7 +490,8 @@ begin
     regs_read_arr(17)(REG_TTC_CMD_COUNTERS_STOP_MSB downto REG_TTC_CMD_COUNTERS_STOP_LSB) <= ttc_cmds_cnt_arr(8);
     regs_read_arr(18)(REG_TTC_CMD_COUNTERS_TEST_SYNC_MSB downto REG_TTC_CMD_COUNTERS_TEST_SYNC_LSB) <= ttc_cmds_cnt_arr(9);
     regs_read_arr(19)(REG_TTC_L1A_ID_MSB downto REG_TTC_L1A_ID_LSB) <= l1id_cnt;
-    regs_read_arr(20)(REG_TTC_TTC_SPY_BUFFER_MSB downto REG_TTC_TTC_SPY_BUFFER_LSB) <= ttc_spy_buffer;
+    regs_read_arr(20)(REG_TTC_L1A_RATE_MSB downto REG_TTC_L1A_RATE_LSB) <= l1a_rate;
+    regs_read_arr(21)(REG_TTC_TTC_SPY_BUFFER_MSB downto REG_TTC_TTC_SPY_BUFFER_LSB) <= ttc_spy_buffer;
 
     -- Connect write signals
     ttc_ctrl.l1a_enable <= regs_write_arr(0)(REG_TTC_CTRL_L1A_ENABLE_BIT);

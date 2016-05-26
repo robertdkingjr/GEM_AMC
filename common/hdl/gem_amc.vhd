@@ -23,7 +23,8 @@ use work.ttc_pkg.all;
 entity gem_amc is
     generic(
         g_NUM_OF_OHs         : integer;
-        g_NUM_IPB_SLAVES     : integer
+        g_NUM_IPB_SLAVES     : integer;
+        g_DAQ_CLK_FREQ       : integer
     );
     port(
         reset_i                 : in   std_logic;
@@ -217,7 +218,8 @@ begin
 
     i_daq : entity work.daq
         generic map(
-            g_NUM_OF_OHs => g_NUM_OF_OHs
+            g_NUM_OF_OHs => g_NUM_OF_OHs,
+            g_DAQ_CLK_FREQ => g_DAQ_CLK_FREQ
         )
         port map(
             reset_i          => reset,

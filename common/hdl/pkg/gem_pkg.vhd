@@ -10,10 +10,10 @@ package gem_pkg is
     --==  Firmware version  ==--
     --========================-- 
 
-    constant C_FIRMWARE_DATE    : std_logic_vector(31 downto 0) := x"20160524";
+    constant C_FIRMWARE_DATE    : std_logic_vector(31 downto 0) := x"20160526";
     constant C_FIRMWARE_MAJOR   : integer range 0 to 255        := 1;
     constant C_FIRMWARE_MINOR   : integer range 0 to 255        := 3;
-    constant C_FIRMWARE_BUILD   : integer range 0 to 255        := 6;
+    constant C_FIRMWARE_BUILD   : integer range 0 to 255        := 7;
 
     --======================--
     --==      General     ==--
@@ -135,10 +135,14 @@ package gem_pkg is
         evtfifo_near_full       : std_logic;
         evtfifo_full            : std_logic;
         evtfifo_underflow       : std_logic;
+        evtfifo_near_full_cnt   : std_logic_vector(15 downto 0);
+        evtfifo_wr_rate         : std_logic_vector(16 downto 0);
         infifo_empty            : std_logic;
         infifo_near_full        : std_logic;
         infifo_full             : std_logic;
         infifo_underflow        : std_logic;
+        infifo_near_full_cnt    : std_logic_vector(15 downto 0);
+        infifo_wr_rate          : std_logic_vector(14 downto 0);
         tts_state               : std_logic_vector(3 downto 0);
         err_event_too_big       : std_logic;
         err_evtfifo_full        : std_logic;
@@ -176,6 +180,7 @@ package gem_pkg is
         empty         : std_logic;
         valid         : std_logic;
         underflow     : std_logic;
+        data_cnt      : std_logic_vector(11 downto 0);
     end record;
 
     type t_chamber_infifo_rd_array is array(integer range <>) of t_chamber_infifo_rd;
@@ -186,6 +191,7 @@ package gem_pkg is
         empty         : std_logic;
         valid         : std_logic;
         underflow     : std_logic;
+        data_cnt      : std_logic_vector(11 downto 0);
     end record;
 
     type t_chamber_evtfifo_rd_array is array(integer range <>) of t_chamber_evtfifo_rd;

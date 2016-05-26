@@ -315,7 +315,8 @@ begin
     i_gem : entity work.gem_amc
         generic map(
             g_NUM_OF_OHs         => CFG_NUM_OF_OHs,
-            g_NUM_IPB_SLAVES     => C_NUM_IPB_SLAVES
+            g_NUM_IPB_SLAVES     => C_NUM_IPB_SLAVES,
+            g_DAQ_CLK_FREQ       => 50_000_000
         )
         port map(
             reset_i                 => '0',
