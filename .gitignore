@@ -12,6 +12,8 @@
 /ctp7/ip/*
 /glib/ip/*
 !*.xcix
+!*.xci
+!*.xco
 
 zamiacad
 sigasi
