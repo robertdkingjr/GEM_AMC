@@ -92,7 +92,10 @@ entity gth_wrapper is
     gth_misc_status_arr_o : out t_gth_misc_status_arr(g_NUM_OF_GTH_GTs-1 downto 0);
 
     gth_tx_data_arr_i : in  t_gt_8b10b_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
-    gth_rx_data_arr_o : out t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0)
+    gth_rx_data_arr_o : out t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+
+    gth_gbt_tx_data_arr_i : in  t_gt_gbt_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+    gth_gbt_rx_data_arr_o : out t_gt_gbt_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0)
     );
 end gth_wrapper;
 
@@ -376,38 +379,46 @@ begin
     gen_gth_4p8g : if c_gth_config_arr(n).gth_link_type = gth_4p8g generate
 
       -------------  GT txdata_i Assignments for 20 bit datapath  -------  
-      s_gth_tx_data_arr(n).txdata <= x"0000" &
-                                     gth_tx_data_arr_i(n).txdata(17 downto 10) &
-                                     gth_tx_data_arr_i(n).txdata(7 downto 0);
+      s_gth_tx_data_arr(n).txdata <= gth_gbt_tx_data_arr_i(n).txdata(37 downto 30) &
+                                     gth_gbt_tx_data_arr_i(n).txdata(27 downto 20) &
+                                     gth_gbt_tx_data_arr_i(n).txdata(17 downto 10) &
+                                     gth_gbt_tx_data_arr_i(n).txdata(7 downto 0);
 
-      s_gth_tx_data_arr(n).txchardispmode <= "00" &
-                                             gth_tx_data_arr_i(n).txdata(19) &
-                                             gth_tx_data_arr_i(n).txdata(9);
+      s_gth_tx_data_arr(n).txchardispmode <= gth_gbt_tx_data_arr_i(n).txdata(39) &
+                                             gth_gbt_tx_data_arr_i(n).txdata(29) &
+                                             gth_gbt_tx_data_arr_i(n).txdata(19) &
+                                             gth_gbt_tx_data_arr_i(n).txdata(9);
 
-      s_gth_tx_data_arr(n).txchardispval <= "00" &
-                                            gth_tx_data_arr_i(n).txdata(18) &
-                                            gth_tx_data_arr_i(n).txdata(8);
+      s_gth_tx_data_arr(n).txchardispval <= gth_gbt_tx_data_arr_i(n).txdata(38) &
+                                            gth_gbt_tx_data_arr_i(n).txdata(28) &
+                                            gth_gbt_tx_data_arr_i(n).txdata(18) &
+                                            gth_gbt_tx_data_arr_i(n).txdata(8);
 
-      s_gth_tx_data_arr(n).txcharisk <= gth_tx_data_arr_i(n).txcharisk;
+      --s_gth_tx_data_arr(n).txcharisk <= gth_tx_data_arr_i(n).txcharisk;
 
       -------------  GT RXDATA Assignments for 20 bit datapath  -------  
 
-      gth_rx_data_arr_o(n).rxdata <= x"000" &
-                                     s_gth_rx_data_arr(n).rxdisperr(1) &
-                                     s_gth_rx_data_arr(n).rxcharisk(1) &
-                                     s_gth_rx_data_arr(n).rxdata(15 downto 8) &
-                                     s_gth_rx_data_arr(n).rxdisperr(0) &
-                                     s_gth_rx_data_arr(n).rxcharisk(0) &
-                                     s_gth_rx_data_arr(n).rxdata(7 downto 0);
+      gth_gbt_rx_data_arr_o(n).rxdata <= s_gth_rx_data_arr(n).rxdisperr(3) &
+                                         s_gth_rx_data_arr(n).rxcharisk(3) &
+                                         s_gth_rx_data_arr(n).rxdata(31 downto 24) &
+                                         s_gth_rx_data_arr(n).rxdisperr(2) &
+                                         s_gth_rx_data_arr(n).rxcharisk(2) &
+                                         s_gth_rx_data_arr(n).rxdata(23 downto 16) &
+                                         s_gth_rx_data_arr(n).rxdisperr(1) &
+                                         s_gth_rx_data_arr(n).rxcharisk(1) &
+                                         s_gth_rx_data_arr(n).rxdata(15 downto 8) &
+                                         s_gth_rx_data_arr(n).rxdisperr(0) &
+                                         s_gth_rx_data_arr(n).rxcharisk(0) &
+                                         s_gth_rx_data_arr(n).rxdata(7 downto 0);
 
 
-      gth_rx_data_arr_o(n).rxbyteisaligned <= s_gth_rx_data_arr(n).rxbyteisaligned;
-      gth_rx_data_arr_o(n).rxbyterealign   <= s_gth_rx_data_arr(n).rxbyterealign;
-      gth_rx_data_arr_o(n).rxcommadet      <= s_gth_rx_data_arr(n).rxcommadet;
-      gth_rx_data_arr_o(n).rxdisperr       <= s_gth_rx_data_arr(n).rxdisperr;
-      gth_rx_data_arr_o(n).rxnotintable    <= s_gth_rx_data_arr(n).rxnotintable;
-      gth_rx_data_arr_o(n).rxchariscomma   <= s_gth_rx_data_arr(n).rxchariscomma;
-      gth_rx_data_arr_o(n).rxcharisk       <= s_gth_rx_data_arr(n).rxcharisk;
+--      gth_rx_data_arr_o(n).rxbyteisaligned <= s_gth_rx_data_arr(n).rxbyteisaligned;
+--      gth_rx_data_arr_o(n).rxbyterealign   <= s_gth_rx_data_arr(n).rxbyterealign;
+--      gth_rx_data_arr_o(n).rxcommadet      <= s_gth_rx_data_arr(n).rxcommadet;
+--      gth_rx_data_arr_o(n).rxdisperr       <= s_gth_rx_data_arr(n).rxdisperr;
+--      gth_rx_data_arr_o(n).rxnotintable    <= s_gth_rx_data_arr(n).rxnotintable;
+--      gth_rx_data_arr_o(n).rxchariscomma   <= s_gth_rx_data_arr(n).rxchariscomma;
+--      gth_rx_data_arr_o(n).rxcharisk       <= s_gth_rx_data_arr(n).rxcharisk;
 
       i_gth_single_4p8g : entity work.gth_single_4p8g
         generic map

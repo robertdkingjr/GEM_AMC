@@ -166,7 +166,7 @@ begin
             MULT        => 9.0,
             DIVIDE      => 2,
             CLK_PERIOD  => 6.25,
-            OUT0_DIVIDE => 3.0,
+            OUT0_DIVIDE => 6.0,
             OUT1_DIVIDE => 1,
             OUT2_DIVIDE => 1,
             OUT3_DIVIDE => 1

@@ -128,8 +128,12 @@ architecture gem_ctp7_arch of gem_ctp7 is
             ----------------- GTH ------------------------
             clk_gth_tx_arr_o               : out std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
             clk_gth_rx_arr_o               : out std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
+            
             gth_tx_data_arr_i              : in  t_gt_8b10b_tx_data_arr(g_NUM_OF_GTH_GTs - 1 downto 0);
             gth_rx_data_arr_o              : out t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs - 1 downto 0);
+            gth_gbt_tx_data_arr_i          : in  t_gt_gbt_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);  
+            gth_gbt_rx_data_arr_o          : out t_gt_gbt_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+            
             gth_rxreset_arr_o              : out std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
             gth_txreset_arr_o              : out std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
 
@@ -171,27 +175,35 @@ architecture gem_ctp7_arch of gem_ctp7 is
     signal ttc_clocks : t_ttc_clks;
 
     -------------------------- GTH ---------------------------------
-    signal clk_gth_tx_arr  : std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
-    signal clk_gth_rx_arr  : std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
-    signal gth_tx_data_arr : t_gt_8b10b_tx_data_arr(g_NUM_OF_GTH_GTs - 1 downto 0);
-    signal gth_rx_data_arr : t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs - 1 downto 0);
-    signal gth_rxreset_arr : std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
-    signal gth_txreset_arr : std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
+    signal clk_gth_tx_arr       : std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
+    signal clk_gth_rx_arr       : std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
+    signal gth_tx_data_arr      : t_gt_8b10b_tx_data_arr(g_NUM_OF_GTH_GTs - 1 downto 0);
+    signal gth_rx_data_arr      : t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs - 1 downto 0);
+    signal gth_gbt_tx_data_arr  : t_gt_gbt_tx_data_arr(g_NUM_OF_GTH_GTs - 1 downto 0);
+    signal gth_gbt_rx_data_arr  : t_gt_gbt_rx_data_arr(g_NUM_OF_GTH_GTs - 1 downto 0);
+    signal gth_rxreset_arr      : std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
+    signal gth_txreset_arr      : std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
 
     
     -------------------- GTHs mapped to GEM links ---------------------------------
     
     -- 8b10b DAQ + Control GTX / GTH links (3.2Gbs, 16bit @ 160MHz w/ 8b10b encoding)
-    signal gt_8b10b_rx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
-    signal gt_8b10b_tx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
-    signal gt_8b10b_rx_data_arr : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
-    signal gt_8b10b_tx_data_arr : t_gt_8b10b_tx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_8b10b_rx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_8b10b_tx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_8b10b_rx_data_arr : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_8b10b_tx_data_arr : t_gt_8b10b_tx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
 
     -- Trigger RX GTX / GTH links (3.2Gbs, 16bit @ 160MHz w/ 8b10b encoding)
-    signal gt_trig0_rx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
-    signal gt_trig0_rx_data_arr : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
-    signal gt_trig1_rx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
-    signal gt_trig1_rx_data_arr : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_trig0_rx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_trig0_rx_data_arr : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_trig1_rx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_trig1_rx_data_arr : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
+
+    -- Trigger RX GTX / GTH links (3.2Gbs, 16bit @ 160MHz w/ 8b10b encoding)
+    signal gem_gt_gbt_rx_clk_arr    : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_gbt_tx_clk_arr    : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_gbt_rx_data_arr   : t_gt_gbt_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_gbt_tx_data_arr   : t_gt_gbt_tx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
 
     -------------------------- DEBUG ----------------------------------
     signal debug_gth_rx_data    : t_gt_8b10b_rx_data;
@@ -258,8 +270,12 @@ begin
             
             clk_gth_tx_arr_o               => clk_gth_tx_arr,
             clk_gth_rx_arr_o               => clk_gth_rx_arr,
+            
             gth_tx_data_arr_i              => gth_tx_data_arr,
             gth_rx_data_arr_o              => gth_rx_data_arr,
+            gth_gbt_tx_data_arr_i          => gth_gbt_tx_data_arr,
+            gth_gbt_rx_data_arr_o          => gth_gbt_rx_data_arr,
+            
             gth_rxreset_arr_o              => gth_rxreset_arr,
             gth_txreset_arr_o              => gth_txreset_arr,
 
@@ -327,14 +343,18 @@ begin
             ttc_data_n_i            => ttc_data_n_i,
             ttc_clocks_o            => ttc_clocks,
             
-            gt_8b10b_rx_clk_arr_i   => gt_8b10b_rx_clk_arr,
-            gt_8b10b_tx_clk_arr_i   => gt_8b10b_tx_clk_arr,
-            gt_8b10b_rx_data_arr_i  => gt_8b10b_rx_data_arr,
-            gt_8b10b_tx_data_arr_o  => gt_8b10b_tx_data_arr,
-            gt_trig0_rx_clk_arr_i   => gt_trig0_rx_clk_arr,
-            gt_trig0_rx_data_arr_i  => gt_trig0_rx_data_arr,
-            gt_trig1_rx_clk_arr_i   => gt_trig1_rx_clk_arr,
-            gt_trig1_rx_data_arr_i  => gt_trig1_rx_data_arr,
+            gt_8b10b_rx_clk_arr_i   => gem_gt_8b10b_rx_clk_arr,
+            gt_8b10b_tx_clk_arr_i   => gem_gt_8b10b_tx_clk_arr,
+            gt_8b10b_rx_data_arr_i  => gem_gt_8b10b_rx_data_arr,
+            gt_8b10b_tx_data_arr_o  => gem_gt_8b10b_tx_data_arr,
+            gt_trig0_rx_clk_arr_i   => gem_gt_trig0_rx_clk_arr,
+            gt_trig0_rx_data_arr_i  => gem_gt_trig0_rx_data_arr,
+            gt_trig1_rx_clk_arr_i   => gem_gt_trig1_rx_clk_arr,
+            gt_trig1_rx_data_arr_i  => gem_gt_trig1_rx_data_arr,
+            gt_gbt_rx_clk_arr_i     => gem_gt_gbt_rx_clk_arr,
+            gt_gbt_tx_clk_arr_i     => gem_gt_gbt_tx_clk_arr,
+            gt_gbt_rx_data_arr_i    => gem_gt_gbt_rx_data_arr,
+            gt_gbt_tx_data_arr_o    => gem_gt_gbt_tx_data_arr,
             
             ipb_reset_i             => ipb_reset,
             ipb_clk_i               => ipb_clk,
@@ -354,55 +374,21 @@ begin
 
     -- GTH mapping to GEM links
     g_gem_links : for i in 0 to CFG_NUM_OF_OHs - 1 generate
-        gt_8b10b_rx_clk_arr(i)  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
-        gt_8b10b_tx_clk_arr(i)  <= clk_gth_tx_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
-        gt_8b10b_rx_data_arr(i) <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
-        gt_8b10b_tx_data_arr(i) <= gth_tx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
+        gem_gt_8b10b_rx_clk_arr(i)  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
+        gem_gt_8b10b_tx_clk_arr(i)  <= clk_gth_tx_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
+        gem_gt_8b10b_rx_data_arr(i) <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
+        gth_tx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link) <= gem_gt_8b10b_tx_data_arr(i);
         
-        gt_trig0_rx_clk_arr(i)  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).trig0_rx_link);
-        gt_trig0_rx_data_arr(i) <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).trig0_rx_link);
-        gt_trig1_rx_clk_arr(i)  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).trig1_rx_link);
-        gt_trig1_rx_data_arr(i) <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).trig1_rx_link);
+        gem_gt_trig0_rx_clk_arr(i)  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).trig0_rx_link);
+        gem_gt_trig0_rx_data_arr(i) <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).trig0_rx_link);
+        gem_gt_trig1_rx_clk_arr(i)  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).trig1_rx_link);
+        gem_gt_trig1_rx_data_arr(i) <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).trig1_rx_link);
+
+        gem_gt_gbt_rx_clk_arr(i)  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt_link);
+        gem_gt_gbt_tx_clk_arr(i)  <= clk_gth_tx_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt_link);
+        gem_gt_gbt_rx_data_arr(i) <= gth_gbt_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt_link);
+        gth_gbt_tx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt_link) <= gem_gt_gbt_tx_data_arr(i);
     end generate; 
-
-    -------------------------- OptoHybrids --------------------------------- TODO: *** remove ***
-
---  optohybrids : for i in 0 to 15 generate
---    
---    real_oh : if (i = 6) generate
---      optohybrid_single_inst : entity work.optohybrid_single
---        port map(
---          reset_i                 => gth_rxreset_arr(6),
---          ttc_clk_i               => ttc_clks,
---          ttc_cmds_i              => ttc_cmds,
---          gth_rx_usrclk_i         => clk_gth_rx_arr(6),
---          gth_tx_usrclk_i         => clk_gth_tx_arr(6),
---          gth_rx_data_i           => gth_rx_data_arr(6),
---          gth_tx_data_o           => gth_tx_data_arr(6),
---          ipb_clk_i               => ipb_clk,
---          ipb_reg_miso_o          => ipb_miso_arr(C_IPB_SLV.oh_reg(6)),
---          ipb_reg_mosi_i          => ipb_mosi_arr(C_IPB_SLV.oh_reg(6))
---        );
---    end generate;
---    
---    unconnected_ohs : if (i /= 6) generate
---      gth_tx_data_arr(i) <= (txdata => (others => '0'), txcharisk => (others => '0'), txchardispmode => (others => '0'), txchardispval => (others => '0')); 
---      ipb_miso_arr(C_IPB_SLV.oh_reg(i)) <= (ipb_rdata => (others => '0'), ipb_ack => '0', ipb_err => '0');
---      ipb_miso_arr(C_IPB_SLV.oh_evt(i)) <= (ipb_rdata => (others => '0'), ipb_ack => '0', ipb_err => '0');
---    end generate;
---    
---  end generate;
---
---  -- pull down the unconnected IPBs
---  ipb_miso_arr(C_IPB_SLV.ttc) <= (ipb_rdata => (others => '0'), ipb_ack => '0', ipb_err => '0');
---  ipb_miso_arr(C_IPB_SLV.counters) <= (ipb_rdata => (others => '0'), ipb_ack => '0', ipb_err => '0');
---  ipb_miso_arr(C_IPB_SLV.daq) <= (ipb_rdata => (others => '0'), ipb_ack => '0', ipb_err => '0');
---  ipb_miso_arr(C_IPB_SLV.trigger) <= (ipb_rdata => (others => '0'), ipb_ack => '0', ipb_err => '0');
---
---  -- pull down unconnected TXs
---  unconnected_txs : for i in 16 to g_NUM_OF_GTH_GTs-1 generate
---    gth_tx_data_arr(i) <= (txdata => (others => '0'), txcharisk => (others => '0'), txchardispmode => (others => '0'), txchardispval => (others => '0')); 
---  end generate;
 
 end gem_ctp7_arch;
 

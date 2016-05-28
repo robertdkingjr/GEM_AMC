@@ -40,10 +40,10 @@ package gem_board_config_package is
 	constant CFG_OH_LINK_CONFIG_ARR : t_oh_link_config_arr := (
         --(6, 6, 7, 8),   -- OH 0 (for now just duplicate track for gbt since they don't exist in the design, but change this if you add them) 
         --(9, 9, 10, 11)  -- OH 1 (for now just duplicate track for gbt since they don't exist in the design, but change this if you add them) 
-        (0, 0, 1, 2), 
-        (3, 3, 4, 5), 
-        (6, 6, 7, 8), 
-        (9, 9, 10, 11)
+        (0, 12, 1, 2), 
+        (3, 13, 4, 5), 
+        (6, 14, 7, 8), 
+        (9, 15, 10, 11)
 
         --(12, 12, 13, 14), 
         --(15, 15, 16, 17), 

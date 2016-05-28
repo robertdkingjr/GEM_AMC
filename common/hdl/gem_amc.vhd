@@ -19,6 +19,7 @@ use work.gem_board_config_package.all;
 use work.ipb_addr_decode.all;
 use work.ipbus.all;
 use work.ttc_pkg.all;
+use work.vendor_specific_gbt_bank_package.all;
 
 entity gem_amc is
     generic(
@@ -47,6 +48,12 @@ entity gem_amc is
         gt_trig0_rx_data_arr_i  : in  t_gt_8b10b_rx_data_arr(g_NUM_OF_OHs - 1 downto 0);
         gt_trig1_rx_clk_arr_i   : in  std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
         gt_trig1_rx_data_arr_i  : in  t_gt_8b10b_rx_data_arr(g_NUM_OF_OHs - 1 downto 0);
+
+        -- GBT DAQ + Control GTX / GTH links (4.8Gbs, 40bit @ 120MHz without 8b10b encoding)
+        gt_gbt_rx_clk_arr_i     : in  std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+        gt_gbt_tx_clk_arr_i     : in  std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+        gt_gbt_rx_data_arr_i    : in  t_gt_gbt_rx_data_arr(g_NUM_OF_OHs - 1 downto 0);
+        gt_gbt_tx_data_arr_o    : out t_gt_gbt_tx_data_arr(g_NUM_OF_OHs - 1 downto 0);
         
         -- IPbus
         ipb_reset_i             : in  std_logic;
@@ -72,16 +79,38 @@ end gem_amc;
 
 architecture gem_amc_arch of gem_amc is
 
+    --================================--
+    -- Components  
+    --================================--
+
+    component ila_gbt
+    port (
+        clk : IN STD_LOGIC;
+    
+    
+    
+        probe0 : IN STD_LOGIC_VECTOR(83 DOWNTO 0); 
+        probe1 : IN STD_LOGIC_VECTOR(83 DOWNTO 0); 
+        probe2 : IN STD_LOGIC_VECTOR(0 DOWNTO 0); 
+        probe3 : IN STD_LOGIC_VECTOR(0 DOWNTO 0); 
+        probe4 : IN STD_LOGIC_VECTOR(0 DOWNTO 0); 
+        probe5 : IN STD_LOGIC_VECTOR(0 DOWNTO 0); 
+        probe6 : IN STD_LOGIC_VECTOR(0 DOWNTO 0); 
+        probe7 : IN STD_LOGIC_VECTOR(0 DOWNTO 0); 
+        probe8 : IN STD_LOGIC_VECTOR(0 DOWNTO 0); 
+        probe9 : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+        probe10 : IN STD_LOGIC_VECTOR(5 DOWNTO 0)
+    );
+    end component;
+
+    --================================--
+    -- Signals
+    --================================--
+
     --== General ==--
     signal reset            : std_logic;
     signal reset_pwrup      : std_logic;
     signal ipb_reset        : std_logic;
-
-    --== GTX signals ==--
-    signal gtx_tk_error     : std_logic_vector(1 downto 0);
-    signal gtx_tr_error     : std_logic_vector(1 downto 0);
-    signal gtx_evt_rcvd     : std_logic_vector(1 downto 0);
-    signal vfat2_t1         : t_t1;
 
     --== TTC signals ==--
     signal ttc_clocks       : t_ttc_clks;
@@ -97,7 +126,25 @@ architecture gem_amc_arch of gem_amc is
     signal sbit_links_status_arr    : t_oh_sbit_links_arr(g_NUM_OF_OHs - 1 downto 0);
     
     --== OH link status ==--
-    signal oh_link_status_arr       : t_oh_link_status_arr(g_NUM_OF_OHs - 1 downto 0);
+    signal oh_link_status_arr       : t_oh_link_status_arr(g_NUM_OF_OHs - 1 downto 0);    
+
+    --== GBT ==--
+    signal gbt_tx_we_arr                : std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+    signal gbt_tx_data_arr              : t_gbt_frame_array(g_NUM_OF_OHs - 1 downto 0);
+    signal gbt_tx_gearbox_aligned_arr   : std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+    signal gbt_tx_gearbox_align_done_arr: std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+    signal gbt_mgt_tx_data_arr          : t_gt_gbt_tx_data_arr(g_NUM_OF_OHs - 1 downto 0);
+            
+    signal gbt_rx_valid_arr             : std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+    signal gbt_rx_data_arr              : t_gbt_frame_array(g_NUM_OF_OHs - 1 downto 0);
+    signal gbt_rx_header                : std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+    signal gbt_rx_header_locked         : std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+    signal gbt_rx_ready                 : std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+    signal gbt_rx_frame_clk_ready       : std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+    signal gbt_rx_word_clk_ready        : std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+    signal gbt_rx_bitslip_nbr           : rxBitSlipNbr_mxnbit_A(g_NUM_OF_OHs - 1 downto 0);
+    signal gbt_mgt_rx_data_arr          : t_gt_gbt_rx_data_arr(g_NUM_OF_OHs - 1 downto 0);
+    signal gbt_mgt_rx_ready_arr         : std_logic_vector(g_NUM_OF_OHs - 1 downto 0);    
 
     --== Other ==--
     signal ipb_miso_arr     : ipb_rbus_array(g_NUM_IPB_SLAVES - 1 downto 0) := (others => (ipb_rdata => (others => '0'), ipb_ack => '0', ipb_err => '0'));
@@ -117,7 +164,7 @@ begin
     --================================--
     
     process(ipb_clk_i)
-        variable countdown : integer := 50_000; -- 1ms - probably way too long, but ok for now (this is only used after powerup)
+        variable countdown : integer := 50_000_000; -- 1s - probably way too long, but ok for now (this is only used after powerup)
     begin
         if (rising_edge(ipb_clk_i)) then
             if (countdown > 0) then
@@ -254,9 +301,9 @@ begin
             board_id_o       => open
         );
 
-    --==========--
-    -- Counters --
-    --==========--
+    --==================--
+    -- OH Link Counters --
+    --==================--
 
     i_oh_link_registers : entity work.oh_link_regs
         generic map(
@@ -273,6 +320,88 @@ begin
 
             debug_clk_cnt_arr_i  => debug_clk_cnt_arr,
             debug_clk_reset_o    => debug_clk_reset
+        );
+    
+    --==========--
+    --    GBT   --
+    --==========--
+    
+    i_gbt : entity work.gbt
+        generic map(
+            GBT_BANK_ID     => 0,
+            NUM_LINKS       => 4,
+            TX_OPTIMIZATION => 1,
+            RX_OPTIMIZATION => 0,
+            TX_ENCODING     => 0,
+            RX_ENCODING     => 0
+        )
+        port map(
+            reset_i                     => reset,
+            tx_frame_clk_i              => ttc_clocks.clk_40,
+            rx_frame_clk_i              => ttc_clocks.clk_40,
+            tx_word_clk_arr_i           => gt_gbt_tx_clk_arr_i(3 downto 0),
+            rx_word_clk_arr_i           => gt_gbt_rx_clk_arr_i(3 downto 0),
+            tx_ready_arr_i              => (others => '1'),
+            tx_we_arr_i                 => gbt_tx_we_arr(3 downto 0),
+            tx_data_arr_i               => gbt_tx_data_arr(3 downto 0),
+            tx_gearbox_aligned_arr_o    => gbt_tx_gearbox_aligned_arr(3 downto 0),
+            tx_gearbox_align_done_arr_o => gbt_tx_gearbox_align_done_arr(3 downto 0),
+            rx_frame_clk_rdy_arr_i      => gbt_rx_frame_clk_ready(3 downto 0),
+            rx_word_clk_rdy_arr_i       => gbt_rx_word_clk_ready(3 downto 0),
+            rx_rdy_arr_o                => gbt_rx_ready(3 downto 0),
+            rx_bitslip_nbr_arr_o        => gbt_rx_bitslip_nbr(3 downto 0),
+            rx_header_arr_o             => gbt_rx_header(3 downto 0),
+            rx_header_locked_arr_o      => gbt_rx_header_locked(3 downto 0),
+            rx_data_valid_arr_o         => gbt_rx_valid_arr(3 downto 0),
+            rx_data_arr_o               => gbt_rx_data_arr(3 downto 0),
+            mgt_rx_rdy_arr_i            => gbt_mgt_rx_ready_arr(3 downto 0),
+            mgt_tx_data_arr_o           => gbt_mgt_tx_data_arr(3 downto 0),
+            mgt_rx_data_arr_i           => gbt_mgt_rx_data_arr(3 downto 0)
+        );
+        
+    gbt_rx_frame_clk_ready <= (others => '1');
+    gbt_rx_word_clk_ready <= (others => '1');
+    gbt_mgt_rx_ready_arr <= (others => '1');
+--    gbt_mgt_rx_data_arr <= gt_gbt_rx_data_arr_i;  
+--    gt_gbt_tx_data_arr_o <= gbt_mgt_tx_data_arr;  
+        
+    --=== GBT test ===--
+    g_gbt_test : for i in 0 to 3 generate
+        -- loopback
+        gbt_mgt_rx_data_arr(i).rxdata <= gbt_mgt_tx_data_arr(i).txdata;
+        
+        -- generate test data
+        p_gbt_test_data : process(ttc_clocks.clk_40)
+            variable counter    : unsigned(19 downto 0);
+        begin
+            if (rising_edge(ttc_clocks.clk_40)) then
+                if (reset = '1') then
+                    counter := (others => '0');
+                    gbt_tx_we_arr(i) <= '0';
+                else
+                    counter := counter + 1;
+                    gbt_tx_we_arr(i) <= '1';
+                    gbt_tx_data_arr(i) <= x"a" & std_logic_vector(counter) & std_logic_vector(counter) & std_logic_vector(counter) & std_logic_vector(counter);
+                end if;
+            end if;
+        end process;
+        
+    end generate;
+    
+    i_ila_gbt : component ila_gbt
+        port map(
+            clk     => ttc_clocks.clk_40,
+            probe0  => gbt_tx_data_arr(0),
+            probe1  => gbt_rx_data_arr(0),
+            probe2  => gbt_tx_gearbox_aligned_arr(0 downto 0),
+            probe3  => gbt_tx_gearbox_align_done_arr(0 downto 0),
+            probe4  => gbt_rx_frame_clk_ready(0 downto 0),
+            probe5  => gbt_rx_word_clk_ready(0 downto 0),
+            probe6  => gbt_rx_ready(0 downto 0),
+            probe7  => gbt_rx_header(0 downto 0),
+            probe8  => gbt_rx_header_locked(0 downto 0),
+            probe9  => gbt_rx_valid_arr(0 downto 0),
+            probe10 => gbt_rx_bitslip_nbr(0)
         );
     
 end gem_amc_arch;

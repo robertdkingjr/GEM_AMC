@@ -72,12 +72,16 @@ entity system is
     ttc_clks_i        : in t_ttc_clks;
     
     ----------------- GTH ------------------------
-    clk_gth_tx_arr_o  : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0);
-    clk_gth_rx_arr_o  : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0);
-    gth_tx_data_arr_i : in  t_gt_8b10b_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);  
-    gth_rx_data_arr_o : out t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
-    gth_rxreset_arr_o : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0); 
-    gth_txreset_arr_o : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0);
+    clk_gth_tx_arr_o        : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0);
+    clk_gth_rx_arr_o        : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0);
+
+    gth_tx_data_arr_i       : in  t_gt_8b10b_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);  
+    gth_rx_data_arr_o       : out t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+    gth_gbt_tx_data_arr_i   : in  t_gt_gbt_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);  
+    gth_gbt_rx_data_arr_o   : out t_gt_gbt_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+
+    gth_rxreset_arr_o       : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0); 
+    gth_txreset_arr_o       : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0);
     
     ----------------- AMC13 DAQLink ------------------------
     amc13_gth_refclk_p             : in  std_logic;
@@ -218,9 +222,12 @@ architecture system_arch of system is
   signal s_gth_rx_status_arr   : t_gth_rx_status_arr(g_NUM_OF_GTH_GTs-1 downto 0);
   signal s_gth_misc_ctrl_arr   : t_gth_misc_ctrl_arr(g_NUM_OF_GTH_GTs-1 downto 0);
   signal s_gth_misc_status_arr : t_gth_misc_status_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+  
   signal s_gth_tx_data_arr     : t_gt_8b10b_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
-
   signal s_gth_rx_data_arr     : t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+
+  signal s_gth_gbt_tx_data_arr : t_gt_gbt_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+  signal s_gth_gbt_rx_data_arr : t_gt_gbt_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
 
 
   signal s_clk_gth_tx_usrclk_arr : std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0);
@@ -275,8 +282,11 @@ begin
   clk_gth_rx_arr_o  <= s_clk_gth_rx_usrclk_arr;
   gth_rxreset_arr_o <= s_gth_gt_rxreset;
   gth_txreset_arr_o <= s_gth_gt_txreset;
+  
   gth_rx_data_arr_o <= s_gth_rx_data_arr;
   s_gth_tx_data_arr <= gth_tx_data_arr_i;
+  gth_gbt_rx_data_arr_o <= s_gth_gbt_rx_data_arr;
+  s_gth_gbt_tx_data_arr <= gth_gbt_tx_data_arr_i;
   
   axi_clk_o                <= axi_clk;
   axi_reset_o              <= axi_reset(0);
@@ -468,8 +478,12 @@ begin
       gth_rx_status_arr_o   => s_gth_rx_status_arr,
       gth_misc_ctrl_arr_i   => s_gth_misc_ctrl_arr,
       gth_misc_status_arr_o => s_gth_misc_status_arr,
+      
       gth_tx_data_arr_i     => s_gth_tx_data_arr,
       gth_rx_data_arr_o     => s_gth_rx_data_arr,
+      gth_gbt_tx_data_arr_i => s_gth_gbt_tx_data_arr,
+      gth_gbt_rx_data_arr_o => s_gth_gbt_rx_data_arr,      
+      
       gth_tx_serial_arr_o   => s_gth_tx_serial_arr,
       gth_rx_serial_arr_i   => s_gth_rx_serial_arr
       );

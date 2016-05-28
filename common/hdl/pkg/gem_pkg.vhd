@@ -35,12 +35,18 @@ package gem_pkg is
     --============--   
     
     type t_std_array is array(integer range <>) of std_logic;
-    
+  
     type t_std32_array is array(integer range <>) of std_logic_vector(31 downto 0);
         
     type t_std16_array is array(integer range <>) of std_logic_vector(15 downto 0);
 
     type t_std4_array is array(integer range <>) of std_logic_vector(3 downto 0);
+
+    --============--
+    --==   GBT  ==--
+    --============--   
+
+    type t_gbt_frame_array is array(integer range <>) of std_logic_vector(83 downto 0);
 
     --========================--
     --== GTH/GTX link types ==--
@@ -66,6 +72,17 @@ package gem_pkg is
 
     type t_gt_8b10b_tx_data_arr is array(integer range <>) of t_gt_8b10b_tx_data;
     type t_gt_8b10b_rx_data_arr is array(integer range <>) of t_gt_8b10b_rx_data;
+
+    type t_gt_gbt_tx_data is record
+        txdata          : std_logic_vector(39 downto 0);
+    end record;
+
+    type t_gt_gbt_rx_data is record
+        rxdata          : std_logic_vector(39 downto 0);
+    end record;
+
+    type t_gt_gbt_tx_data_arr is array(integer range <>) of t_gt_gbt_tx_data;
+    type t_gt_gbt_rx_data_arr is array(integer range <>) of t_gt_gbt_rx_data;
 
     --========================--
     --== SBit cluster data  ==--

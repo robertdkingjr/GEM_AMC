@@ -39,13 +39,13 @@
     <Option Name="WTVcsLaunchSim" Val="0"/>
     <Option Name="WTRivieraLaunchSim" Val="0"/>
     <Option Name="WTActivehdlLaunchSim" Val="0"/>
-    <Option Name="WTXSimExportSim" Val="22"/>
-    <Option Name="WTModelSimExportSim" Val="22"/>
-    <Option Name="WTQuestaExportSim" Val="22"/>
-    <Option Name="WTIesExportSim" Val="22"/>
-    <Option Name="WTVcsExportSim" Val="22"/>
-    <Option Name="WTRivieraExportSim" Val="22"/>
-    <Option Name="WTActivehdlExportSim" Val="22"/>
+    <Option Name="WTXSimExportSim" Val="24"/>
+    <Option Name="WTModelSimExportSim" Val="24"/>
+    <Option Name="WTQuestaExportSim" Val="24"/>
+    <Option Name="WTIesExportSim" Val="24"/>
+    <Option Name="WTVcsExportSim" Val="24"/>
+    <Option Name="WTRivieraExportSim" Val="24"/>
+    <Option Name="WTActivehdlExportSim" Val="24"/>
     <Option Name="GenerateIPUpgradeLog" Val="TRUE"/>
   </Configuration>
   <FileSets Version="1" Minor="31">
@@ -165,15 +165,6 @@
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_blk_mem_gen_0_0/v7_bd_blk_mem_gen_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_bram_ctrl_gth_reg_file_0/v7_bd_axi_bram_ctrl_gth_reg_file_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_chip2chip_0_0/v7_bd_axi_chip2chip_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_interconnect_0_0/v7_bd_axi_interconnect_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_bram_ctrl_drp_0/v7_bd_axi_bram_ctrl_drp_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_bram_ctrl_0_0/v7_bd_axi_bram_ctrl_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_xadc_wiz_0_0/v7_bd_xadc_wiz_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_proc_sys_reset_0_0/v7_bd_proc_sys_reset_0_0.xci"/>
-        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_clk_wiz_0_0/v7_bd_clk_wiz_0_0.xci"/>
         <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="hdl/v7_bd.hwdef"/>
         <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="hw_handoff/v7_bd_bd.tcl"/>
         <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="hw_handoff/v7_bd.hwh"/>
@@ -185,6 +176,15 @@
         <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_auto_pc_1/v7_bd_auto_pc_1.xci"/>
         <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_auto_pc_0/v7_bd_auto_pc_0.xci"/>
         <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_xbar_0/v7_bd_xbar_0.xci"/>
+        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_clk_wiz_0_0/v7_bd_clk_wiz_0_0.xci"/>
+        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_blk_mem_gen_0_0/v7_bd_blk_mem_gen_0_0.xci"/>
+        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_interconnect_0_0/v7_bd_axi_interconnect_0_0.xci"/>
+        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_chip2chip_0_0/v7_bd_axi_chip2chip_0_0.xci"/>
+        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_bram_ctrl_gth_reg_file_0/v7_bd_axi_bram_ctrl_gth_reg_file_0.xci"/>
+        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_bram_ctrl_drp_0/v7_bd_axi_bram_ctrl_drp_0.xci"/>
+        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_axi_bram_ctrl_0_0/v7_bd_axi_bram_ctrl_0_0.xci"/>
+        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_xadc_wiz_0_0/v7_bd_xadc_wiz_0_0.xci"/>
+        <CompFileExtendedInfo CompFileName="v7_bd.bd" FileRelPathName="ip/v7_bd_proc_sys_reset_0_0/v7_bd_proc_sys_reset_0_0.xci"/>
       </File>
       <File Path="$PPRDIR/../hdl/ipbus/pkg/ipb_addr_decode.vhd">
         <FileInfo>
@@ -781,6 +781,12 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PPRDIR/../../common/hdl/gbt_bank/gbt.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
         <Option Name="TopModule" Val="gem_ctp7"/>
@@ -1095,6 +1101,26 @@
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
+    <FileSet Name="ila_gbt" Type="BlockSrcs" RelSrcDir="$PSRCDIR/ila_gbt">
+      <File Path="$PSRCDIR/sources_1/ip/ila_gbt.xcix">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/ip/ila_gbt/ila_gbt.xci">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <Config>
+        <Option Name="TopModule" Val="ila_gbt"/>
+        <Option Name="UseBlackboxStub" Val="1"/>
+      </Config>
+    </FileSet>
   </FileSets>
   <Simulators>
     <Simulator Name="XSim">
@@ -1217,6 +1243,13 @@
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
     </Run>
     <Run Id="xlx_k7v7_tx_dpram_synth_1" Type="Ft3:Synth" SrcSet="xlx_k7v7_tx_dpram" Part="xc7vx690tffg1927-2" ConstrsSet="xlx_k7v7_tx_dpram" Description="Vivado Synthesis Defaults" Dir="$PRUNDIR/xlx_k7v7_tx_dpram_synth_1" IncludeInArchive="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2016"/>
+        <Step Id="synth_design"/>
+      </Strategy>
+      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
+    </Run>
+    <Run Id="ila_gbt_synth_1" Type="Ft3:Synth" SrcSet="ila_gbt" Part="xc7vx690tffg1927-2" ConstrsSet="ila_gbt" Description="Vivado Synthesis Defaults" Dir="$PRUNDIR/ila_gbt_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2016"/>
         <Step Id="synth_design"/>
@@ -1421,6 +1454,20 @@
       </Strategy>
     </Run>
     <Run Id="xlx_k7v7_tx_dpram_impl_1" Type="Ft2:EntireDesign" Part="xc7vx690tffg1927-2" ConstrsSet="xlx_k7v7_tx_dpram" Description="Default settings for Implementation." SynthRun="xlx_k7v7_tx_dpram_synth_1" IncludeInArchive="false">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2016"/>
+        <Step Id="init_design"/>
+        <Step Id="opt_design"/>
+        <Step Id="power_opt_design"/>
+        <Step Id="place_design"/>
+        <Step Id="post_place_power_opt_design"/>
+        <Step Id="phys_opt_design"/>
+        <Step Id="route_design"/>
+        <Step Id="post_route_phys_opt_design"/>
+        <Step Id="write_bitstream"/>
+      </Strategy>
+    </Run>
+    <Run Id="ila_gbt_impl_1" Type="Ft2:EntireDesign" Part="xc7vx690tffg1927-2" ConstrsSet="ila_gbt" Description="Default settings for Implementation." SynthRun="ila_gbt_synth_1" IncludeInArchive="false">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2016"/>
         <Step Id="init_design"/>
