@@ -84,23 +84,23 @@ architecture gem_amc_arch of gem_amc is
     --================================--
 
     component ila_gbt
-    port (
-        clk : IN STD_LOGIC;
-    
-    
-    
-        probe0 : IN STD_LOGIC_VECTOR(83 DOWNTO 0); 
-        probe1 : IN STD_LOGIC_VECTOR(83 DOWNTO 0); 
-        probe2 : IN STD_LOGIC_VECTOR(0 DOWNTO 0); 
-        probe3 : IN STD_LOGIC_VECTOR(0 DOWNTO 0); 
-        probe4 : IN STD_LOGIC_VECTOR(0 DOWNTO 0); 
-        probe5 : IN STD_LOGIC_VECTOR(0 DOWNTO 0); 
-        probe6 : IN STD_LOGIC_VECTOR(0 DOWNTO 0); 
-        probe7 : IN STD_LOGIC_VECTOR(0 DOWNTO 0); 
-        probe8 : IN STD_LOGIC_VECTOR(0 DOWNTO 0); 
-        probe9 : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-        probe10 : IN STD_LOGIC_VECTOR(5 DOWNTO 0)
-    );
+        port(
+            clk     : IN STD_LOGIC;
+            probe0  : IN STD_LOGIC_VECTOR(83 DOWNTO 0);
+            probe1  : IN STD_LOGIC_VECTOR(83 DOWNTO 0);
+            probe2  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+            probe3  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+            probe4  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+            probe5  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+            probe6  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+            probe7  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+            probe8  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+            probe9  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+            probe10 : IN STD_LOGIC_VECTOR(5 DOWNTO 0);
+            probe11 : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+            probe12 : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+            probe13 : IN STD_LOGIC_VECTOR(15 DOWNTO 0)
+        );
     end component;
 
     --================================--
@@ -145,6 +145,9 @@ architecture gem_amc_arch of gem_amc is
     signal gbt_rx_bitslip_nbr           : rxBitSlipNbr_mxnbit_A(g_NUM_OF_OHs - 1 downto 0);
     signal gbt_mgt_rx_data_arr          : t_gt_gbt_rx_data_arr(g_NUM_OF_OHs - 1 downto 0);
     signal gbt_mgt_rx_ready_arr         : std_logic_vector(g_NUM_OF_OHs - 1 downto 0);    
+
+    -- test
+    signal gbt_rx_mismatch_cnt          : t_std16_array(g_NUM_OF_OHs - 1 downto 0);
 
     --== Other ==--
     signal ipb_miso_arr     : ipb_rbus_array(g_NUM_IPB_SLAVES - 1 downto 0) := (others => (ipb_rdata => (others => '0'), ipb_ack => '0', ipb_err => '0'));
@@ -378,10 +381,14 @@ begin
                 if (reset = '1') then
                     counter := (others => '0');
                     gbt_tx_we_arr(i) <= '0';
+                    gbt_rx_mismatch_cnt(i) <= (others => '0');
                 else
                     counter := counter + 1;
                     gbt_tx_we_arr(i) <= '1';
                     gbt_tx_data_arr(i) <= x"a" & std_logic_vector(counter) & std_logic_vector(counter) & std_logic_vector(counter) & std_logic_vector(counter);
+                    if (gbt_rx_data_arr(i) /= gbt_rx_data_arr(0)) then
+                        gbt_rx_mismatch_cnt(i) <= std_logic_vector(unsigned(gbt_rx_mismatch_cnt(i)) + 1);
+                    end if;
                 end if;
             end if;
         end process;
@@ -401,7 +408,10 @@ begin
             probe7  => gbt_rx_header(0 downto 0),
             probe8  => gbt_rx_header_locked(0 downto 0),
             probe9  => gbt_rx_valid_arr(0 downto 0),
-            probe10 => gbt_rx_bitslip_nbr(0)
+            probe10 => gbt_rx_bitslip_nbr(0),
+            probe11 => gbt_rx_mismatch_cnt(1),
+            probe12 => gbt_rx_mismatch_cnt(2),
+            probe13 => gbt_rx_mismatch_cnt(3)
         );
     
 end gem_amc_arch;
