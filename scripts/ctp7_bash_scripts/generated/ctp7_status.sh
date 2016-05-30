@@ -206,6 +206,7 @@ if [ "$MODULE" = "GEM_SYSTEM" ]; then
     printf 'GEM_AMC.GEM_SYSTEM.RELEASE.MINOR              = 0x%x\n' $(( (`mpeek 0x6640000c` & 0x0000ff00) >> 8 ))
     printf 'GEM_AMC.GEM_SYSTEM.RELEASE.MAJOR              = 0x%x\n' $(( (`mpeek 0x6640000c` & 0x00ff0000) >> 16 ))
     printf 'GEM_AMC.GEM_SYSTEM.RELEASE.DATE               = 0x%x\n' `mpeek 0x66400010` 
+    printf 'GEM_AMC.GEM_SYSTEM.GBT_CLK_COUNTERS           = 0x%x\n' $(( (`mpeek 0x66400014` & 0x00ffffff) >> 0 ))
     printf 'GEM_AMC.GEM_SYSTEM.LEGACY_SYSTEM.BOARD_ID     = 0x%x\n' `mpeek 0x66440000` 
     printf 'GEM_AMC.GEM_SYSTEM.LEGACY_SYSTEM.SYSTEM_ID    = 0x%x\n' `mpeek 0x66440004` 
     printf 'GEM_AMC.GEM_SYSTEM.LEGACY_SYSTEM.FIRMWARE_VERSION = 0x%x\n' `mpeek 0x66440008` 

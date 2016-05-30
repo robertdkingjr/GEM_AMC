@@ -105,6 +105,7 @@ architecture Behavioral of daq is
 
     -- Reset
     signal reset_global         : std_logic := '1';
+    signal reset_daq_async      : std_logic := '1';
     signal reset_daq            : std_logic := '1';
     signal reset_daqlink        : std_logic := '1'; -- should only be done once at powerup
     signal reset_pwrup          : std_logic := '1';
@@ -328,7 +329,7 @@ begin
             sync_o  => reset_global
         );
     
-    reset_daq <= reset_pwrup or reset_global or reset_local;
+    reset_daq_async <= reset_pwrup or reset_global or reset_local;
     reset_daqlink <= reset_pwrup or reset_global or reset_daqlink_ipb;
     
     -- Reset after powerup
@@ -343,6 +344,13 @@ begin
             else
               reset_pwrup <= '0';
             end if;
+        end if;
+    end process;
+
+    process(ttc_clks_i.clk_40)
+    begin
+        if (rising_edge(ttc_clks_i.clk_40)) then
+            reset_daq <= reset_daq_async;
         end if;
     end process;
 

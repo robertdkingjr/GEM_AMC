@@ -39,13 +39,13 @@
     <Option Name="WTVcsLaunchSim" Val="0"/>
     <Option Name="WTRivieraLaunchSim" Val="0"/>
     <Option Name="WTActivehdlLaunchSim" Val="0"/>
-    <Option Name="WTXSimExportSim" Val="25"/>
-    <Option Name="WTModelSimExportSim" Val="25"/>
-    <Option Name="WTQuestaExportSim" Val="25"/>
-    <Option Name="WTIesExportSim" Val="25"/>
-    <Option Name="WTVcsExportSim" Val="25"/>
-    <Option Name="WTRivieraExportSim" Val="25"/>
-    <Option Name="WTActivehdlExportSim" Val="25"/>
+    <Option Name="WTXSimExportSim" Val="26"/>
+    <Option Name="WTModelSimExportSim" Val="26"/>
+    <Option Name="WTQuestaExportSim" Val="26"/>
+    <Option Name="WTIesExportSim" Val="26"/>
+    <Option Name="WTVcsExportSim" Val="26"/>
+    <Option Name="WTRivieraExportSim" Val="26"/>
+    <Option Name="WTActivehdlExportSim" Val="26"/>
     <Option Name="GenerateIPUpgradeLog" Val="TRUE"/>
   </Configuration>
   <FileSets Version="1" Minor="31">
@@ -1115,41 +1115,29 @@
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="sim/ila_gbt.vhd"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ila_gbt.vho"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ila_gbt.xml"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="synth/ila_gbt.vhd"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ila_gbt_ooc.xdc"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ila_v6_1/constraints/ila.xdc"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ila_v6_1_0/hdl/verilog/ila_v6_1_0_ila_lib_function.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ila_v6_1_0/hdl/verilog/ila_v6_1_0_ila_localparam_inc.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ila_v6_1_0/hdl/verilog/ila_v6_1_0_ila_param_inc.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ila_v6_1_0/hdl/verilog/ila_v6_1_0_ila_in_ports_inc.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ila_v6_1_0/hdl/ila_v6_1_syn_rfs.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ila_v6_1_0/hdl/verilog/ila_v6_1_0_ila_ver_inc.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="xsdbm_v1_1_2/hdl/verilog/xsdbm_v1_1_xsdbm.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="xsdbm_v1_1_2/hdl/xsdbm_v1_1_vl_rfs.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="xsdbm_v1_1_2/hdl/verilog/xsdbm_v1_1_2_icon_inc.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="xsdbm_v1_1_2/hdl/verilog/xsdbm_v1_1_2_inc.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="xsdbm_v1_1_2/hdl/verilog/xsdbm_v1_1_2_icon2xsdb_inc.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="fifo_generator_v13_0_2/hdl/fifo_generator_v13_0.vhd"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="fifo_generator_v13_0_2/hdl/fifo_generator_v13_0_vhsyn_rfs.vhd"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="blk_mem_gen_v8_3_2/hdl/blk_mem_gen_v8_3.vhd"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="blk_mem_gen_v8_3_2/hdl/blk_mem_gen_v8_3_vhsyn_rfs.vhd"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="xsdbs_v1_0_2/hdl/xsdbs_v1_0_vl_rfs.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="xsdbs_v1_0_2/hdl/verilog/xsdbs_v1_0_2_inc.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="xsdbs_v1_0_2/hdl/verilog/xsdbs_v1_0_2_icon2xsdb_inc.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ltlib_v1_0_0/hdl/ltlib_v1_0_vl_rfs.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ltlib_v1_0_0/hdl/verilog/ltlib_v1_0_0_lib_function.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ltlib_v1_0_0/hdl/verilog/ltlib_v1_0_0_ver_inc.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="doc/ila_v6_1_changelog.txt"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ila_gbt_stub.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ila_gbt_stub.vhdl"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ila_gbt_sim_netlist.v"/>
-        <CompFileExtendedInfo CompFileName="ila_gbt.xci" FileRelPathName="ila_gbt_sim_netlist.vhdl"/>
       </File>
       <Config>
         <Option Name="TopModule" Val="ila_gbt"/>
+        <Option Name="UseBlackboxStub" Val="1"/>
+      </Config>
+    </FileSet>
+    <FileSet Name="sync_fifo_gth_40" Type="BlockSrcs" RelSrcDir="$PSRCDIR/sync_fifo_gth_40">
+      <File Path="$PPRDIR/../ip/sync_fifo_gth_40.xcix">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../ip/sync_fifo_gth_40/sync_fifo_gth_40.xci">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <Config>
+        <Option Name="TopModule" Val="sync_fifo_gth_40"/>
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
@@ -1282,6 +1270,13 @@
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
     </Run>
     <Run Id="ila_gbt_synth_1" Type="Ft3:Synth" SrcSet="ila_gbt" Part="xc7vx690tffg1927-2" ConstrsSet="ila_gbt" Description="Vivado Synthesis Defaults" Dir="$PRUNDIR/ila_gbt_synth_1" IncludeInArchive="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2016"/>
+        <Step Id="synth_design"/>
+      </Strategy>
+      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
+    </Run>
+    <Run Id="sync_fifo_gth_40_synth_1" Type="Ft3:Synth" SrcSet="sync_fifo_gth_40" Part="xc7vx690tffg1927-2" ConstrsSet="sync_fifo_gth_40" Description="Vivado Synthesis Defaults" Dir="$PRUNDIR/sync_fifo_gth_40_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2016"/>
         <Step Id="synth_design"/>
@@ -1500,6 +1495,20 @@
       </Strategy>
     </Run>
     <Run Id="ila_gbt_impl_1" Type="Ft2:EntireDesign" Part="xc7vx690tffg1927-2" ConstrsSet="ila_gbt" Description="Default settings for Implementation." SynthRun="ila_gbt_synth_1" IncludeInArchive="false">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2016"/>
+        <Step Id="init_design"/>
+        <Step Id="opt_design"/>
+        <Step Id="power_opt_design"/>
+        <Step Id="place_design"/>
+        <Step Id="post_place_power_opt_design"/>
+        <Step Id="phys_opt_design"/>
+        <Step Id="route_design"/>
+        <Step Id="post_route_phys_opt_design"/>
+        <Step Id="write_bitstream"/>
+      </Strategy>
+    </Run>
+    <Run Id="sync_fifo_gth_40_impl_1" Type="Ft2:EntireDesign" Part="xc7vx690tffg1927-2" ConstrsSet="sync_fifo_gth_40" Description="Default settings for Implementation." SynthRun="sync_fifo_gth_40_synth_1" IncludeInArchive="false">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2016"/>
         <Step Id="init_design"/>

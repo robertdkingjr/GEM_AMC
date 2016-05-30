@@ -50,11 +50,12 @@ entity gem_amc is
         gt_trig1_rx_data_arr_i  : in  t_gt_8b10b_rx_data_arr(g_NUM_OF_OHs - 1 downto 0);
 
         -- GBT DAQ + Control GTX / GTH links (4.8Gbs, 40bit @ 120MHz without 8b10b encoding)
+        gt_gbt_rx_common_clk_i  : in  std_logic;
         gt_gbt_rx_clk_arr_i     : in  std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
         gt_gbt_tx_clk_arr_i     : in  std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
         gt_gbt_rx_data_arr_i    : in  t_gt_gbt_rx_data_arr(g_NUM_OF_OHs - 1 downto 0);
         gt_gbt_tx_data_arr_o    : out t_gt_gbt_tx_data_arr(g_NUM_OF_OHs - 1 downto 0);
-        
+
         -- IPbus
         ipb_reset_i             : in  std_logic;
         ipb_clk_i               : in  std_logic;
@@ -166,10 +167,10 @@ begin
     -- Power-on reset  
     --================================--
     
-    process(ipb_clk_i)
-        variable countdown : integer := 50_000_000; -- 1s - probably way too long, but ok for now (this is only used after powerup)
+    process(ttc_clocks.clk_40) -- NOTE: using TTC clock, no nothing will work if there's no TTC clock
+        variable countdown : integer := 40_000_000; -- 1s - probably way too long, but ok for now (this is only used after powerup)
     begin
-        if (rising_edge(ipb_clk_i)) then
+        if (rising_edge(ttc_clocks.clk_40)) then
             if (countdown > 0) then
               reset_pwrup <= '1';
               countdown := countdown - 1;
@@ -295,13 +296,18 @@ begin
 
     i_gem_system : entity work.gem_system_regs
         port map(
+            reset_i          => reset,
             ipb_clk_i        => ipb_clk_i,
             ipb_reset_i      => ipb_reset_i,
             ipb_mosi_i       => ipb_mosi_arr_i(C_IPB_SLV.system),
             ipb_miso_o       => ipb_miso_arr(C_IPB_SLV.system),
             tk_rx_polarity_o => open,
             tk_tx_polarity_o => open,
-            board_id_o       => open
+            board_id_o       => open,
+            ttc_clks_i       => ttc_clocks,
+            gbt_common_rx_clk_i => gt_gbt_rx_common_clk_i,
+            gbt_common_tx_clk_i => gt_gbt_tx_clk_arr_i(0)
+            
         );
 
     --==================--
@@ -333,7 +339,7 @@ begin
         generic map(
             GBT_BANK_ID     => 0,
             NUM_LINKS       => 4,
-            TX_OPTIMIZATION => 1,
+            TX_OPTIMIZATION => 0,
             RX_OPTIMIZATION => 0,
             TX_ENCODING     => 0,
             RX_ENCODING     => 0
@@ -342,6 +348,7 @@ begin
             reset_i                     => reset,
             tx_frame_clk_i              => ttc_clocks.clk_40,
             rx_frame_clk_i              => ttc_clocks.clk_40,
+            rx_word_common_clk_i        => gt_gbt_rx_common_clk_i,
             tx_word_clk_arr_i           => gt_gbt_tx_clk_arr_i(3 downto 0),
             rx_word_clk_arr_i           => gt_gbt_rx_clk_arr_i(3 downto 0),
             tx_ready_arr_i              => (others => '1'),
@@ -365,13 +372,17 @@ begin
     gbt_rx_frame_clk_ready <= (others => '1');
     gbt_rx_word_clk_ready <= (others => '1');
     gbt_mgt_rx_ready_arr <= (others => '1');
---    gbt_mgt_rx_data_arr <= gt_gbt_rx_data_arr_i;  
---    gt_gbt_tx_data_arr_o <= gbt_mgt_tx_data_arr;  
+        
+    -- MGT data: the next two lines sending data through MGTs (comment if using loopback inside FPGA)
+    gbt_mgt_rx_data_arr <= gt_gbt_rx_data_arr_i;  
+    gt_gbt_tx_data_arr_o <= gbt_mgt_tx_data_arr;  
         
     --=== GBT test ===--
     g_gbt_test : for i in 0 to 3 generate
-        -- loopback
-        gbt_mgt_rx_data_arr(i).rxdata <= gbt_mgt_tx_data_arr(i).txdata;
+
+        -- loopback (comment the next two lines sending data through MGTs)
+        --gbt_mgt_rx_data_arr(i).rxdata <= gbt_mgt_tx_data_arr(i).txdata;
+        --gt_gbt_tx_data_arr_o(i).txdata <= x"BCBCBCBCBC"; -- load the MGT data input with some fake data -- TODO: remove this once you connect the GBT to the real MGTs
         
         -- generate test data
         p_gbt_test_data : process(ttc_clocks.clk_40)
@@ -385,7 +396,7 @@ begin
                 else
                     counter := counter + 1;
                     gbt_tx_we_arr(i) <= '1';
-                    gbt_tx_data_arr(i) <= x"a" & std_logic_vector(counter) & std_logic_vector(counter) & std_logic_vector(counter) & std_logic_vector(counter);
+                    gbt_tx_data_arr(i) <= x"aaaa" & x"fafa" & x"ffff" & x"1111" & std_logic_vector(counter);
                     if (gbt_rx_data_arr(i) /= gbt_rx_data_arr(0)) then
                         gbt_rx_mismatch_cnt(i) <= std_logic_vector(unsigned(gbt_rx_mismatch_cnt(i)) + 1);
                     end if;

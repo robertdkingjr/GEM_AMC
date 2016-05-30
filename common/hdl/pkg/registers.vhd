@@ -802,7 +802,7 @@ package registers is
     -- This module is controlling GEM AMC System wide settings
     --============================================================================
 
-    constant REG_GEM_SYSTEM_NUM_REGS : integer := 8;
+    constant REG_GEM_SYSTEM_NUM_REGS : integer := 10;
     constant REG_GEM_SYSTEM_ADDRESS_MSB : integer := 16;
     constant REG_GEM_SYSTEM_ADDRESS_LSB : integer := 0;
     constant REG_GEM_SYSTEM_TK_LINK_RX_POLARITY_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0000";
@@ -835,6 +835,13 @@ package registers is
     constant REG_GEM_SYSTEM_RELEASE_DATE_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0004";
     constant REG_GEM_SYSTEM_RELEASE_DATE_MSB    : integer := 31;
     constant REG_GEM_SYSTEM_RELEASE_DATE_LSB     : integer := 0;
+
+    constant REG_GEM_SYSTEM_GBT_CLK_COUNTERS_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0005";
+    constant REG_GEM_SYSTEM_GBT_CLK_COUNTERS_MSB    : integer := 23;
+    constant REG_GEM_SYSTEM_GBT_CLK_COUNTERS_LSB     : integer := 0;
+
+    constant REG_GEM_SYSTEM_CTRL_CNT_RESET_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0100";
+    constant REG_GEM_SYSTEM_CTRL_CNT_RESET_BIT    : integer := 30;
 
     constant REG_GEM_SYSTEM_LEGACY_SYSTEM_BOARD_ID_ADDR    : std_logic_vector(16 downto 0) := '1' & x"0000";
     constant REG_GEM_SYSTEM_LEGACY_SYSTEM_BOARD_ID_MSB    : integer := 31;

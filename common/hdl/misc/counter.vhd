@@ -19,7 +19,8 @@ use ieee.numeric_std.all;
 entity counter is
     generic(
         g_COUNTER_WIDTH  : integer := 32;
-        g_ALLOW_ROLLOVER : string  := "FALSE"
+        g_ALLOW_ROLLOVER : string  := "FALSE";
+        g_INCREMENT_STEP : integer := 1
     );
     port(
         ref_clk_i : in  std_logic;
@@ -44,7 +45,7 @@ begin
                 count <= (others => '0');
             else
                 if en_i = '1' and (count < max_count or g_ALLOW_ROLLOVER = "TRUE") then
-                    count <= count + 1;
+                    count <= count + g_INCREMENT_STEP;
                 end if;
                 count_o <= std_logic_vector(count);
             end if;

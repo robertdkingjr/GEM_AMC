@@ -95,7 +95,10 @@ entity gth_wrapper is
     gth_rx_data_arr_o : out t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
 
     gth_gbt_tx_data_arr_i : in  t_gt_gbt_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
-    gth_gbt_rx_data_arr_o : out t_gt_gbt_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0)
+    gth_gbt_rx_data_arr_o : out t_gt_gbt_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+    
+    gth_gbt_common_rxusrclk_o : out std_logic
+    
     );
 end gth_wrapper;
 
@@ -152,6 +155,8 @@ architecture gth_wrapper_arch of gth_wrapper is
   signal s_gth_rx_data_arr : t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
 
   ---------------------
+    
+  signal s_gth_4p8g_common_rxusrclk : std_logic;
 
   signal s_gth_common_clk_in_arr  : t_gth_common_clk_in_arr(g_NUM_OF_GTH_COMMONs-1 downto 0);
   signal s_gth_common_clk_out_arr : t_gth_common_clk_out_arr(g_NUM_OF_GTH_COMMONs-1 downto 0);
@@ -230,7 +235,6 @@ begin
       )
     port map
     (
-
       GTH_4p8g_TX_MMCM_reset_i  => s_GTH_4p8g_TX_MMCM_reset,
       GTH_4p8g_TX_MMCM_locked_o => s_GTH_4p8g_TX_MMCM_locked,
 
@@ -251,13 +255,16 @@ begin
       gth_gt_clk_out_arr_i => s_gth_gt_clk_out_arr,
 
       clk_gth_tx_usrclk_arr_o => s_clk_gth_tx_usrclk_arr,
-      clk_gth_rx_usrclk_arr_o => s_clk_gth_rx_usrclk_arr
+      clk_gth_rx_usrclk_arr_o => s_clk_gth_rx_usrclk_arr,
+
+      clk_gth_4p8g_common_rxusrclk_o => s_gth_4p8g_common_rxusrclk
 
       );
 
   clk_gth_tx_usrclk_arr_o <= s_clk_gth_tx_usrclk_arr;
   clk_gth_rx_usrclk_arr_o <= s_clk_gth_rx_usrclk_arr;
-
+  gth_gbt_common_rxusrclk_o <= s_gth_4p8g_common_rxusrclk;
+  
 ------------------------
 
   gen_qpll_refclk_assign_Q110_to_Q111 : for i in 0 to 1 generate

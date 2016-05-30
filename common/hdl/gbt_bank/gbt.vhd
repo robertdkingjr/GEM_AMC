@@ -2,6 +2,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- Xilinx devices library:
+library unisim;
+use unisim.vcomponents.all;
+
 -- Custom libraries and packages:
 use work.gbt_bank_package.all;
 use work.vendor_specific_gbt_bank_package.all;
@@ -30,8 +34,9 @@ entity gbt is
 
         tx_frame_clk_i              : in  std_logic;
         rx_frame_clk_i              : in  std_logic;
-        tx_word_clk_arr_i           : in std_logic_vector(NUM_LINKS - 1 downto 0);
+        tx_word_clk_arr_i           : in  std_logic_vector(NUM_LINKS - 1 downto 0);
         rx_word_clk_arr_i           : in  std_logic_vector(NUM_LINKS - 1 downto 0);
+        rx_word_common_clk_i        : in  std_logic;
 
         --========--
         -- GBT TX --
@@ -74,6 +79,25 @@ end gbt;
 
 architecture gbt_arch of gbt is
 
+    --================================ Component Declarations ================================--
+    
+    component sync_fifo_gth_40
+        port (
+            rst       : IN  STD_LOGIC;
+            wr_clk    : IN  STD_LOGIC;
+            rd_clk    : IN  STD_LOGIC;
+            din       : IN  STD_LOGIC_VECTOR(39 DOWNTO 0);
+            wr_en     : IN  STD_LOGIC;
+            rd_en     : IN  STD_LOGIC;
+            dout      : OUT STD_LOGIC_VECTOR(39 DOWNTO 0);
+            full      : OUT STD_LOGIC;
+            overflow  : OUT STD_LOGIC;
+            empty     : OUT STD_LOGIC;
+            valid     : OUT STD_LOGIC;
+            underflow : OUT STD_LOGIC
+        );
+    end component;
+    
     --================================ Signal Declarations ================================--
 
     --========--
@@ -104,13 +128,55 @@ architecture gbt_arch of gbt is
     signal rxBitSlipNbr_from_gbtRx   : rxBitSlipNbr_mxnbit_A(NUM_LINKS - 1 downto 0);
     signal rxHeaderLocked_from_gbtRx : std_logic_vector(NUM_LINKS - 1 downto 0);
 
+    signal rx_common_word_clk        : std_logic;
+    signal mgt_sync_rx_data_arr      : t_gt_gbt_rx_data_arr(NUM_LINKS - 1 downto 0);
+    signal mgt_sync_rx_valid_arr     : std_logic_vector(NUM_LINKS - 1 downto 0);
+   
+    --== constant signals ==--
+    
+    signal tied_to_ground   : std_logic;
+    signal tied_to_vcc      : std_logic;    
+        
 --=====================================================================================--
 
 --=================================================================================================--
 begin                                   --========####   Architecture Body   ####========-- 
 --=================================================================================================--
 
-   --==================================== User Logic =====================================--
+    -- constant signals
+    tied_to_ground <= '0';
+    tied_to_vcc <= '1';
+
+   --===============--
+   -- RX Sync FIFOs --
+   --===============--
+
+    -- put the data from all GBT MGT RXs through sync a FIFO immediately to get it out of the BUFH domain and put it on a common clock domain which is on BUFG
+    -- This is to let the GBT cores to be placed more freely (not constrained to the area that the RX BUFHs are spanning)
+   
+    rx_common_word_clk <= rx_word_common_clk_i;
+    
+    g_rx_sync_fifos : for i in 0 to NUM_LINKS - 1 generate
+        
+        i_rx_sync_fifo : component sync_fifo_gth_40
+            port map(
+                rst       => reset_i and not mgt_rx_rdy_arr_i(i),
+                wr_clk    => rx_word_clk_arr_i(i),
+                rd_clk    => rx_common_word_clk,
+                din       => rx_wordNbit_from_mgt(i),
+                wr_en     => tied_to_vcc,
+                rd_en     => tied_to_vcc,
+                dout      => mgt_sync_rx_data_arr(i).rxdata,
+                full      => open,
+                overflow  => open,
+                empty     => open,
+                valid     => mgt_sync_rx_valid_arr(i),
+                underflow => open
+            );
+            
+        rx_wordNbit_from_mgt(i) <= mgt_rx_data_arr_i(i).rxdata;
+        
+    end generate;
    
    --========--
    -- GBT TX --
@@ -143,8 +209,26 @@ begin                                   --========####   Architecture Body   ###
 					TX_EXTRA_DATA_WIDEBUS_I             => (others => '0')
 				); 
 				
-				tx_gearbox_aligned_arr_o(i)			<= phaligned_from_gbtTx(i);
-				tx_gearbox_align_done_arr_o(i)		<= phcomputing_from_gbtTx(i);
+				i_sync_gearbox_aligned : entity work.synchronizer
+				    generic map(
+				        N_STAGES => 2
+				    )
+				    port map(
+				        async_i => phaligned_from_gbtTx(i),
+				        clk_i   => tx_frame_clk_i,
+				        sync_o  => tx_gearbox_aligned_arr_o(i)
+				    );
+				
+				i_sync_gearbox_align_done : entity work.synchronizer
+				    generic map(
+				        N_STAGES => 2
+				    )
+				    port map(
+				        async_i => phcomputing_from_gbtTx(i),
+				        clk_i   => tx_frame_clk_i,
+				        sync_o  => tx_gearbox_align_done_arr_o(i)
+				    );
+				
 				mgt_tx_data_arr_o(i).txdata         <= tx_wordNbit_from_gbtTx(i);
 				
 			end generate;
@@ -168,10 +252,10 @@ begin                                   --========####   Architecture Body   ###
 				port map (              
 					-- Reset & Clocks:
 					RX_RESET_I                          => reset_i,
-					RX_WORDCLK_I                        => rx_word_clk_arr_i(i),
+					RX_WORDCLK_I                        => rx_common_word_clk,
 					RX_FRAMECLK_I                       => rx_frame_clk_i,                  
 					-- Control:    
-					RX_MGT_RDY_I                        => rxReady_from_mgt(i),        
+					RX_MGT_RDY_I                        => rxReady_from_mgt(i) and mgt_sync_rx_valid_arr(i),        
 					RX_WORDCLK_READY_I                  => rx_word_clk_rdy_arr_i(i),
 					RX_FRAMECLK_READY_I                 => rx_frame_clk_rdy_arr_i(i),
 					------------------------------------
@@ -181,7 +265,7 @@ begin                                   --========####   Architecture Body   ###
 					RX_ISDATA_FLAG_O                    => rx_data_valid_arr_o(i),            
 					RX_READY_O                          => rx_rdy_arr_o(i),
 					-- Word & Data:                  
-					RX_WORD_I                           => rx_wordNbit_from_mgt(i),                  
+					RX_WORD_I                           => mgt_sync_rx_data_arr(i).rxdata,                  
 					RX_DATA_O                           => rx_data_arr_o(i),
 					------------------------------------
 					RX_EXTRA_DATA_WIDEBUS_O             => open
@@ -191,7 +275,6 @@ begin                                   --========####   Architecture Body   ###
             rxReady_from_mgt(i)                       <= mgt_rx_rdy_arr_i(i);
 			rx_bitslip_nbr_arr_o(i)                   <= rxBitSlipNbr_from_gbtRx(i);                         
 			rx_header_locked_arr_o(i)                 <= rxHeaderLocked_from_gbtRx(i);
-			rx_wordNbit_from_mgt(i)                   <= mgt_rx_data_arr_i(i).rxdata;
 	 
 		end generate;
 	end generate;

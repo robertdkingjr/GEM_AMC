@@ -134,6 +134,8 @@ architecture gem_ctp7_arch of gem_ctp7 is
             gth_gbt_tx_data_arr_i          : in  t_gt_gbt_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);  
             gth_gbt_rx_data_arr_o          : out t_gt_gbt_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
             
+            gth_gbt_common_rxusrclk_o      : out std_logic;
+            
             gth_rxreset_arr_o              : out std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
             gth_txreset_arr_o              : out std_logic_vector(g_NUM_OF_GTH_GTs - 1 downto 0);
 
@@ -199,11 +201,12 @@ architecture gem_ctp7_arch of gem_ctp7 is
     signal gem_gt_trig1_rx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
     signal gem_gt_trig1_rx_data_arr : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
 
-    -- Trigger RX GTX / GTH links (3.2Gbs, 16bit @ 160MHz w/ 8b10b encoding)
+    -- GBT GTX/GTH links (4.8Gbs, 40bit @ 120MHz w/o 8b10b encoding)
     signal gem_gt_gbt_rx_clk_arr    : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
     signal gem_gt_gbt_tx_clk_arr    : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
     signal gem_gt_gbt_rx_data_arr   : t_gt_gbt_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
     signal gem_gt_gbt_tx_data_arr   : t_gt_gbt_tx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gth_gbt_common_rxusrclk  : std_logic;
 
     -------------------------- DEBUG ----------------------------------
     signal debug_gth_rx_data    : t_gt_8b10b_rx_data;
@@ -275,6 +278,8 @@ begin
             gth_rx_data_arr_o              => gth_rx_data_arr,
             gth_gbt_tx_data_arr_i          => gth_gbt_tx_data_arr,
             gth_gbt_rx_data_arr_o          => gth_gbt_rx_data_arr,
+
+            gth_gbt_common_rxusrclk_o      => gth_gbt_common_rxusrclk,
             
             gth_rxreset_arr_o              => gth_rxreset_arr,
             gth_txreset_arr_o              => gth_txreset_arr,
@@ -351,6 +356,7 @@ begin
             gt_trig0_rx_data_arr_i  => gem_gt_trig0_rx_data_arr,
             gt_trig1_rx_clk_arr_i   => gem_gt_trig1_rx_clk_arr,
             gt_trig1_rx_data_arr_i  => gem_gt_trig1_rx_data_arr,
+            gt_gbt_rx_common_clk_i  => gth_gbt_common_rxusrclk,            
             gt_gbt_rx_clk_arr_i     => gem_gt_gbt_rx_clk_arr,
             gt_gbt_tx_clk_arr_i     => gem_gt_gbt_tx_clk_arr,
             gt_gbt_rx_data_arr_i    => gem_gt_gbt_rx_data_arr,
