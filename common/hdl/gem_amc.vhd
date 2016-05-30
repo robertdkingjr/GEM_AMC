@@ -149,6 +149,7 @@ architecture gem_amc_arch of gem_amc is
 
     -- test
     signal gbt_rx_mismatch_cnt          : t_std16_array(g_NUM_OF_OHs - 1 downto 0);
+    signal gbt_counter_pattern          : unsigned(7 downto 0) := (others => '0');
 
     --== Other ==--
     signal ipb_miso_arr     : ipb_rbus_array(g_NUM_IPB_SLAVES - 1 downto 0) := (others => (ipb_rdata => (others => '0'), ipb_ack => '0', ipb_err => '0'));
@@ -378,6 +379,21 @@ begin
     gt_gbt_tx_data_arr_o <= gbt_mgt_tx_data_arr;  
         
     --=== GBT test ===--
+    
+    -- one second counter
+    process (ttc_clocks.clk_40)
+        variable countdown : integer := C_TTC_CLK_FREQUENCY;
+    begin
+        if (rising_edge(ttc_clocks.clk_40)) then
+            if (countdown = 0) then
+                countdown := C_TTC_CLK_FREQUENCY;
+                gbt_counter_pattern <= gbt_counter_pattern + 1;
+            else
+                countdown := countdown - 1;
+            end if;
+        end if;
+    end process;
+    
     g_gbt_test : for i in 0 to 3 generate
 
         -- loopback (comment the next two lines sending data through MGTs)
@@ -396,7 +412,13 @@ begin
                 else
                     counter := counter + 1;
                     gbt_tx_we_arr(i) <= '1';
-                    gbt_tx_data_arr(i) <= x"aaaa" & x"fafa" & x"ffff" & x"1111" & std_logic_vector(counter);
+                    gbt_tx_data_arr(i) <= x"0" & std_logic_vector(gbt_counter_pattern) & std_logic_vector(gbt_counter_pattern) &
+                                                 std_logic_vector(gbt_counter_pattern) & std_logic_vector(gbt_counter_pattern) &
+                                                 std_logic_vector(gbt_counter_pattern) & std_logic_vector(gbt_counter_pattern) &
+                                                 std_logic_vector(gbt_counter_pattern) & std_logic_vector(gbt_counter_pattern) &
+                                                 std_logic_vector(gbt_counter_pattern) & std_logic_vector(gbt_counter_pattern);
+                                                 
+                    --gbt_tx_data_arr(i) <= x"aaaa" & x"fafa" & x"ffff" & x"1111" & std_logic_vector(counter);
                     if (gbt_rx_data_arr(i) /= gbt_rx_data_arr(0)) then
                         gbt_rx_mismatch_cnt(i) <= std_logic_vector(unsigned(gbt_rx_mismatch_cnt(i)) + 1);
                     end if;
