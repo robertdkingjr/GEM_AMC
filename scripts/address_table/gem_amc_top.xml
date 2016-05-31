@@ -266,6 +266,19 @@
                   fw_signal="firmware_date"/>
         </node>      
 
+        <node id="GBT" address="0x100">
+            <node id="TX_SYNC_PATTERN" address="0x0" mask="0x0000ffff" permission="rw"
+                  description="GBT TX sync pattern (sent continuously after reset until a valid RX sync pattern is received for a certain number of clocks)"
+                  fw_signal="gbt_tx_sync_pattern" fw_default="0x76BC"/>
+            <node id="RX_SYNC_PATTERN" address="0x1" mask="0xffffffff" permission="rw"
+                  description="GBT RX sync pattern (TX sync pattern is sent continuously after reset until a valid RX sync pattern is received for a certain number of clocks)"
+                  fw_signal="gbt_rx_sync_pattern" fw_default="0x76BC76BC"/>
+            <node id="RX_SYNC_COUNT_REQUIRED" address="0x2" mask="0x000000ff" permission="rw"
+                  description="GBT RX sync pattern has to be received for this number of clock cycles to consider the link synchronized"
+                  fw_signal="gbt_rx_sync_count_req" fw_default="0x7f"/>
+        </node>
+
+
         <node id="LEGACY_SYSTEM" address="0x10000"
               description="Legacy system registers (taken from GLIB system core). These should be removed once the software is made compatible with the new system registers.">
               

@@ -9,6 +9,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -18,23 +19,25 @@ use work.gem_pkg.all;
 entity link_gbt_tx is
 port(
 
-    ttc_clk_40      : in std_logic;    
-    reset_i         : in std_logic;    
+    ttc_clk_40              : in std_logic;    
+    reset_i                 : in std_logic;    
     
-    vfat2_t1_i      : in t_t1;
+    vfat2_t1_i              : in t_t1;
     
-    req_en_o        : out std_logic;
-    req_valid_i     : in std_logic;
-    req_data_i      : in std_logic_vector(64 downto 0);
+    req_en_o                : out std_logic;
+    req_valid_i             : in std_logic;
+    req_data_i              : in std_logic_vector(64 downto 0);
     
-    gbt_tx_data_o   : out std_logic_vector(83 downto 0)
+    gbt_tx_data_o           : out std_logic_vector(83 downto 0);
+    gbt_tx_sync_pattern_i   : in std_logic_vector(15 downto 0);
+    gbt_rx_sync_done_i      : in std_logic
     
 );
 end link_gbt_tx;
 
 architecture link_gbt_tx_arch of link_gbt_tx is    
 
-    type state_t is (FRAME_BEGIN, ADDR_1, ADDR_2, DATA_0, DATA_1, DATA_2, FRAME_END);
+    type state_t is (SYNC, FRAME_BEGIN, ADDR_1, ADDR_2, DATA_0, DATA_1, DATA_2, FRAME_END);
     
     signal state        : state_t;
     
@@ -49,9 +52,13 @@ begin
     begin
         if (rising_edge(ttc_clk_40)) then
             if (reset_i = '1') then
-                state <= FRAME_BEGIN;
+                state <= SYNC;
             else
                 case state is
+                    when SYNC        =>
+                        if gbt_rx_sync_done_i = '1' then
+                            state <= FRAME_BEGIN;
+                        end if;
                     when FRAME_BEGIN => state <= ADDR_1;
                     when ADDR_1 => state <= ADDR_2;
                     when ADDR_2 => state <= DATA_0;
@@ -101,6 +108,8 @@ begin
                 gbt_tx_data_o(47 downto 44) <= vfat2_t1_i.lv1a & vfat2_t1_i.bc0 & vfat2_t1_i.resync & vfat2_t1_i.calpulse;
                 
                 case state is
+                    when SYNC =>
+                        gbt_tx_data_o(47 downto 32) <= gbt_tx_sync_pattern_i;
                     when FRAME_BEGIN => 
                         gbt_tx_data_o(43 downto 40) <= req_valid & req_data(64) & "00";
                         gbt_tx_data_o(39 downto 32) <= req_data(63 downto 56);

@@ -48,9 +48,14 @@ entity optohybrid is
         gth_rx_data_i           : in  t_gt_8b10b_rx_data;
         gth_tx_data_o           : out t_gt_8b10b_tx_data;
 
-        -- Control and tracking data GBT link 
+        -- GBT control/tracking link
+        gbt_rx_ready_i          : in  std_logic; 
         gbt_rx_data_i           : in  std_logic_vector(83 downto 0);
         gbt_tx_data_o           : out std_logic_vector(83 downto 0);
+        
+        gbt_tx_sync_pattern_i   : in std_logic_vector(15 downto 0);
+        gbt_rx_sync_pattern_i   : in std_logic_vector(31 downto 0);
+        gbt_rx_sync_count_req_i : in std_logic_vector(7 downto 0);            
         
         -- Trigger links
         gth_rx_trig_usrclk_i    : in  std_logic_vector(1 downto 0);
@@ -137,6 +142,9 @@ architecture optohybrid_arch of optohybrid is
     signal sync_tr1_rx_dout  : std_logic_vector(23 downto 0);
     signal sync_tr1_rx_ovf   : std_logic;
     signal sync_tr1_rx_unf   : std_logic;
+    
+    --== GBT ==--
+    signal gbt_rx_sync_done  : std_logic := '0';
 
     --== constant signals ==--
     
@@ -307,13 +315,15 @@ begin
     g_gbt_tx_link : if not g_USE_GBT generate
         i_gbt_tx_link : entity work.link_gbt_tx
             port map(
-                ttc_clk_40    => ttc_clk_i.clk_40,
-                reset_i       => reset_i,
-                vfat2_t1_i    => vfat2_t1,
-                req_en_o      => g2o_req_en,
-                req_valid_i   => g2o_req_valid,
-                req_data_i    => g2o_req_data,
-                gbt_tx_data_o => gbt_tx_data_o
+                ttc_clk_40            => ttc_clk_i.clk_40,
+                reset_i               => reset_i,
+                vfat2_t1_i            => vfat2_t1,
+                req_en_o              => g2o_req_en,
+                req_valid_i           => g2o_req_valid,
+                req_data_i            => g2o_req_data,
+                gbt_tx_data_o         => gbt_tx_data_o,
+                gbt_tx_sync_pattern_i => gbt_tx_sync_pattern_i,
+                gbt_rx_sync_done_i    => gbt_rx_sync_done
             );
     end generate;
 
@@ -344,15 +354,23 @@ begin
         
         --dummy load for RX and DAQ data
         process (ttc_clk_i.clk_40)
+            variable sync_count : unsigned(7 downto 0) := x"00";
         begin
             if (rising_edge(ttc_clk_i.clk_40)) then
-                link_status_o.tk_error <= '0';
-                link_status_o.evt_rcvd <= '0';
-                if (gbt_rx_data_i = x"0123456789abcdef01234") then
-                    evt_en <= '1';
-                    evt_data <= x"FAFA";
-                    link_status_o.tk_error <= '1';
-                    link_status_o.evt_rcvd <= '1';
+                if (reset_i = '1') then
+                    sync_count := x"00";
+                    gbt_rx_sync_done <= '0';
+                else
+                    link_status_o.tk_error <= '0';
+                    link_status_o.evt_rcvd <= '0';
+                    if (gbt_rx_ready_i = '1' and gbt_rx_data_i = x"FFFFFFFFFFFFFFFFFFFFF") then
+                        sync_count := sync_count + 1;
+                    else
+                        sync_count := x"00";
+                    end if;
+                    if (sync_count > unsigned(gbt_rx_sync_count_req_i)) then
+                        gbt_rx_sync_done <= '1';
+                    end if;
                 end if;
             end if;
         end process;

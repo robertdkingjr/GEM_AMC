@@ -802,7 +802,7 @@ package registers is
     -- This module is controlling GEM AMC System wide settings
     --============================================================================
 
-    constant REG_GEM_SYSTEM_NUM_REGS : integer := 9;
+    constant REG_GEM_SYSTEM_NUM_REGS : integer := 11;
     constant REG_GEM_SYSTEM_ADDRESS_MSB : integer := 16;
     constant REG_GEM_SYSTEM_ADDRESS_LSB : integer := 0;
     constant REG_GEM_SYSTEM_TK_LINK_RX_POLARITY_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0000";
@@ -836,8 +836,23 @@ package registers is
     constant REG_GEM_SYSTEM_RELEASE_DATE_MSB    : integer := 31;
     constant REG_GEM_SYSTEM_RELEASE_DATE_LSB     : integer := 0;
 
+    constant REG_GEM_SYSTEM_GBT_TX_SYNC_PATTERN_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0100";
+    constant REG_GEM_SYSTEM_GBT_TX_SYNC_PATTERN_MSB    : integer := 15;
+    constant REG_GEM_SYSTEM_GBT_TX_SYNC_PATTERN_LSB     : integer := 0;
+    constant REG_GEM_SYSTEM_GBT_TX_SYNC_PATTERN_DEFAULT : std_logic_vector(15 downto 0) := x"76bc";
+
     constant REG_GEM_SYSTEM_CTRL_CNT_RESET_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0100";
     constant REG_GEM_SYSTEM_CTRL_CNT_RESET_BIT    : integer := 30;
+
+    constant REG_GEM_SYSTEM_GBT_RX_SYNC_PATTERN_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0101";
+    constant REG_GEM_SYSTEM_GBT_RX_SYNC_PATTERN_MSB    : integer := 31;
+    constant REG_GEM_SYSTEM_GBT_RX_SYNC_PATTERN_LSB     : integer := 0;
+    constant REG_GEM_SYSTEM_GBT_RX_SYNC_PATTERN_DEFAULT : std_logic_vector(31 downto 0) := x"76bc76bc";
+
+    constant REG_GEM_SYSTEM_GBT_RX_SYNC_COUNT_REQUIRED_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0102";
+    constant REG_GEM_SYSTEM_GBT_RX_SYNC_COUNT_REQUIRED_MSB    : integer := 7;
+    constant REG_GEM_SYSTEM_GBT_RX_SYNC_COUNT_REQUIRED_LSB     : integer := 0;
+    constant REG_GEM_SYSTEM_GBT_RX_SYNC_COUNT_REQUIRED_DEFAULT : std_logic_vector(7 downto 0) := x"7f";
 
     constant REG_GEM_SYSTEM_LEGACY_SYSTEM_BOARD_ID_ADDR    : std_logic_vector(16 downto 0) := '1' & x"0000";
     constant REG_GEM_SYSTEM_LEGACY_SYSTEM_BOARD_ID_MSB    : integer := 31;

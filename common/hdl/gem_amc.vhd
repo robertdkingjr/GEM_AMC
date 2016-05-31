@@ -159,6 +159,12 @@ architecture gem_amc_arch of gem_amc is
     signal gbt_mgt_rx_ready_arr         : std_logic_vector(g_NUM_OF_OHs - 1 downto 0);    
     signal gbt_mgt_rx_clk_arr           : std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
 
+    -- GBT communication settings
+    signal gbt_tx_sync_pattern          : std_logic_vector(15 downto 0);
+    signal gbt_rx_sync_pattern          : std_logic_vector(31 downto 0);
+    signal gbt_rx_sync_count_req        : std_logic_vector(7 downto 0);
+
+
     --== GBT fake links ==--
     signal gbt_fake_tx_data_arr              : t_gbt_frame_array((g_NUM_OF_OHs * 2) - 1 downto 0);
     signal gbt_fake_mgt_tx_data_arr          : t_gt_gbt_tx_data_arr((g_NUM_OF_OHs * 2) - 1 downto 0);
@@ -267,8 +273,13 @@ begin
                 gth_rx_data_i           => gt_8b10b_rx_data_arr_i(i),
                 gth_tx_data_o           => gt_8b10b_tx_data_arr_o(i),
 
+                gbt_rx_ready_i          => gbt_rx_ready(i) and gbt_rx_valid_arr(i),
                 gbt_rx_data_i           => gbt_rx_data_arr(i),
                 gbt_tx_data_o           => gbt_tx_data_arr(i),
+
+                gbt_tx_sync_pattern_i   => gbt_tx_sync_pattern,
+                gbt_rx_sync_pattern_i   => gbt_rx_sync_pattern,
+                gbt_rx_sync_count_req_i => gbt_rx_sync_count_req,
 
                 sbit_clusters_o         => sbit_clusters_arr(i), 
                 sbit_links_status_o     => sbit_links_status_arr(i), 
@@ -345,6 +356,7 @@ begin
 
     i_gem_system : entity work.gem_system_regs
         port map(
+            ttc_clks_i       => ttc_clocks,            
             reset_i          => reset,
             ipb_clk_i        => ipb_clk_i,
             ipb_reset_i      => ipb_reset_i,
@@ -353,7 +365,9 @@ begin
             tk_rx_polarity_o => open,
             tk_tx_polarity_o => open,
             board_id_o       => open,
-            ttc_clks_i       => ttc_clocks            
+            gbt_tx_sync_pattern_o => gbt_tx_sync_pattern,
+            gbt_rx_sync_pattern_o => gbt_rx_sync_pattern,
+            gbt_rx_sync_count_req_o => gbt_rx_sync_count_req       
         );
 
     --==================--
