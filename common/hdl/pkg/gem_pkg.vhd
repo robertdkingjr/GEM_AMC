@@ -73,16 +73,26 @@ package gem_pkg is
     type t_gt_8b10b_tx_data_arr is array(integer range <>) of t_gt_8b10b_tx_data;
     type t_gt_8b10b_rx_data_arr is array(integer range <>) of t_gt_8b10b_rx_data;
 
-    type t_gt_gbt_tx_data is record
-        txdata          : std_logic_vector(39 downto 0);
+    type t_gbt_mgt_tx_links is record
+        tx0data          : std_logic_vector(39 downto 0); -- main GBT link for OH v2b 
+        tx1data          : std_logic_vector(39 downto 0); -- this will only be used in OH v3 (for now this will just have a dummy load if CFG_USE_3x_GBTs is set to true)
+        tx2data          : std_logic_vector(39 downto 0); -- this will only be used in OH v3 (for now this will just have a dummy load if CFG_USE_3x_GBTs is set to true)
     end record;
 
-    type t_gt_gbt_rx_data is record
-        rxdata          : std_logic_vector(39 downto 0);
+    type t_gbt_mgt_rx_links is record
+        rx0clk           : std_logic;
+        rx1clk           : std_logic;
+        rx2clk           : std_logic;
+        rx0data          : std_logic_vector(39 downto 0); -- main GBT link for OH v2b 
+        rx1data          : std_logic_vector(39 downto 0); -- this will only be used in OH v3 (for now this will just have a dummy load if CFG_USE_3x_GBTs is set to true)
+        rx2data          : std_logic_vector(39 downto 0); -- this will only be used in OH v3 (for now this will just have a dummy load if CFG_USE_3x_GBTs is set to true)
     end record;
 
-    type t_gt_gbt_tx_data_arr is array(integer range <>) of t_gt_gbt_tx_data;
-    type t_gt_gbt_rx_data_arr is array(integer range <>) of t_gt_gbt_rx_data;
+    type t_gbt_mgt_rx_links_arr  is array(integer range <>) of t_gbt_mgt_rx_links;
+    type t_gbt_mgt_tx_links_arr  is array(integer range <>) of t_gbt_mgt_tx_links;
+
+    type t_gt_gbt_tx_data_arr is array(integer range <>) of std_logic_vector(39 downto 0);
+    type t_gt_gbt_rx_data_arr is array(integer range <>) of std_logic_vector(39 downto 0);
 
     --========================--
     --== SBit cluster data  ==--

@@ -166,7 +166,7 @@ begin                                   --========####   Architecture Body   ###
                 din       => rx_wordNbit_from_mgt(i),
                 wr_en     => tied_to_vcc,
                 rd_en     => tied_to_vcc,
-                dout      => mgt_sync_rx_data_arr(i).rxdata,
+                dout      => mgt_sync_rx_data_arr(i),
                 full      => open,
                 overflow  => open,
                 empty     => open,
@@ -174,7 +174,7 @@ begin                                   --========####   Architecture Body   ###
                 underflow => open
             );
             
-        rx_wordNbit_from_mgt(i) <= mgt_rx_data_arr_i(i).rxdata;
+        rx_wordNbit_from_mgt(i) <= mgt_rx_data_arr_i(i);
         
     end generate;
    
@@ -229,7 +229,7 @@ begin                                   --========####   Architecture Body   ###
 				        sync_o  => tx_gearbox_align_done_arr_o(i)
 				    );
 				
-				mgt_tx_data_arr_o(i).txdata         <= tx_wordNbit_from_gbtTx(i);
+				mgt_tx_data_arr_o(i)         <= tx_wordNbit_from_gbtTx(i);
 				
 			end generate;
 	end generate;   
@@ -265,7 +265,7 @@ begin                                   --========####   Architecture Body   ###
 					RX_ISDATA_FLAG_O                    => rx_data_valid_arr_o(i),            
 					RX_READY_O                          => rx_rdy_arr_o(i),
 					-- Word & Data:                  
-					RX_WORD_I                           => mgt_sync_rx_data_arr(i).rxdata,                  
+					RX_WORD_I                           => mgt_sync_rx_data_arr(i),                  
 					RX_DATA_O                           => rx_data_arr_o(i),
 					------------------------------------
 					RX_EXTRA_DATA_WIDEBUS_O             => open

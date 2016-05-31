@@ -386,26 +386,26 @@ begin
     gen_gth_4p8g : if c_gth_config_arr(n).gth_link_type = gth_4p8g generate
 
       -------------  GT txdata_i Assignments for 20 bit datapath  -------  
-      s_gth_tx_data_arr(n).txdata <= gth_gbt_tx_data_arr_i(n).txdata(37 downto 30) &
-                                     gth_gbt_tx_data_arr_i(n).txdata(27 downto 20) &
-                                     gth_gbt_tx_data_arr_i(n).txdata(17 downto 10) &
-                                     gth_gbt_tx_data_arr_i(n).txdata(7 downto 0);
+      s_gth_tx_data_arr(n).txdata <= gth_gbt_tx_data_arr_i(n)(37 downto 30) &
+                                     gth_gbt_tx_data_arr_i(n)(27 downto 20) &
+                                     gth_gbt_tx_data_arr_i(n)(17 downto 10) &
+                                     gth_gbt_tx_data_arr_i(n)(7 downto 0);
 
-      s_gth_tx_data_arr(n).txchardispmode <= gth_gbt_tx_data_arr_i(n).txdata(39) &
-                                             gth_gbt_tx_data_arr_i(n).txdata(29) &
-                                             gth_gbt_tx_data_arr_i(n).txdata(19) &
-                                             gth_gbt_tx_data_arr_i(n).txdata(9);
+      s_gth_tx_data_arr(n).txchardispmode <= gth_gbt_tx_data_arr_i(n)(39) &
+                                             gth_gbt_tx_data_arr_i(n)(29) &
+                                             gth_gbt_tx_data_arr_i(n)(19) &
+                                             gth_gbt_tx_data_arr_i(n)(9);
 
-      s_gth_tx_data_arr(n).txchardispval <= gth_gbt_tx_data_arr_i(n).txdata(38) &
-                                            gth_gbt_tx_data_arr_i(n).txdata(28) &
-                                            gth_gbt_tx_data_arr_i(n).txdata(18) &
-                                            gth_gbt_tx_data_arr_i(n).txdata(8);
+      s_gth_tx_data_arr(n).txchardispval <= gth_gbt_tx_data_arr_i(n)(38) &
+                                            gth_gbt_tx_data_arr_i(n)(28) &
+                                            gth_gbt_tx_data_arr_i(n)(18) &
+                                            gth_gbt_tx_data_arr_i(n)(8);
 
       --s_gth_tx_data_arr(n).txcharisk <= gth_tx_data_arr_i(n).txcharisk;
 
       -------------  GT RXDATA Assignments for 20 bit datapath  -------  
 
-      gth_gbt_rx_data_arr_o(n).rxdata <= s_gth_rx_data_arr(n).rxdisperr(3) &
+      gth_gbt_rx_data_arr_o(n)        <= s_gth_rx_data_arr(n).rxdisperr(3) &
                                          s_gth_rx_data_arr(n).rxcharisk(3) &
                                          s_gth_rx_data_arr(n).rxdata(31 downto 24) &
                                          s_gth_rx_data_arr(n).rxdisperr(2) &

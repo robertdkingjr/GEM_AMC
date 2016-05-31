@@ -395,7 +395,7 @@ begin
     i_daqfifo_near_full_counter : entity work.counter
     generic map(
         g_COUNTER_WIDTH  => 16,
-        g_ALLOW_ROLLOVER => "FALSE"
+        g_ALLOW_ROLLOVER => FALSE
     )
     port map(
         ref_clk_i => daq_clk_i,
@@ -408,7 +408,7 @@ begin
     i_daqlink_afull_counter : entity work.counter
     generic map(
         g_COUNTER_WIDTH  => 16,
-        g_ALLOW_ROLLOVER => "FALSE"
+        g_ALLOW_ROLLOVER => FALSE
     )
     port map(
         ref_clk_i => daq_clk_i,
@@ -481,7 +481,7 @@ begin
     i_l1afifo_near_full_counter : entity work.counter
     generic map(
         g_COUNTER_WIDTH  => 16,
-        g_ALLOW_ROLLOVER => "FALSE"
+        g_ALLOW_ROLLOVER => FALSE
     )
     port map(
         ref_clk_i => ttc_clks_i.clk_40,
@@ -601,7 +601,7 @@ begin
     i_tts_warning_counter : entity work.counter
     generic map(
         g_COUNTER_WIDTH  => 16,
-        g_ALLOW_ROLLOVER => "FALSE"
+        g_ALLOW_ROLLOVER => FALSE
     )
     port map(
         ref_clk_i => ttc_clks_i.clk_40,
@@ -1101,7 +1101,7 @@ begin
            g_NUM_REGS             => REG_DAQ_NUM_REGS,
            g_ADDR_HIGH_BIT        => REG_DAQ_ADDRESS_MSB,
            g_ADDR_LOW_BIT         => REG_DAQ_ADDRESS_LSB,
-           g_USE_INDIVIDUAL_ADDRS => "TRUE"
+           g_USE_INDIVIDUAL_ADDRS => true
        )
        port map(
            ipb_reset_i            => ipb_reset_i,

@@ -202,11 +202,12 @@ architecture gem_ctp7_arch of gem_ctp7 is
     signal gem_gt_trig1_rx_data_arr : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
 
     -- GBT GTX/GTH links (4.8Gbs, 40bit @ 120MHz w/o 8b10b encoding)
-    signal gem_gt_gbt_rx_clk_arr    : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
-    signal gem_gt_gbt_tx_clk_arr    : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
-    signal gem_gt_gbt_rx_data_arr   : t_gt_gbt_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
-    signal gem_gt_gbt_tx_data_arr   : t_gt_gbt_tx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_gbt_rx_links_arr  : t_gbt_mgt_rx_links_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_gbt_tx_links_arr  : t_gbt_mgt_tx_links_arr(CFG_NUM_OF_OHs - 1 downto 0);
     signal gth_gbt_common_rxusrclk  : std_logic;
+    signal gt_gbt_tx0_clk_arr       : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gt_gbt_tx1_clk_arr       : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gt_gbt_tx2_clk_arr       : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
 
     -------------------------- DEBUG ----------------------------------
     signal debug_gth_rx_data    : t_gt_8b10b_rx_data;
@@ -352,15 +353,18 @@ begin
             gt_8b10b_tx_clk_arr_i   => gem_gt_8b10b_tx_clk_arr,
             gt_8b10b_rx_data_arr_i  => gem_gt_8b10b_rx_data_arr,
             gt_8b10b_tx_data_arr_o  => gem_gt_8b10b_tx_data_arr,
+
             gt_trig0_rx_clk_arr_i   => gem_gt_trig0_rx_clk_arr,
             gt_trig0_rx_data_arr_i  => gem_gt_trig0_rx_data_arr,
             gt_trig1_rx_clk_arr_i   => gem_gt_trig1_rx_clk_arr,
             gt_trig1_rx_data_arr_i  => gem_gt_trig1_rx_data_arr,
+
             gt_gbt_rx_common_clk_i  => gth_gbt_common_rxusrclk,            
-            gt_gbt_rx_clk_arr_i     => gem_gt_gbt_rx_clk_arr,
-            gt_gbt_tx_clk_arr_i     => gem_gt_gbt_tx_clk_arr,
-            gt_gbt_rx_data_arr_i    => gem_gt_gbt_rx_data_arr,
-            gt_gbt_tx_data_arr_o    => gem_gt_gbt_tx_data_arr,
+            gt_gbt_rx_links_arr_i   => gem_gt_gbt_rx_links_arr,
+            gt_gbt_tx_links_arr_o   => gem_gt_gbt_tx_links_arr,
+            gt_gbt_tx0_clk_arr_i    => gt_gbt_tx0_clk_arr,
+            gt_gbt_tx1_clk_arr_i    => gt_gbt_tx1_clk_arr,
+            gt_gbt_tx2_clk_arr_i    => gt_gbt_tx2_clk_arr,
             
             ipb_reset_i             => ipb_reset,
             ipb_clk_i               => ipb_clk,
@@ -380,20 +384,31 @@ begin
 
     -- GTH mapping to GEM links
     g_gem_links : for i in 0 to CFG_NUM_OF_OHs - 1 generate
-        gem_gt_8b10b_rx_clk_arr(i)  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
-        gem_gt_8b10b_tx_clk_arr(i)  <= clk_gth_tx_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
-        gem_gt_8b10b_rx_data_arr(i) <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link);
-        gth_tx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).track_link) <= gem_gt_8b10b_tx_data_arr(i);
+        gem_gt_8b10b_rx_clk_arr(i)  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).track_8b10b_link);
+        gem_gt_8b10b_tx_clk_arr(i)  <= clk_gth_tx_arr(CFG_OH_LINK_CONFIG_ARR(i).track_8b10b_link);
+        gem_gt_8b10b_rx_data_arr(i) <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).track_8b10b_link);
+        gth_tx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).track_8b10b_link) <= gem_gt_8b10b_tx_data_arr(i);
         
         gem_gt_trig0_rx_clk_arr(i)  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).trig0_rx_link);
         gem_gt_trig0_rx_data_arr(i) <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).trig0_rx_link);
         gem_gt_trig1_rx_clk_arr(i)  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).trig1_rx_link);
         gem_gt_trig1_rx_data_arr(i) <= gth_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).trig1_rx_link);
 
-        gem_gt_gbt_rx_clk_arr(i)  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt_link);
-        gem_gt_gbt_tx_clk_arr(i)  <= clk_gth_tx_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt_link);
-        gem_gt_gbt_rx_data_arr(i) <= gth_gbt_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt_link);
-        gth_gbt_tx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt_link) <= gem_gt_gbt_tx_data_arr(i);
+        gem_gt_gbt_rx_links_arr(i).rx0clk  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt0_link);
+        gt_gbt_tx0_clk_arr(i) <= clk_gth_tx_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt0_link);
+        gem_gt_gbt_rx_links_arr(i).rx0data <= gth_gbt_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt0_link);
+        gth_gbt_tx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt0_link) <= gem_gt_gbt_tx_links_arr(i).tx0data;
+
+        -- the GBT links 1 and 2 only apply for future OH v3 (or test when CFG_USE_3x_GBTs is set to true)
+        gem_gt_gbt_rx_links_arr(i).rx1clk  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt1_link);
+        gt_gbt_tx1_clk_arr(i)  <= clk_gth_tx_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt1_link);
+        gem_gt_gbt_rx_links_arr(i).rx1data <= gth_gbt_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt1_link);
+        gth_gbt_tx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt1_link) <= gem_gt_gbt_tx_links_arr(i).tx1data;
+
+        gem_gt_gbt_rx_links_arr(i).rx2clk  <= clk_gth_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt2_link);
+        gt_gbt_tx2_clk_arr(i)  <= clk_gth_tx_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt2_link);
+        gem_gt_gbt_rx_links_arr(i).rx2data <= gth_gbt_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt2_link);
+        gth_gbt_tx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).gbt2_link) <= gem_gt_gbt_tx_links_arr(i).tx2data;
     end generate; 
 
 end gem_ctp7_arch;

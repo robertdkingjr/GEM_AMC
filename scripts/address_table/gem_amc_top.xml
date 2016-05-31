@@ -265,9 +265,6 @@
                   description="Firmware release date (read as hex)"
                   fw_signal="firmware_date"/>
         </node>      
-        <node id="GBT_CLK_COUNTERS" address="0x5" mask="0x00ffffff" permission="r"
-              description="counts the clocks on GBT RX clk [7:0], GBT TX [15:8] clk and TTC clk [23:16] (TTC clock count is multiplied by 3)"
-              fw_signal="gbt_all_clk_cnt"/>
 
         <node id="LEGACY_SYSTEM" address="0x10000"
               description="Legacy system registers (taken from GLIB system core). These should be removed once the software is made compatible with the new system registers.">

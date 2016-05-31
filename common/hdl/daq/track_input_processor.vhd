@@ -238,7 +238,7 @@ begin
     i_infifo_near_full_counter : entity work.counter
     generic map(
         g_COUNTER_WIDTH  => 16,
-        g_ALLOW_ROLLOVER => "FALSE"
+        g_ALLOW_ROLLOVER => FALSE
     )
     port map(
         ref_clk_i => tk_data_link_i.clk,
@@ -250,7 +250,7 @@ begin
     i_evtfifo_near_full_counter : entity work.counter
     generic map(
         g_COUNTER_WIDTH  => 16,
-        g_ALLOW_ROLLOVER => "FALSE"
+        g_ALLOW_ROLLOVER => FALSE
     )
     port map(
         ref_clk_i => tk_data_link_i.clk,

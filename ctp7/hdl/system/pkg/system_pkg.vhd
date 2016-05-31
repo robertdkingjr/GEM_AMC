@@ -20,7 +20,7 @@ use IEEE.STD_LOGIC_1164.all;
 package system_package is
 
   constant g_NUM_OF_GTH_COMMONs : integer := 16;
-  constant g_NUM_OF_GTH_GTs     : integer := 36; -- was 36; -- changing to 6 also had to comment out stuff in gth_register_file.vhd, drp_controller.vhd as well as here below
+  constant g_NUM_OF_GTH_GTs     : integer := 36;
 
   constant BCFG_FW_PROJECT_CODE : std_logic_vector(31 downto 0) := X"B1050001";  -- BIOS 0x1 
 
@@ -43,20 +43,20 @@ package system_package is
   type t_gth_config_arr is array (0 to g_NUM_OF_GTH_GTs-1) of t_gth_config;
 
   constant c_gth_config_arr : t_gth_config_arr := (
-    (gth_3p2g, TRUE),                   -- GTH FW Ch 0
-    (gth_3p2g, false),                  -- GTH FW Ch 1
-    (gth_3p2g, false),                  -- GTH FW Ch 2
-    (gth_3p2g, false),                  -- GTH FW Ch 3
-    (gth_3p2g, false),                  -- GTH FW Ch 4
-    (gth_3p2g, false),                  -- GTH FW Ch 5
-    (gth_3p2g, false),                  -- GTH FW Ch 6
-    (gth_3p2g, false),                  -- GTH FW Ch 7
-    (gth_3p2g, false),                  -- GTH FW Ch 8
-    (gth_3p2g, false),                  -- GTH FW Ch 9
-    (gth_3p2g, false),                  -- GTH FW Ch 10
-    (gth_3p2g, false),                  -- GTH FW Ch 11
+    (gth_4p8g, TRUE),                   -- GTH FW Ch 0
+    (gth_4p8g, false),                  -- GTH FW Ch 1
+    (gth_4p8g, false),                  -- GTH FW Ch 2
+    (gth_4p8g, false),                  -- GTH FW Ch 3
+    (gth_4p8g, false),                  -- GTH FW Ch 4
+    (gth_4p8g, false),                  -- GTH FW Ch 5
+    (gth_4p8g, false),                  -- GTH FW Ch 6
+    (gth_4p8g, false),                  -- GTH FW Ch 7
+    (gth_4p8g, false),                  -- GTH FW Ch 8
+    (gth_4p8g, false),                  -- GTH FW Ch 9
+    (gth_4p8g, false),                  -- GTH FW Ch 10
+    (gth_4p8g, false),                  -- GTH FW Ch 11
 
-    (gth_4p8g, TRUE),                   -- GTH FW Ch 12
+    (gth_4p8g, false),                  -- GTH FW Ch 12
     (gth_4p8g, false),                  -- GTH FW Ch 13
     (gth_4p8g, false),                  -- GTH FW Ch 14
     (gth_4p8g, false),                  -- GTH FW Ch 15
