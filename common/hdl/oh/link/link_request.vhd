@@ -102,7 +102,12 @@ begin
                     when IDLE =>    
                         if (ipb_mosi_i.ipb_strobe = '1') then
                             wr_en <= '1';
-                            wr_data <= ipb_mosi_i.ipb_write & ipb_mosi_i.ipb_addr(23 downto 20) & ipb_mosi_i.ipb_addr(15 downto 12) & x"000" & ipb_mosi_i.ipb_addr(11 downto 0) & ipb_mosi_i.ipb_wdata; -- see ipb_addr_decode for info on addressing
+                            if (ipb_mosi_i.ipb_addr(23 downto 20) = x"4") then -- OH registers
+                                wr_data <= ipb_mosi_i.ipb_write & x"4" & ipb_mosi_i.ipb_addr(15 downto 12) & x"000" & ipb_mosi_i.ipb_addr(11 downto 0) & ipb_mosi_i.ipb_wdata; -- see ipb_addr_decode for info on addressing
+                            end if;
+                            if (ipb_mosi_i.ipb_addr(23 downto 20) = x"5") then -- VFAT registers
+                                wr_data <= ipb_mosi_i.ipb_write & x"40" & x"00" & ipb_mosi_i.ipb_addr(15 downto 0) & ipb_mosi_i.ipb_wdata; -- see ipb_addr_decode for info on addressing
+                            end if;
                             state <= RSPD;
                         end if;
                     when RSPD =>
