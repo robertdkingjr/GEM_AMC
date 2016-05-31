@@ -219,7 +219,11 @@ def scan_vfat(vfat_slot, outfile):
                 nSbits = -1
                 
             triggerResults.append([strip,parseInt(nSbits)])
-            printCyan( 'Strip '+str(strip)+'   Expected:'+str(pulses)+'\t'+'Received:'+str(parseInt(nSbits)) )
+            
+            if parseInt(nSbits) != 4*pulses:
+                printRed( 'Strip '+str(strip)+'   Expected:'+str(pulses)+'\t'+'Received:'+str(parseInt(nSbits)) )
+            else:
+                printCyan( 'Strip '+str(strip)+'   Expected:'+str(pulses)+'\t'+'Received:'+str(parseInt(nSbits)) )
     
             # Map Cluster
             if not QUICKTEST:
@@ -261,6 +265,11 @@ def subheading(string):
 
 def printCyan(string):
     print Colors.CYAN
+    print string
+    print Colors.ENDC
+
+def printRed(string):
+    print Colors.RED
     print string
     print Colors.ENDC
 
