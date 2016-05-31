@@ -102,10 +102,7 @@ architecture gem_amc_arch of gem_amc is
             probe7  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
             probe8  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
             probe9  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-            probe10 : IN STD_LOGIC_VECTOR(5 DOWNTO 0);
-            probe11 : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-            probe12 : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-            probe13 : IN STD_LOGIC_VECTOR(15 DOWNTO 0)
+            probe10 : IN STD_LOGIC_VECTOR(5 DOWNTO 0)
         );
     end component;
 
@@ -561,10 +558,7 @@ begin
             probe7  => gbt_rx_header(0 downto 0),
             probe8  => gbt_rx_header_locked(0 downto 0),
             probe9  => gbt_rx_valid_arr(0 downto 0),
-            probe10 => gbt_rx_bitslip_nbr(0),
-            probe11 => gbt_rx_mismatch_cnt(1),
-            probe12 => gbt_rx_mismatch_cnt(2),
-            probe13 => gbt_rx_mismatch_cnt(3)
+            probe10 => gbt_rx_bitslip_nbr(0)
         );
     
 end gem_amc_arch;
