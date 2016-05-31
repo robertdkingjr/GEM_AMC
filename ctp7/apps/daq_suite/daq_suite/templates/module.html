@@ -1,21 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="">
-  <meta name="author" content="">
-  
-  <title>Light DQM Browser</title>
-</head>
-<body>
-<table style="width:100%">
-{% for reg, value in ziplist %}
-<tr><td>{{reg}}</td><td>{{value}}</td></tr>
+{% extends 'main.html' %}
+{% block module %}
+<h2 align="center">{{module}} module</h2>
+<table align="center" class="table table-bordered table-condensed" style="width:auto">
+<thead><tr><th>Register Name </th> <th> Register Value </th></tr></thead>
+{% for z in ziplist %}
+<tr class={{z.2}}><td>{{z.0}}</td><td>{{z.1}}</td></tr>
 {% endfor %}
 </table>
-</body>
-</html>
+{% endblock %}
