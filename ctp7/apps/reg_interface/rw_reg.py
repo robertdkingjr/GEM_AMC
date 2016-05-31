@@ -15,6 +15,8 @@ class Node:
     isModule = False
     parent = None
     level = 0
+    warn_min_value = None
+    error_min_value = None
 
     def __init__(self):
         self.children = []
@@ -77,7 +79,11 @@ def makeTree(node,baseName,baseAddress,nodes,parentNode,vars,isGenerated):
     newNode.real_address = (address<<2)+0x64000000
     newNode.permission = node.get('permission')
     newNode.mask = parseInt(node.get('mask'))
-    newNode.isModule = node.get('fw_is_module') is not None and node.get('fw_is_module') == 'true' 
+    newNode.isModule = node.get('fw_is_module') is not None and node.get('fw_is_module') == 'true'
+    if node.get('sw_monitor_warn_min_threshold') is not None:
+        newNode.warn_min_value = node.get('sw_monitor_warn_min_threshold') 
+    if node.get('sw_monitor_error_min_threshold') is not None:
+        newNode.error_min_value = node.get('sw_monitor_error_min_threshold') 
     nodes.append(newNode)
     if parentNode is not None:
         parentNode.addChild(newNode)
