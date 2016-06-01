@@ -275,7 +275,7 @@
                   fw_signal="gbt_rx_sync_pattern" fw_default="0x76BC76BC"/>
             <node id="RX_SYNC_COUNT_REQUIRED" address="0x2" mask="0x000000ff" permission="rw"
                   description="GBT RX sync pattern has to be received for this number of clock cycles to consider the link synchronized"
-                  fw_signal="gbt_rx_sync_count_req" fw_default="0x7f"/>
+                  fw_signal="gbt_rx_sync_count_req" fw_default="0x3"/>
         </node>
 
 

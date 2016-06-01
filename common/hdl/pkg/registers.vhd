@@ -852,7 +852,7 @@ package registers is
     constant REG_GEM_SYSTEM_GBT_RX_SYNC_COUNT_REQUIRED_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0102";
     constant REG_GEM_SYSTEM_GBT_RX_SYNC_COUNT_REQUIRED_MSB    : integer := 7;
     constant REG_GEM_SYSTEM_GBT_RX_SYNC_COUNT_REQUIRED_LSB     : integer := 0;
-    constant REG_GEM_SYSTEM_GBT_RX_SYNC_COUNT_REQUIRED_DEFAULT : std_logic_vector(7 downto 0) := x"7f";
+    constant REG_GEM_SYSTEM_GBT_RX_SYNC_COUNT_REQUIRED_DEFAULT : std_logic_vector(7 downto 0) := x"03";
 
     constant REG_GEM_SYSTEM_LEGACY_SYSTEM_BOARD_ID_ADDR    : std_logic_vector(16 downto 0) := '1' & x"0000";
     constant REG_GEM_SYSTEM_LEGACY_SYSTEM_BOARD_ID_MSB    : integer := 31;
