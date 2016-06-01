@@ -102,7 +102,7 @@ begin
                             end if;
                             tk_counter <= 0;
                         when TK_DATA =>
-                            if (tk_counter = 13) then
+                            if (tk_counter = 6) then
                                 state <= REG_DATA;
                             else
                                 tk_counter <= tk_counter + 1;
