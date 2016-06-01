@@ -37,7 +37,7 @@ end link_gbt_tx;
 
 architecture link_gbt_tx_arch of link_gbt_tx is    
 
-    type state_t is (SYNC, FRAME_BEGIN, ADDR_1, ADDR_2, DATA_0, DATA_1, DATA_2, FRAME_END);
+    type state_t is (SYNC, SYNC_DONE, FRAME_BEGIN, ADDR_1, ADDR_2, DATA_0, DATA_1, DATA_2, FRAME_END);
     
     signal state        : state_t;
     
@@ -58,7 +58,8 @@ begin
                     state <= SYNC; -- go to sync state if rx is not synced (e.g. if we lost connection)
                 else
                     case state is
-                        when SYNC        => state <= FRAME_BEGIN;
+                        when SYNC        => state <= SYNC_DONE;
+                        when SYNC_DONE   => state <= FRAME_BEGIN;
                         when FRAME_BEGIN => state <= ADDR_1;
                         when ADDR_1      => state <= ADDR_2;
                         when ADDR_2      => state <= DATA_0;
@@ -112,6 +113,8 @@ begin
                     when SYNC =>
                         -- note that this also overrides the TTC bits
                         gbt_tx_data_o(47 downto 32) <= gbt_tx_sync_pattern_i;
+                    when SYNC_DONE =>
+                        gbt_tx_data_o(47 downto 32) <= not gbt_tx_sync_pattern_i;
                     when FRAME_BEGIN => 
                         gbt_tx_data_o(43 downto 40) <= req_valid & req_data(64) & "00";
                         gbt_tx_data_o(39 downto 32) <= req_data(63 downto 56);
