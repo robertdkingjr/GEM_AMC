@@ -382,29 +382,6 @@ begin
                 gbt_rx_sync_done_o      => gbt_rx_sync_done
             );
         
-        --dummy load for RX and DAQ data
-        process (ttc_clk_i.clk_40)
-            variable sync_count : unsigned(7 downto 0) := x"00";
-        begin
-            if (rising_edge(ttc_clk_i.clk_40)) then
-                if (reset_i = '1') then
-                    sync_count := x"00";
-                    gbt_rx_sync_done <= '0';
-                else
-                    link_status_o.tk_error <= '0';
-                    link_status_o.evt_rcvd <= '0';
-                    if (gbt_rx_ready_i = '1' and gbt_rx_data_i = x"FFFFFFFFFFFFFFFFFFFFF") then
-                        sync_count := sync_count + 1;
-                    else
-                        sync_count := x"00";
-                    end if;
-                    if (sync_count > unsigned(gbt_rx_sync_count_req_i)) then
-                        gbt_rx_sync_done <= '1';
-                    end if;
-                end if;
-            end if;
-        end process;
-        
     end generate;    
 
     --=================================--
