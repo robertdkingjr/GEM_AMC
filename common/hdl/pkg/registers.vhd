@@ -1547,7 +1547,7 @@ package registers is
     -- OH Link monitoring registers
     --============================================================================
 
-    constant REG_OH_LINKS_NUM_REGS : integer := 69;
+    constant REG_OH_LINKS_NUM_REGS : integer := 73;
     constant REG_OH_LINKS_ADDRESS_MSB : integer := 12;
     constant REG_OH_LINKS_ADDRESS_LSB : integer := 0;
     constant REG_OH_LINKS_CTRL_DEBUG_CLK_CNT_RESET_ADDR    : std_logic_vector(12 downto 0) := '0' & x"000";
@@ -1620,7 +1620,10 @@ package registers is
     constant REG_OH_LINKS_OH0_TRIG1_LINK_DISPERR_CNT_MSB    : integer := 31;
     constant REG_OH_LINKS_OH0_TRIG1_LINK_DISPERR_CNT_LSB     : integer := 0;
 
-    constant REG_OH_LINKS_OH0_DEBUG_CLK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"110";
+    constant REG_OH_LINKS_OH0_GBT_LINK_SYNC_DONE_ADDR    : std_logic_vector(12 downto 0) := '0' & x"110";
+    constant REG_OH_LINKS_OH0_GBT_LINK_SYNC_DONE_BIT    : integer := 0;
+
+    constant REG_OH_LINKS_OH0_DEBUG_CLK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"111";
     constant REG_OH_LINKS_OH0_DEBUG_CLK_CNT_MSB    : integer := 31;
     constant REG_OH_LINKS_OH0_DEBUG_CLK_CNT_LSB     : integer := 0;
 
@@ -1688,7 +1691,10 @@ package registers is
     constant REG_OH_LINKS_OH1_TRIG1_LINK_DISPERR_CNT_MSB    : integer := 31;
     constant REG_OH_LINKS_OH1_TRIG1_LINK_DISPERR_CNT_LSB     : integer := 0;
 
-    constant REG_OH_LINKS_OH1_DEBUG_CLK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"210";
+    constant REG_OH_LINKS_OH1_GBT_LINK_SYNC_DONE_ADDR    : std_logic_vector(12 downto 0) := '0' & x"210";
+    constant REG_OH_LINKS_OH1_GBT_LINK_SYNC_DONE_BIT    : integer := 0;
+
+    constant REG_OH_LINKS_OH1_DEBUG_CLK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"211";
     constant REG_OH_LINKS_OH1_DEBUG_CLK_CNT_MSB    : integer := 31;
     constant REG_OH_LINKS_OH1_DEBUG_CLK_CNT_LSB     : integer := 0;
 
@@ -1756,7 +1762,10 @@ package registers is
     constant REG_OH_LINKS_OH2_TRIG1_LINK_DISPERR_CNT_MSB    : integer := 31;
     constant REG_OH_LINKS_OH2_TRIG1_LINK_DISPERR_CNT_LSB     : integer := 0;
 
-    constant REG_OH_LINKS_OH2_DEBUG_CLK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"310";
+    constant REG_OH_LINKS_OH2_GBT_LINK_SYNC_DONE_ADDR    : std_logic_vector(12 downto 0) := '0' & x"310";
+    constant REG_OH_LINKS_OH2_GBT_LINK_SYNC_DONE_BIT    : integer := 0;
+
+    constant REG_OH_LINKS_OH2_DEBUG_CLK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"311";
     constant REG_OH_LINKS_OH2_DEBUG_CLK_CNT_MSB    : integer := 31;
     constant REG_OH_LINKS_OH2_DEBUG_CLK_CNT_LSB     : integer := 0;
 
@@ -1824,7 +1833,10 @@ package registers is
     constant REG_OH_LINKS_OH3_TRIG1_LINK_DISPERR_CNT_MSB    : integer := 31;
     constant REG_OH_LINKS_OH3_TRIG1_LINK_DISPERR_CNT_LSB     : integer := 0;
 
-    constant REG_OH_LINKS_OH3_DEBUG_CLK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"410";
+    constant REG_OH_LINKS_OH3_GBT_LINK_SYNC_DONE_ADDR    : std_logic_vector(12 downto 0) := '0' & x"410";
+    constant REG_OH_LINKS_OH3_GBT_LINK_SYNC_DONE_BIT    : integer := 0;
+
+    constant REG_OH_LINKS_OH3_DEBUG_CLK_CNT_ADDR    : std_logic_vector(12 downto 0) := '0' & x"411";
     constant REG_OH_LINKS_OH3_DEBUG_CLK_CNT_MSB    : integer := 31;
     constant REG_OH_LINKS_OH3_DEBUG_CLK_CNT_LSB     : integer := 0;
 

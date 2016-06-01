@@ -20,9 +20,9 @@ use IEEE.STD_LOGIC_1164.all;
 package gem_board_config_package is
 
     constant CFG_USE_GBT        : boolean := true;  -- if this is true, GBT links will be used for communicationa with OH, if false 3.2Gbs 8b10b links will be used instead (remember to instanciate the correct links!)
-    constant CFG_USE_3x_GBTs    : boolean := true;  -- if this is true, each OH will use 3 GBT links - this will be default in the future with OH v3, but for now it's a good test
+    constant CFG_USE_3x_GBTs    : boolean := false;  -- if this is true, each OH will use 3 GBT links - this will be default in the future with OH v3, but for now it's a good test
     constant CFG_USE_TRIG_LINKS : boolean := false; -- this should be TRUE by default, but could be set to false for tests or quicker compilation if not needed
-    constant CFG_NUM_OF_OHs     : integer := 12;    -- total number of OHs to instanciate (remember to adapt the CFG_OH_LINK_CONFIG_ARR accordingly)
+    constant CFG_NUM_OF_OHs     : integer := 4;    -- total number of OHs to instanciate (remember to adapt the CFG_OH_LINK_CONFIG_ARR accordingly)
 
 
     --========================--
@@ -45,17 +45,17 @@ package gem_board_config_package is
         (0, 0, 1, 2, 1, 2), 
         (3, 3, 4, 5, 4, 5), 
         (6, 6, 7, 8, 7, 8), 
-        (9, 9, 10, 11, 10, 11),
+        (9, 9, 10, 11, 10, 11)
 
-        (12, 12, 13, 14, 13, 14), 
-        (15, 15, 16, 17, 16, 17), 
-        (18, 18, 19, 20, 19, 20), 
-        (21, 21, 22, 23, 22, 23), 
+--        (12, 12, 13, 14, 13, 14), 
+--        (15, 15, 16, 17, 16, 17), 
+--        (18, 18, 19, 20, 19, 20), 
+--        (21, 21, 22, 23, 22, 23), 
 
-        (24, 24, 25, 26, 25, 26), 
-        (27, 27, 28, 29, 28, 29), 
-        (30, 30, 31, 32, 31, 32), 
-        (33, 33, 34, 35, 34, 35) 
+--        (24, 24, 25, 26, 25, 26), 
+--        (27, 27, 28, 29, 28, 29), 
+--        (30, 30, 31, 32, 31, 32), 
+--        (33, 33, 34, 35, 34, 35) 
 	);
 
 end package gem_board_config_package;

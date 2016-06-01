@@ -143,6 +143,7 @@ architecture gem_amc_arch of gem_amc is
     signal gbt_tx_gearbox_align_done_arr: std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
     signal gbt_mgt_tx_data_arr          : t_gt_gbt_tx_data_arr(g_NUM_OF_OHs - 1 downto 0);
     signal gbt_mgt_tx_clk_arr           : std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
+    signal gbt_rx_sync_done_arr         : std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
             
     signal gbt_rx_valid_arr             : std_logic_vector(g_NUM_OF_OHs - 1 downto 0);
     signal gbt_rx_data_arr              : t_gbt_frame_array(g_NUM_OF_OHs - 1 downto 0);
@@ -257,7 +258,7 @@ begin
 
         i_optohybrid_single : entity work.optohybrid
             generic map(
-                g_use_gbt       => g_USE_GBT,
+                g_USE_GBT       => g_USE_GBT,
                 g_DEBUG         => TRUE
             )
             port map(
@@ -277,7 +278,8 @@ begin
                 gbt_tx_sync_pattern_i   => gbt_tx_sync_pattern,
                 gbt_rx_sync_pattern_i   => gbt_rx_sync_pattern,
                 gbt_rx_sync_count_req_i => gbt_rx_sync_count_req,
-
+                gbt_rx_sync_done_o      => gbt_rx_sync_done_arr(i),
+                
                 sbit_clusters_o         => sbit_clusters_arr(i), 
                 sbit_links_status_o     => sbit_links_status_arr(i), 
                 gth_rx_trig_usrclk_i    => (gt_trig0_rx_clk_arr(i), gt_trig1_rx_clk_arr(i)),
@@ -376,16 +378,19 @@ begin
             g_NUM_OF_OHs => g_NUM_OF_OHs
         )
         port map(
-            reset_i              => reset,
-            clk_i                => ttc_clocks.clk_160,
-            oh_link_status_arr_i => oh_link_status_arr,
-            ipb_reset_i          => ipb_reset_i,
-            ipb_clk_i            => ipb_clk_i,
-            ipb_miso_o           => ipb_miso_arr(C_IPB_SLV.oh_links),
-            ipb_mosi_i           => ipb_mosi_arr_i(C_IPB_SLV.oh_links),
+            reset_i                => reset,
+            clk_i                  => ttc_clocks.clk_160,
 
-            debug_clk_cnt_arr_i  => debug_clk_cnt_arr,
-            debug_clk_reset_o    => debug_clk_reset
+            oh_link_status_arr_i   => oh_link_status_arr,
+            gbt_rx_sync_done_arr_i => gbt_rx_sync_done_arr,
+
+            ipb_reset_i            => ipb_reset_i,
+            ipb_clk_i              => ipb_clk_i,
+            ipb_miso_o             => ipb_miso_arr(C_IPB_SLV.oh_links),
+            ipb_mosi_i             => ipb_mosi_arr_i(C_IPB_SLV.oh_links),
+                    
+            debug_clk_cnt_arr_i    => debug_clk_cnt_arr,
+            debug_clk_reset_o      => debug_clk_reset
         );
     
     --==========--

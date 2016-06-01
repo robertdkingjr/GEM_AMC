@@ -336,6 +336,9 @@ begin
     
     i_gem : entity work.gem_amc
         generic map(
+            g_use_gbt            => CFG_USE_GBT,
+            g_use_3x_gbts        => CFG_USE_3x_GBTs,
+            g_use_trig_links     => CFG_USE_TRIG_LINKS,
             g_NUM_OF_OHs         => CFG_NUM_OF_OHs,
             g_NUM_IPB_SLAVES     => C_NUM_IPB_SLAVES,
             g_DAQ_CLK_FREQ       => 50_000_000

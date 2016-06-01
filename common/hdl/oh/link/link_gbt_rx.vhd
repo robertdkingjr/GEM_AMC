@@ -9,6 +9,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -18,127 +19,167 @@ library work;
 entity link_gbt_rx is
 port(
 
-    gtx_clk_i       : in std_logic;    
-    reset_i         : in std_logic;
+    ttc_clk_40_i            : in std_logic;   
+    ttc_clk_80_i            : in std_logic;
+    reset_i                 : in std_logic;
     
-    req_en_o        : out std_logic;
-    req_data_o      : out std_logic_vector(31 downto 0);
+    req_en_o                : out std_logic;
+    req_data_o              : out std_logic_vector(31 downto 0);
     
-    evt_en_o        : out std_logic;
-    evt_data_o      : out std_logic_vector(15 downto 0);
+    evt_en_o                : out std_logic;
+    evt_data_o              : out std_logic_vector(15 downto 0);
 
-    tk_error_o      : out std_logic;
-    evt_rcvd_o      : out std_logic;
+    tk_error_o              : out std_logic;
+    evt_rcvd_o              : out std_logic;
     
-    rx_kchar_i      : in std_logic_vector(1 downto 0);
-    rx_data_i       : in std_logic_vector(15 downto 0)
+    gbt_rx_data_i           : in std_logic_vector(83 downto 0);
+    gbt_rx_ready_i          : in std_logic;
+    gbt_rx_sync_pattern_i   : in std_logic_vector(31 downto 0);
+    gbt_rx_sync_count_req_i : in std_logic_vector(7 downto 0);
+    gbt_rx_sync_done_o      : out std_logic
     
 );
 end link_gbt_rx;
 
 architecture link_gbt_rx_arch of link_gbt_rx is    
 
-    type state_t is (COMMA, HEADER, TK_DATA, DATA_0, DATA_1, CRC);
+    component gbt_tk_data_fifo
+        port(
+            rst    : IN  STD_LOGIC;
+            wr_clk : IN  STD_LOGIC;
+            rd_clk : IN  STD_LOGIC;
+            din    : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
+            wr_en  : IN  STD_LOGIC;
+            rd_en  : IN  STD_LOGIC;
+            dout   : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
+            full   : OUT STD_LOGIC;
+            empty  : OUT STD_LOGIC;
+            valid  : OUT STD_LOGIC
+        );
+    end component;
+
+    type state_t is (SYNC, HEADER, TK_DATA, REG_DATA);
     
-    signal state        : state_t;
+    signal state            : state_t;
     
-    signal tk_counter   : integer range 0 to 13;
+    signal tk_counter       : integer range 0 to 13;
+    signal tk_fifo_wr_en    : std_logic;
+    signal tk_fifo_din      : std_logic_vector(31 downto 0);
         
-    signal evt_valid    : std_logic;
-    signal req_valid    : std_logic;
-    signal req_data     : std_logic_vector(31 downto 0);
-    signal req_crc      : std_logic_vector(15 downto 0);
+    signal evt_valid        : std_logic;
+    signal req_valid        : std_logic;
+    signal sync_done        : std_logic := '0';
+    
+    signal oh_data          : std_logic_vector(31 downto 0);
     
 begin  
     
+    gbt_rx_sync_done_o <= sync_done;
+    
+    -- on OH v2b elinks 0, 16, 24, 32 are connected to the FPGA
+    oh_data <= gbt_rx_data_i(71 downto 64) & gbt_rx_data_i(55 downto 48) & gbt_rx_data_i(39 downto 32) & gbt_rx_data_i(7 downto 0);
+    
     --== STATE ==--
 
-    process(gtx_clk_i)
+    process(ttc_clk_40_i)
     begin
-        if (rising_edge(gtx_clk_i)) then
+        if (rising_edge(ttc_clk_40_i)) then
             if (reset_i = '1') then
-                state <= COMMA;
+                state <= SYNC;
                 tk_counter <= 0;
             else
-                case state is
-                    when COMMA =>
-                        if (rx_kchar_i = "01" and rx_data_i = x"00BC") then
+                if (gbt_rx_ready_i = '0' or sync_done = '0') then
+                    state <= SYNC;
+                else                
+                    case state is
+                        when SYNC =>
+                            if (sync_done = '1') then
+                                state <= HEADER;
+                            end if;
+                        when HEADER =>
+                            state <= TK_DATA;
+                            tk_counter <= 0;
+                        when TK_DATA =>
+                            if (tk_counter = 13) then
+                                state <= REG_DATA;
+                            else
+                                tk_counter <= tk_counter + 1;
+                            end if;
+                        when REG_DATA => state <= HEADER;
+                        when others => 
                             state <= HEADER;
-                        end if;
-                    when HEADER => 
-                        state <= TK_DATA;
-                        tk_counter <= 0;
-                    when TK_DATA =>
-                        if (tk_counter = 13) then
-                            state <= DATA_0;
-                        else
-                            tk_counter <= tk_counter + 1;
-                        end if;
-                    when DATA_0 => state <= DATA_1;
-                    when DATA_1 => state <= CRC;
-                    when CRC => state <= COMMA;
-                    when others => 
-                        state <= COMMA;
-                        tk_counter <= 0;
-                end case;
+                            tk_counter <= 0;
+                    end case;
+                end if;
             end if;
         end if;
     end process;
     
     --== ERROR ==--    
     
-    process(gtx_clk_i)
+    process(ttc_clk_40_i)
     begin
-        if (rising_edge(gtx_clk_i)) then
+        if (rising_edge(ttc_clk_40_i)) then
             if (reset_i = '1') then
                 tk_error_o <= '0';
             else
-                case state is
-                    when COMMA =>
-                        if (rx_kchar_i = "01" and rx_data_i = x"00BC") then
-                            tk_error_o <= '0';
-                        else
-                            tk_error_o <= '1';
-                        end if;
-                    when others => tk_error_o <= '0';
-                end case;
+                if (gbt_rx_ready_i = '0') then
+                    tk_error_o <= '1';
+                else
+                    tk_error_o <= '0';
+                end if;
+            end if;
+        end if;
+    end process;
+
+    --== SYNC ==--
+    
+    process(ttc_clk_40_i)
+        variable sync_word_cnt : unsigned(7 downto 0) := x"00";
+    begin
+        if (rising_edge(ttc_clk_40_i)) then
+            if (reset_i = '1') then
+                sync_done <= '0';
+                sync_word_cnt := x"00";
+            else
+                if (sync_done = '1') then
+                    if (gbt_rx_ready_i = '0') then
+                        sync_done <= '0';
+                        sync_word_cnt := x"00";
+                    else
+                        sync_done <= '1';
+                    end if; 
+                else
+                    if (oh_data = gbt_rx_sync_pattern_i) then
+                        sync_word_cnt := sync_word_cnt + 1;
+                    else
+                        sync_word_cnt := x"00";
+                    end if;
+                end if;
+                if (sync_word_cnt >= unsigned(gbt_rx_sync_count_req_i)) then
+                    sync_done <= '1';
+                end if;
             end if;
         end if;
     end process;
     
     --== REQUEST ==--
     
-    process(gtx_clk_i)
+    process(ttc_clk_40_i)
     begin
-        if (rising_edge(gtx_clk_i)) then
+        if (rising_edge(ttc_clk_40_i)) then
             if (reset_i = '1') then
                 req_en_o <= '0';
                 req_data_o <= (others => '0');
                 req_valid <= '0';
-                req_data <= (others => '0');
-                req_crc <= (others => '0');
             else
                 case state is    
-                    when COMMA =>            
-                        req_en_o <= req_valid;
-                        req_data_o <= req_data(31 downto 0);  
                     when HEADER => 
                         req_en_o <= '0';
-                        req_valid <= rx_data_i(15);    
-                        req_crc <= (others => '0');
-                    when DATA_0 => 
-                        req_en_o <= '0';
-                        req_data(31 downto 16) <= rx_data_i;
-                        req_crc <= req_crc xor rx_data_i;
-                    when DATA_1 => 
-                        req_en_o <= '0';
-                        req_data(15 downto 0) <= rx_data_i;
-                        req_crc <= req_crc xor rx_data_i;
-                    when CRC =>                           
-                        req_en_o <= '0';
-                        if (req_crc /= rx_data_i) then                           
-                            req_valid <= '0';
-                        end if;
+                        req_valid <= oh_data(31);    
+                    when REG_DATA => 
+                        req_en_o <= req_valid;
+                        req_data_o <= oh_data;
                     when others => req_en_o <= '0';
                 end case;
             end if;
@@ -147,9 +188,9 @@ begin
     
     --== TRACKING DATA ==--
     
-    process(gtx_clk_i)
+    process(ttc_clk_40_i)
     begin
-        if (rising_edge(gtx_clk_i)) then
+        if (rising_edge(ttc_clk_40_i)) then
             if (reset_i = '1') then
                 evt_en_o <= '0';
                 evt_rcvd_o <= '0';
@@ -159,19 +200,33 @@ begin
                 case state is   
                     when HEADER => 
                         evt_en_o <= '0'; 
-                        evt_rcvd_o <= rx_data_i(14);
-                        evt_valid <= rx_data_i(14);
+                        evt_rcvd_o <= oh_data(30);
+                        evt_valid <= oh_data(30);
                     when TK_DATA =>                         
-                        evt_en_o <= evt_valid;
+                        tk_fifo_wr_en <= evt_valid;
+                        tk_fifo_din <= oh_data;
                         evt_rcvd_o <= '0';
-                        evt_data_o <= rx_data_i;
                     when others => 
-                        evt_en_o <= '0';
+                        tk_fifo_wr_en <= '0';
                         evt_rcvd_o <= '0';
                         evt_valid <= '0';
                 end case;
             end if;
         end if;
     end process;   
+    
+    i_gbt_tk_data_fifo : component gbt_tk_data_fifo
+        port map(
+            rst    => reset_i,
+            wr_clk => ttc_clk_40_i,
+            rd_clk => ttc_clk_80_i,
+            din    => tk_fifo_din,
+            wr_en  => tk_fifo_wr_en,
+            rd_en  => '1',
+            dout   => evt_data_o,
+            full   => open,
+            empty  => open,
+            valid  => evt_en_o
+        );
     
 end link_gbt_rx_arch;

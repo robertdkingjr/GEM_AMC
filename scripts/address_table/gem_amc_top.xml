@@ -746,7 +746,11 @@
                   fw_signal="tr1_disperr_arr(${OH_IDX})"
                   sw_monitor_warn_min_threshold="1000"/>
 
-            <node id="DEBUG_CLK_CNT" address="0x10" mask="0xffffffff" permission="r"
+            <node id="GBT_LINK_SYNC_DONE" address="0x10" mask="0x00000001" permission="r"
+                  description="Indicates whether or not the sync procedure has been done on the GBT link for this OH (if GBT is not enabled, this will be always 0)"
+                  fw_signal="gbt_rx_sync_done_arr_i(${OH_IDX})"/>
+
+            <node id="DEBUG_CLK_CNT" address="0x11" mask="0xffffffff" permission="r"
                   description="Clock debug counter -- the lowest 16 bits are counting track/control RX clocks and the top 16 bits are counting the 160MHz TTC clocks"
                   fw_signal="debug_clk_cnt_arr(${OH_IDX})"/>
 

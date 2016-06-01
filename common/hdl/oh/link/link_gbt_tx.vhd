@@ -19,7 +19,7 @@ use work.gem_pkg.all;
 entity link_gbt_tx is
 port(
 
-    ttc_clk_40              : in std_logic;    
+    ttc_clk_40_i            : in std_logic;    
     reset_i                 : in std_logic;    
     
     vfat2_t1_i              : in t_t1;
@@ -48,9 +48,9 @@ begin
 
     --== STATE ==--
 
-    process(ttc_clk_40)
+    process(ttc_clk_40_i)
     begin
-        if (rising_edge(ttc_clk_40)) then
+        if (rising_edge(ttc_clk_40_i)) then
             if (reset_i = '1') then
                 state <= SYNC;
             else
@@ -75,9 +75,9 @@ begin
     --== REQUEST ==--
 
     -- pop the request from the fifo
-    process(ttc_clk_40)
+    process(ttc_clk_40_i)
     begin
-        if (rising_edge(ttc_clk_40)) then
+        if (rising_edge(ttc_clk_40_i)) then
             if (reset_i = '1') then
                 req_en_o <= '0';
                 req_valid <= '0';
@@ -97,9 +97,9 @@ begin
         
     --== SEND ==--    
     
-    process(ttc_clk_40)
+    process(ttc_clk_40_i)
     begin
-        if (rising_edge(ttc_clk_40)) then
+        if (rising_edge(ttc_clk_40_i)) then
             if (reset_i = '1') then
                 gbt_tx_data_o <= (others => '0');
             else

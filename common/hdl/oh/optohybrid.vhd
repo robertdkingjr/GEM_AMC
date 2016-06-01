@@ -55,7 +55,8 @@ entity optohybrid is
         
         gbt_tx_sync_pattern_i   : in std_logic_vector(15 downto 0);
         gbt_rx_sync_pattern_i   : in std_logic_vector(31 downto 0);
-        gbt_rx_sync_count_req_i : in std_logic_vector(7 downto 0);            
+        gbt_rx_sync_count_req_i : in std_logic_vector(7 downto 0);
+        gbt_rx_sync_done_o      : out std_logic;            
         
         -- Trigger links
         gth_rx_trig_usrclk_i    : in  std_logic_vector(1 downto 0);
@@ -163,7 +164,14 @@ begin
 
     gth_tx_data_o <= gth_tx_data;
 
-    tk_data_link_o.clk <= ttc_clk_i.clk_160;
+    g_3g2_fallback_data_clk : if not g_USE_GBT generate
+        tk_data_link_o.clk <= ttc_clk_i.clk_160;
+    end generate;
+
+    g_gbt_data_clk : if g_USE_GBT generate
+        tk_data_link_o.clk <= ttc_clk_i.clk_80;
+    end generate;
+    
     tk_data_link_o.data_en <= evt_en;
     tk_data_link_o.data <= evt_data;
 
@@ -236,9 +244,13 @@ begin
         link_status_o.tr1_rx_gt_status.not_in_table <= sync_tr1_rx_dout(21) or sync_tr1_rx_dout(20);
         link_status_o.tr1_rx_gt_status.disperr      <= sync_tr1_rx_dout(23) or sync_tr1_rx_dout(22);
             
+        gbt_rx_sync_done_o <= '0';
+        
     end generate;
     
-    g_gbt_fake_link_status_load : if g_USE_GBT generate
+    g_gbt_link_status : if g_USE_GBT generate
+        gbt_rx_sync_done_o <= gbt_rx_sync_done;
+        
         link_status_o.tk_tx_sync_status.ovf <= tied_to_ground;
         link_status_o.tk_tx_sync_status.unf <= tied_to_ground;
         link_status_o.tk_rx_sync_status.ovf <= tied_to_ground;
@@ -312,10 +324,10 @@ begin
     
     end generate;
 
-    g_gbt_tx_link : if not g_USE_GBT generate
+    g_gbt_tx_link : if g_USE_GBT generate
         i_gbt_tx_link : entity work.link_gbt_tx
             port map(
-                ttc_clk_40            => ttc_clk_i.clk_40,
+                ttc_clk_40_i          => ttc_clk_i.clk_40,
                 reset_i               => reset_i,
                 vfat2_t1_i            => vfat2_t1,
                 req_en_o              => g2o_req_en,
@@ -350,7 +362,25 @@ begin
 
     end generate;
 
-    g_gbt_rx_link : if not g_USE_GBT generate
+    g_gbt_rx_link : if g_USE_GBT generate
+        
+        i_gbt_rx_link : entity work.link_gbt_rx
+            port map(
+                ttc_clk_40_i            => ttc_clk_i.clk_40,
+                ttc_clk_80_i            => ttc_clk_i.clk_80,
+                reset_i                 => reset_i,
+                req_en_o                => o2g_req_en,
+                req_data_o              => o2g_req_data,
+                evt_en_o                => evt_en,
+                evt_data_o              => evt_data,
+                tk_error_o              => link_status_o.tk_error,
+                evt_rcvd_o              => link_status_o.evt_rcvd,
+                gbt_rx_data_i           => gbt_rx_data_i,
+                gbt_rx_ready_i          => gbt_rx_ready_i,
+                gbt_rx_sync_pattern_i   => gbt_rx_sync_pattern_i,
+                gbt_rx_sync_count_req_i => gbt_rx_sync_count_req_i,
+                gbt_rx_sync_done_o      => gbt_rx_sync_done
+            );
         
         --dummy load for RX and DAQ data
         process (ttc_clk_i.clk_40)
