@@ -97,7 +97,9 @@ begin
                                 state <= HEADER;
                             end if;
                         when HEADER =>
-                            state <= TK_DATA;
+                            if (oh_data(15 downto 0) = x"BCBC") then
+                                state <= TK_DATA;
+                            end if;
                             tk_counter <= 0;
                         when TK_DATA =>
                             if (tk_counter = 13) then
