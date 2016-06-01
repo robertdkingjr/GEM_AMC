@@ -54,20 +54,21 @@ begin
             if (reset_i = '1') then
                 state <= SYNC;
             else
-                case state is
-                    when SYNC        =>
-                        if gbt_rx_sync_done_i = '1' then
-                            state <= FRAME_BEGIN;
-                        end if;
-                    when FRAME_BEGIN => state <= ADDR_1;
-                    when ADDR_1 => state <= ADDR_2;
-                    when ADDR_2 => state <= DATA_0;
-                    when DATA_0 => state <= DATA_1;
-                    when DATA_1 => state <= DATA_2;
-                    when DATA_2 => state <= FRAME_END;
-                    when FRAME_END => state <= FRAME_BEGIN;
-                    when others => state <= FRAME_BEGIN;
-                end case;
+                if (gbt_rx_sync_done_i = '0') then
+                    state <= SYNC; -- go to sync state if rx is not synced (e.g. if we lost connection)
+                else
+                    case state is
+                        when SYNC        => state <= FRAME_BEGIN;
+                        when FRAME_BEGIN => state <= ADDR_1;
+                        when ADDR_1      => state <= ADDR_2;
+                        when ADDR_2      => state <= DATA_0;
+                        when DATA_0      => state <= DATA_1;
+                        when DATA_1      => state <= DATA_2;
+                        when DATA_2      => state <= FRAME_END;
+                        when FRAME_END   => state <= FRAME_BEGIN;
+                        when others      => state <= FRAME_BEGIN;
+                    end case;
+                end if;
             end if;
         end if;
     end process;
@@ -109,6 +110,7 @@ begin
                 
                 case state is
                     when SYNC =>
+                        -- note that this also overrides the TTC bits
                         gbt_tx_data_o(47 downto 32) <= gbt_tx_sync_pattern_i;
                     when FRAME_BEGIN => 
                         gbt_tx_data_o(43 downto 40) <= req_valid & req_data(64) & "00";
