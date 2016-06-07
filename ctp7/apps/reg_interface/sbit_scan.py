@@ -155,7 +155,7 @@ def map_vfat_sbits(vfat_slot, outfile):
                 print 'VFAT:',cluster_to_vfat(value),'\t VFAT2 SBit:',cluster_to_vfat2_sbit(value),'\t Size:', cluster_to_size(value),'\n'
                 outfile.write('%s%03d%s%d\n' % ('Strip',strip,'\t Cluster: ',value))
                 outfile.write('%d%s%s%s%s\n' % (value, ' = ', '{0:#010x}'.format(value),' = ', '{0:#032b}'.format(value)))
-                outfile.write('%s%d%s%d%s%d%s\n' % ('VFAT:',cluster_to_vfat(value),'\t VFAT2 SBit:',cluster_to_vfat2_sbit(value),'\t Size:', cluster_to_size(value),'\n'))
+                outfile.write('%s%d%s%d%s%d\n' % ('VFAT:',cluster_to_vfat(value),'\t VFAT2 SBit:',cluster_to_vfat2_sbit(value),'\t Size:', cluster_to_size(value)))
         outfile.write('\n')
         # Mask Channel
         print writeReg(getNode(REG_PATH + 'VFATChannels.ChanReg' + str(strip)), 0)
@@ -264,6 +264,7 @@ def scan_vfat(vfat_slot, outfile):
     # LOOP
     heading('LOOPING OVER CHANNELS')
     triggerResults = []
+    dead_pins = []
     pads = range(1,2*NUM_PADS+1)
     strips = [8*i for i in pads] #8,16,24,...,128
     previousStrip = 0
@@ -272,8 +273,6 @@ def scan_vfat(vfat_slot, outfile):
     subheading('Clearing all channels...')
     for strip in range(1,129):
         writeReg(getNode(REG_PATH+'VFATChannels.ChanReg'+str(strip)),0)
-
-
     try:
         for strip in strips:
             subheading('Strip '+str(strip))
@@ -327,8 +326,10 @@ def scan_vfat(vfat_slot, outfile):
                 
             triggerResults.append([strip,parseInt(nSbits)])
             
+
             if parseInt(nSbits) != 4*pulses:
                 printRed( 'Strip '+str(strip)+'   Expected:'+str(pulses)+'\t'+'Received:'+str(parseInt(nSbits)) )
+                if parseInt(nSbits) == 0: dead_pins.append(strip_to_pin(strip))
             else:
                 printCyan( 'Strip '+str(strip)+'   Expected:'+str(pulses)+'\t'+'Received:'+str(parseInt(nSbits)) )
     
@@ -360,8 +361,18 @@ def scan_vfat(vfat_slot, outfile):
             outfile.write('%s%03d%s%s%s %s%s\n' % ('Strip',triggerResults[result][0],'\t','Expected:',pulses,'Received:',triggerResults[result][1]))
         print '\n\n'
         outfile.write('\n\n')
+        if dead_pins is not None:
+            print 'DEAD PINS: (see CMS VFAT2 Hybrid V3 schematic - Panasonic connectors)'
+            outfile.write('DEAD PINS: (see CMS VFAT2 Hybrid V3 schematic - Panasonic connectors)')
+            for pin in dead_pins:
+                print 'Pins:\t'pin,pin-2
+                outfile.write('%s\t%d %d' % ('Pins:',pin,pin-2))
 
 
+# Map strip to physical pin on Panasonic connector
+def strip_to_pin (strip):
+    if strip<1 or strip>128: return -1
+    else: return (100-(4*((strip-1)//16)+1))
 
 def cluster_to_vfat (cluster): 
     vfat_mapping =  [ 0, 8, 16, 1, 9, 17, 2, 10, 18, 3, 11, 19, 4, 12, 20, 5, 13, 21, 6, 14, 22, 7, 15, 23]
