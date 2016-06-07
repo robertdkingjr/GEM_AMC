@@ -10,10 +10,10 @@ package gem_pkg is
     --==  Firmware version  ==--
     --========================-- 
 
-    constant C_FIRMWARE_DATE    : std_logic_vector(31 downto 0) := x"20160524";
+    constant C_FIRMWARE_DATE    : std_logic_vector(31 downto 0) := x"20160526";
     constant C_FIRMWARE_MAJOR   : integer range 0 to 255        := 1;
     constant C_FIRMWARE_MINOR   : integer range 0 to 255        := 3;
-    constant C_FIRMWARE_BUILD   : integer range 0 to 255        := 6;
+    constant C_FIRMWARE_BUILD   : integer range 0 to 255        := 7;
 
     --======================--
     --==      General     ==--
@@ -35,12 +35,18 @@ package gem_pkg is
     --============--   
     
     type t_std_array is array(integer range <>) of std_logic;
-    
+  
     type t_std32_array is array(integer range <>) of std_logic_vector(31 downto 0);
         
     type t_std16_array is array(integer range <>) of std_logic_vector(15 downto 0);
 
     type t_std4_array is array(integer range <>) of std_logic_vector(3 downto 0);
+
+    --============--
+    --==   GBT  ==--
+    --============--   
+
+    type t_gbt_frame_array is array(integer range <>) of std_logic_vector(83 downto 0);
 
     --========================--
     --== GTH/GTX link types ==--
@@ -66,6 +72,27 @@ package gem_pkg is
 
     type t_gt_8b10b_tx_data_arr is array(integer range <>) of t_gt_8b10b_tx_data;
     type t_gt_8b10b_rx_data_arr is array(integer range <>) of t_gt_8b10b_rx_data;
+
+    type t_gbt_mgt_tx_links is record
+        tx0data          : std_logic_vector(39 downto 0); -- main GBT link for OH v2b 
+        tx1data          : std_logic_vector(39 downto 0); -- this will only be used in OH v3 (for now this will just have a dummy load if CFG_USE_3x_GBTs is set to true)
+        tx2data          : std_logic_vector(39 downto 0); -- this will only be used in OH v3 (for now this will just have a dummy load if CFG_USE_3x_GBTs is set to true)
+    end record;
+
+    type t_gbt_mgt_rx_links is record
+        rx0clk           : std_logic;
+        rx1clk           : std_logic;
+        rx2clk           : std_logic;
+        rx0data          : std_logic_vector(39 downto 0); -- main GBT link for OH v2b 
+        rx1data          : std_logic_vector(39 downto 0); -- this will only be used in OH v3 (for now this will just have a dummy load if CFG_USE_3x_GBTs is set to true)
+        rx2data          : std_logic_vector(39 downto 0); -- this will only be used in OH v3 (for now this will just have a dummy load if CFG_USE_3x_GBTs is set to true)
+    end record;
+
+    type t_gbt_mgt_rx_links_arr  is array(integer range <>) of t_gbt_mgt_rx_links;
+    type t_gbt_mgt_tx_links_arr  is array(integer range <>) of t_gbt_mgt_tx_links;
+
+    type t_gt_gbt_tx_data_arr is array(integer range <>) of std_logic_vector(39 downto 0);
+    type t_gt_gbt_rx_data_arr is array(integer range <>) of std_logic_vector(39 downto 0);
 
     --========================--
     --== SBit cluster data  ==--
@@ -135,10 +162,14 @@ package gem_pkg is
         evtfifo_near_full       : std_logic;
         evtfifo_full            : std_logic;
         evtfifo_underflow       : std_logic;
+        evtfifo_near_full_cnt   : std_logic_vector(15 downto 0);
+        evtfifo_wr_rate         : std_logic_vector(16 downto 0);
         infifo_empty            : std_logic;
         infifo_near_full        : std_logic;
         infifo_full             : std_logic;
         infifo_underflow        : std_logic;
+        infifo_near_full_cnt    : std_logic_vector(15 downto 0);
+        infifo_wr_rate          : std_logic_vector(14 downto 0);
         tts_state               : std_logic_vector(3 downto 0);
         err_event_too_big       : std_logic;
         err_evtfifo_full        : std_logic;
@@ -176,6 +207,7 @@ package gem_pkg is
         empty         : std_logic;
         valid         : std_logic;
         underflow     : std_logic;
+        data_cnt      : std_logic_vector(11 downto 0);
     end record;
 
     type t_chamber_infifo_rd_array is array(integer range <>) of t_chamber_infifo_rd;
@@ -186,6 +218,7 @@ package gem_pkg is
         empty         : std_logic;
         valid         : std_logic;
         underflow     : std_logic;
+        data_cnt      : std_logic_vector(11 downto 0);
     end record;
 
     type t_chamber_evtfifo_rd_array is array(integer range <>) of t_chamber_evtfifo_rd;

@@ -114,7 +114,7 @@ begin
     i_or_trigger_cnt: entity work.counter
         generic map(
             g_COUNTER_WIDTH  => 32,
-            g_ALLOW_ROLLOVER => "FALSE"
+            g_ALLOW_ROLLOVER => FALSE
         )
         port map(
             ref_clk_i => ttc_clk_i.clk_40,
@@ -173,7 +173,7 @@ begin
            g_NUM_REGS             => REG_TRIGGER_NUM_REGS,
            g_ADDR_HIGH_BIT        => REG_TRIGGER_ADDRESS_MSB,
            g_ADDR_LOW_BIT         => REG_TRIGGER_ADDRESS_LSB,
-           g_USE_INDIVIDUAL_ADDRS => "TRUE"
+           g_USE_INDIVIDUAL_ADDRS => true
        )
        port map(
            ipb_reset_i            => ipb_reset_i,

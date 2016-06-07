@@ -327,7 +327,7 @@ def updateModuleFile(module):
                                 '           g_NUM_REGS             => %s,\n' % (VHDL_REG_CONSTANT_PREFIX + module.getVhdlName() + '_NUM_REGS') + \
                                 '           g_ADDR_HIGH_BIT        => %s,\n' % (VHDL_REG_CONSTANT_PREFIX + module.getVhdlName() + '_ADDRESS_MSB') + \
                                 '           g_ADDR_LOW_BIT         => %s,\n' % (VHDL_REG_CONSTANT_PREFIX + module.getVhdlName() + '_ADDRESS_LSB') + \
-                                '           g_USE_INDIVIDUAL_ADDRS => "TRUE"\n'\
+                                '           g_USE_INDIVIDUAL_ADDRS => true\n'\
                                 '       )\n'\
                                 '       port map(\n'\
                                 '           ipb_reset_i            => %s,\n' % (module.busReset) + \

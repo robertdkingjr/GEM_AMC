@@ -146,8 +146,8 @@ begin
       CBCC_DATA_SOURCE_SEL => ("ENCODED"),
       CLK_COR_SEQ_2_USE    => ("FALSE"),
       CLK_COR_KEEP_IDLE    => ("FALSE"),
-      CLK_COR_MAX_LAT      => (9),
-      CLK_COR_MIN_LAT      => (7),
+      CLK_COR_MAX_LAT      => (19),  -- Not used because we bypass the buffers. If buffers are used, use 9 for 20bit data width, 19 for 40bit data width 
+      CLK_COR_MIN_LAT      => (15),  -- Not used because we bypass the buffers. If buffers are used, use 7 for 20bit data width, 15 for 40bit data width
       CLK_COR_PRECEDENCE   => ("TRUE"),
       CLK_COR_REPEAT_WAIT  => (0),
       CLK_COR_SEQ_LEN      => (1),
@@ -195,7 +195,7 @@ begin
       ES_VERT_OFFSET => ("000000000"),
 
       -------------------------FPGA RX Interface Attributes-------------------------
-      RX_DATA_WIDTH => (20),
+      RX_DATA_WIDTH => (40),
 
       ---------------------------PMA Attributes----------------------------
       OUTREFCLK_SEL_INV => ("11"),
@@ -319,7 +319,7 @@ begin
       TX_XCLK_SEL                => ("TXUSR"),
 
       -------------------------FPGA TX Interface Attributes-------------------------
-      TX_DATA_WIDTH => (20),
+      TX_DATA_WIDTH => (40),
 
       -------------------------TX Configurable Driver Attributes-------------------------
       TX_DEEMPH0              => ("000000"),
@@ -384,10 +384,10 @@ begin
       TX_CLKMUX_PD => ('1'),
 
       -------------------------FPGA RX Interface Attribute-------------------------
-      RX_INT_DATAWIDTH => (0),
+      RX_INT_DATAWIDTH => (1), -- 0 for 20bit internal data path, produces 240MHz RXOUTCLK; 1 for 40bit internal data path, produces 120MHz RXOUTCLK
 
       -------------------------FPGA TX Interface Attribute-------------------------
-      TX_INT_DATAWIDTH => (0),
+      TX_INT_DATAWIDTH => (1), -- 0 for 20bit internal data path (requires TXUSRCLK=240MHz and TXUSRCLK2=120MHz); 1 for 40bit internal data path (requires TXUSRCLK=120MHz and TXUSRCLK2=120MHz)
 
       ------------------TX Configurable Driver Attributes---------------
       TX_QPI_STATUS_EN => ('0'),

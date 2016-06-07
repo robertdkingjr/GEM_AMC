@@ -52,7 +52,9 @@ entity gth_clk_bufs is
     gth_gt_clk_out_arr_i : in t_gth_gt_clk_out_arr(g_NUM_OF_GTH_GTs-1 downto 0);
 
     clk_gth_tx_usrclk_arr_o : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0);
-    clk_gth_rx_usrclk_arr_o : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0)
+    clk_gth_rx_usrclk_arr_o : out std_logic_vector(g_NUM_OF_GTH_GTs-1 downto 0);
+
+    clk_gth_4p8g_common_rxusrclk_o : out std_logic
 
     );
 end gth_clk_bufs;
@@ -89,11 +91,11 @@ architecture gth_clk_bufs_arch of gth_clk_bufs is
 --                                                         Signal declarations
 --============================================================================
 
-  signal s_gth_4p8g_txusrclk : std_logic;
-  signal s_gth_4p8g_txoutclk : std_logic;
+  signal s_gth_4p8g_txusrclk        : std_logic;
+  signal s_gth_4p8g_txoutclk        : std_logic;
 
-  signal s_gth_3p2g_txusrclk : std_logic;
-  signal s_gth_3p2g_txoutclk : std_logic;
+  signal s_gth_3p2g_txusrclk        : std_logic;
+  signal s_gth_3p2g_txoutclk        : std_logic;
 
 --============================================================================
 --                                                          Architecture begin
@@ -166,7 +168,7 @@ begin
             MULT        => 9.0,
             DIVIDE      => 2,
             CLK_PERIOD  => 6.25,
-            OUT0_DIVIDE => 3.0,
+            OUT0_DIVIDE => 6.0,
             OUT1_DIVIDE => 1,
             OUT2_DIVIDE => 1,
             OUT3_DIVIDE => 1
@@ -180,6 +182,12 @@ begin
             CLK_IN          => s_gth_4p8g_txoutclk,
             MMCM_LOCKED_OUT => GTH_4p8g_TX_MMCM_locked_o,
             MMCM_RESET_IN   => GTH_4p8g_TX_MMCM_reset_i
+            );
+
+        i_bufg_4p8g_rx_common_usrclk : BUFG
+            port map(
+                I => gth_gt_clk_out_arr_i(n).rxoutclk,
+                O => clk_gth_4p8g_common_rxusrclk_o
             );
 
       end generate;

@@ -92,7 +92,13 @@ entity gth_wrapper is
     gth_misc_status_arr_o : out t_gth_misc_status_arr(g_NUM_OF_GTH_GTs-1 downto 0);
 
     gth_tx_data_arr_i : in  t_gt_8b10b_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
-    gth_rx_data_arr_o : out t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0)
+    gth_rx_data_arr_o : out t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+
+    gth_gbt_tx_data_arr_i : in  t_gt_gbt_tx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+    gth_gbt_rx_data_arr_o : out t_gt_gbt_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
+    
+    gth_gbt_common_rxusrclk_o : out std_logic
+    
     );
 end gth_wrapper;
 
@@ -149,6 +155,8 @@ architecture gth_wrapper_arch of gth_wrapper is
   signal s_gth_rx_data_arr : t_gt_8b10b_rx_data_arr(g_NUM_OF_GTH_GTs-1 downto 0);
 
   ---------------------
+    
+  signal s_gth_4p8g_common_rxusrclk : std_logic;
 
   signal s_gth_common_clk_in_arr  : t_gth_common_clk_in_arr(g_NUM_OF_GTH_COMMONs-1 downto 0);
   signal s_gth_common_clk_out_arr : t_gth_common_clk_out_arr(g_NUM_OF_GTH_COMMONs-1 downto 0);
@@ -227,7 +235,6 @@ begin
       )
     port map
     (
-
       GTH_4p8g_TX_MMCM_reset_i  => s_GTH_4p8g_TX_MMCM_reset,
       GTH_4p8g_TX_MMCM_locked_o => s_GTH_4p8g_TX_MMCM_locked,
 
@@ -248,13 +255,16 @@ begin
       gth_gt_clk_out_arr_i => s_gth_gt_clk_out_arr,
 
       clk_gth_tx_usrclk_arr_o => s_clk_gth_tx_usrclk_arr,
-      clk_gth_rx_usrclk_arr_o => s_clk_gth_rx_usrclk_arr
+      clk_gth_rx_usrclk_arr_o => s_clk_gth_rx_usrclk_arr,
+
+      clk_gth_4p8g_common_rxusrclk_o => s_gth_4p8g_common_rxusrclk
 
       );
 
   clk_gth_tx_usrclk_arr_o <= s_clk_gth_tx_usrclk_arr;
   clk_gth_rx_usrclk_arr_o <= s_clk_gth_rx_usrclk_arr;
-
+  gth_gbt_common_rxusrclk_o <= s_gth_4p8g_common_rxusrclk;
+  
 ------------------------
 
   gen_qpll_refclk_assign_Q110_to_Q111 : for i in 0 to 1 generate
@@ -376,38 +386,46 @@ begin
     gen_gth_4p8g : if c_gth_config_arr(n).gth_link_type = gth_4p8g generate
 
       -------------  GT txdata_i Assignments for 20 bit datapath  -------  
-      s_gth_tx_data_arr(n).txdata <= x"0000" &
-                                     gth_tx_data_arr_i(n).txdata(17 downto 10) &
-                                     gth_tx_data_arr_i(n).txdata(7 downto 0);
+      s_gth_tx_data_arr(n).txdata <= gth_gbt_tx_data_arr_i(n)(37 downto 30) &
+                                     gth_gbt_tx_data_arr_i(n)(27 downto 20) &
+                                     gth_gbt_tx_data_arr_i(n)(17 downto 10) &
+                                     gth_gbt_tx_data_arr_i(n)(7 downto 0);
 
-      s_gth_tx_data_arr(n).txchardispmode <= "00" &
-                                             gth_tx_data_arr_i(n).txdata(19) &
-                                             gth_tx_data_arr_i(n).txdata(9);
+      s_gth_tx_data_arr(n).txchardispmode <= gth_gbt_tx_data_arr_i(n)(39) &
+                                             gth_gbt_tx_data_arr_i(n)(29) &
+                                             gth_gbt_tx_data_arr_i(n)(19) &
+                                             gth_gbt_tx_data_arr_i(n)(9);
 
-      s_gth_tx_data_arr(n).txchardispval <= "00" &
-                                            gth_tx_data_arr_i(n).txdata(18) &
-                                            gth_tx_data_arr_i(n).txdata(8);
+      s_gth_tx_data_arr(n).txchardispval <= gth_gbt_tx_data_arr_i(n)(38) &
+                                            gth_gbt_tx_data_arr_i(n)(28) &
+                                            gth_gbt_tx_data_arr_i(n)(18) &
+                                            gth_gbt_tx_data_arr_i(n)(8);
 
-      s_gth_tx_data_arr(n).txcharisk <= gth_tx_data_arr_i(n).txcharisk;
+      --s_gth_tx_data_arr(n).txcharisk <= gth_tx_data_arr_i(n).txcharisk;
 
       -------------  GT RXDATA Assignments for 20 bit datapath  -------  
 
-      gth_rx_data_arr_o(n).rxdata <= x"000" &
-                                     s_gth_rx_data_arr(n).rxdisperr(1) &
-                                     s_gth_rx_data_arr(n).rxcharisk(1) &
-                                     s_gth_rx_data_arr(n).rxdata(15 downto 8) &
-                                     s_gth_rx_data_arr(n).rxdisperr(0) &
-                                     s_gth_rx_data_arr(n).rxcharisk(0) &
-                                     s_gth_rx_data_arr(n).rxdata(7 downto 0);
+      gth_gbt_rx_data_arr_o(n)        <= s_gth_rx_data_arr(n).rxdisperr(3) &
+                                         s_gth_rx_data_arr(n).rxcharisk(3) &
+                                         s_gth_rx_data_arr(n).rxdata(31 downto 24) &
+                                         s_gth_rx_data_arr(n).rxdisperr(2) &
+                                         s_gth_rx_data_arr(n).rxcharisk(2) &
+                                         s_gth_rx_data_arr(n).rxdata(23 downto 16) &
+                                         s_gth_rx_data_arr(n).rxdisperr(1) &
+                                         s_gth_rx_data_arr(n).rxcharisk(1) &
+                                         s_gth_rx_data_arr(n).rxdata(15 downto 8) &
+                                         s_gth_rx_data_arr(n).rxdisperr(0) &
+                                         s_gth_rx_data_arr(n).rxcharisk(0) &
+                                         s_gth_rx_data_arr(n).rxdata(7 downto 0);
 
 
-      gth_rx_data_arr_o(n).rxbyteisaligned <= s_gth_rx_data_arr(n).rxbyteisaligned;
-      gth_rx_data_arr_o(n).rxbyterealign   <= s_gth_rx_data_arr(n).rxbyterealign;
-      gth_rx_data_arr_o(n).rxcommadet      <= s_gth_rx_data_arr(n).rxcommadet;
-      gth_rx_data_arr_o(n).rxdisperr       <= s_gth_rx_data_arr(n).rxdisperr;
-      gth_rx_data_arr_o(n).rxnotintable    <= s_gth_rx_data_arr(n).rxnotintable;
-      gth_rx_data_arr_o(n).rxchariscomma   <= s_gth_rx_data_arr(n).rxchariscomma;
-      gth_rx_data_arr_o(n).rxcharisk       <= s_gth_rx_data_arr(n).rxcharisk;
+--      gth_rx_data_arr_o(n).rxbyteisaligned <= s_gth_rx_data_arr(n).rxbyteisaligned;
+--      gth_rx_data_arr_o(n).rxbyterealign   <= s_gth_rx_data_arr(n).rxbyterealign;
+--      gth_rx_data_arr_o(n).rxcommadet      <= s_gth_rx_data_arr(n).rxcommadet;
+--      gth_rx_data_arr_o(n).rxdisperr       <= s_gth_rx_data_arr(n).rxdisperr;
+--      gth_rx_data_arr_o(n).rxnotintable    <= s_gth_rx_data_arr(n).rxnotintable;
+--      gth_rx_data_arr_o(n).rxchariscomma   <= s_gth_rx_data_arr(n).rxchariscomma;
+--      gth_rx_data_arr_o(n).rxcharisk       <= s_gth_rx_data_arr(n).rxcharisk;
 
       i_gth_single_4p8g : entity work.gth_single_4p8g
         generic map

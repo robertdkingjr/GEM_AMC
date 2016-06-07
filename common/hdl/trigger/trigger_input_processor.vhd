@@ -95,7 +95,7 @@ begin
         i_cluster_size_cnt: entity work.counter
             generic map(
                 g_COUNTER_WIDTH  => 32,
-                g_ALLOW_ROLLOVER => "FALSE"
+                g_ALLOW_ROLLOVER => FALSE
             )
             port map(
                 ref_clk_i => clk_i,
@@ -120,7 +120,7 @@ begin
     i_trigger_cnt: entity work.counter
         generic map(
             g_COUNTER_WIDTH  => 32,
-            g_ALLOW_ROLLOVER => "FALSE"
+            g_ALLOW_ROLLOVER => FALSE
         )
         port map(
             ref_clk_i => clk_i,

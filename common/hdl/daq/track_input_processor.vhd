@@ -33,11 +33,13 @@ port(
     infifo_empty_o              : out std_logic;
     infifo_valid_o              : out std_logic;
     infifo_underflow_o          : out std_logic;
+    infifo_data_cnt_o           : out std_logic_vector(11 downto 0);
     evtfifo_dout_o              : out std_logic_vector(59 downto 0);
     evtfifo_rd_en_i             : in std_logic;
     evtfifo_empty_o             : out std_logic;
     evtfifo_valid_o             : out std_logic;
     evtfifo_underflow_o         : out std_logic;
+    evtfifo_data_cnt_o          : out std_logic_vector(11 downto 0);
 
     -- Track data
     tk_data_link_i              : in t_data_link;
@@ -55,38 +57,40 @@ architecture Behavioral of track_input_processor is
 
     component daq_input_fifo is
         port(
-            rst         : in  std_logic;
-            wr_clk      : in  std_logic;
-            rd_clk      : in  std_logic;
-            din         : in  std_logic_vector(191 downto 0);
-            wr_en       : in  std_logic;
-            rd_en       : in  std_logic;
-            dout        : out std_logic_vector(191 downto 0);
-            full        : out std_logic;
-            almost_full : out std_logic;
-            empty       : out std_logic;
-            almost_empty: out std_logic;
-            valid       : out std_logic;
-            underflow   : out std_logic;
-            prog_full   : out std_logic
+            rst           : in  std_logic;
+            wr_clk        : in  std_logic;
+            rd_clk        : in  std_logic;
+            din           : in  std_logic_vector(191 downto 0);
+            wr_en         : in  std_logic;
+            rd_en         : in  std_logic;
+            dout          : out std_logic_vector(191 downto 0);
+            full          : out std_logic;
+            almost_full   : out std_logic;
+            empty         : out std_logic;
+            almost_empty  : out std_logic;
+            valid         : out std_logic;
+            underflow     : out std_logic;
+            prog_full     : out std_logic;
+            rd_data_count : out std_logic_vector(11 downto 0)
         );
     end component daq_input_fifo;
     
     component daq_event_fifo is
-        port (
-            rst         : in  std_logic;
-            wr_clk      : in  std_logic;
-            rd_clk      : in  std_logic;
-            din         : in  std_logic_vector(59 downto 0);
-            wr_en       : in  std_logic;
-            rd_en       : in  std_logic;
-            dout        : out std_logic_vector(59 downto 0);
-            full        : out std_logic;
-            almost_full : out std_logic;
-            empty       : out std_logic;
-            valid       : out std_logic;
-            underflow   : out std_logic;
-            prog_full   : out std_logic
+        port(
+            rst           : in  std_logic;
+            wr_clk        : in  std_logic;
+            rd_clk        : in  std_logic;
+            din           : in  std_logic_vector(59 downto 0);
+            wr_en         : in  std_logic;
+            rd_en         : in  std_logic;
+            dout          : out std_logic_vector(59 downto 0);
+            full          : out std_logic;
+            almost_full   : out std_logic;
+            empty         : out std_logic;
+            valid         : out std_logic;
+            underflow     : out std_logic;
+            prog_full     : out std_logic;
+            rd_data_count : out std_logic_vector(11 downto 0)
         );
     end component daq_event_fifo;
         
@@ -229,26 +233,54 @@ begin
                  x"8";
 
     --================================--
+    -- Counters
+    --================================--
+    i_infifo_near_full_counter : entity work.counter
+    generic map(
+        g_COUNTER_WIDTH  => 16,
+        g_ALLOW_ROLLOVER => FALSE
+    )
+    port map(
+        ref_clk_i => tk_data_link_i.clk,
+        reset_i   => reset_i,
+        en_i      => err_infifo_near_full,
+        count_o   => status_o.infifo_near_full_cnt
+    );
+
+    i_evtfifo_near_full_counter : entity work.counter
+    generic map(
+        g_COUNTER_WIDTH  => 16,
+        g_ALLOW_ROLLOVER => FALSE
+    )
+    port map(
+        ref_clk_i => tk_data_link_i.clk,
+        reset_i   => reset_i,
+        en_i      => err_evtfifo_near_full,
+        count_o   => status_o.evtfifo_near_full_cnt
+    );
+
+    --================================--
     -- FIFOs
     --================================--
   
     -- Input FIFO
     i_input_fifo : component daq_input_fifo
-    port map (
-        rst => reset_i,
-        wr_clk => tk_data_link_i.clk,
-        rd_clk => fifo_rd_clk_i,
-        din => infifo_din,
-        wr_en => infifo_wr_en,
-        rd_en => infifo_rd_en_i,
-        dout => infifo_dout_o,
-        full => infifo_full,
-        almost_full => infifo_almost_full,
-        empty => infifo_empty,
-        almost_empty => open,
-        valid => infifo_valid_o,
-        underflow => infifo_underflow,
-        prog_full => err_infifo_near_full
+    port map(
+        rst           => reset_i,
+        wr_clk        => tk_data_link_i.clk,
+        rd_clk        => fifo_rd_clk_i,
+        din           => infifo_din,
+        wr_en         => infifo_wr_en,
+        rd_en         => infifo_rd_en_i,
+        dout          => infifo_dout_o,
+        full          => infifo_full,
+        almost_full   => infifo_almost_full,
+        empty         => infifo_empty,
+        almost_empty  => open,
+        valid         => infifo_valid_o,
+        underflow     => infifo_underflow,
+        prog_full     => err_infifo_near_full,
+        rd_data_count => infifo_data_cnt_o
     );
 
     infifo_empty_o <= infifo_empty;
@@ -256,20 +288,21 @@ begin
 
     -- Event FIFO
     i_event_fifo : component daq_event_fifo
-    port map (
-        rst => reset_i,
-        wr_clk => tk_data_link_i.clk,
-        rd_clk => fifo_rd_clk_i,
-        din => evtfifo_din,
-        wr_en => evtfifo_wr_en,
-        rd_en => evtfifo_rd_en_i,
-        dout => evtfifo_dout_o,
-        full => evtfifo_full,
-        almost_full => evtfifo_almost_full,
-        empty => evtfifo_empty,
-        valid => evtfifo_valid_o,
-        underflow => evtfifo_underflow,
-        prog_full => err_evtfifo_near_full
+    port map(
+        rst           => reset_i,
+        wr_clk        => tk_data_link_i.clk,
+        rd_clk        => fifo_rd_clk_i,
+        din           => evtfifo_din,
+        wr_en         => evtfifo_wr_en,
+        rd_en         => evtfifo_rd_en_i,
+        dout          => evtfifo_dout_o,
+        full          => evtfifo_full,
+        almost_full   => evtfifo_almost_full,
+        empty         => evtfifo_empty,
+        valid         => evtfifo_valid_o,
+        underflow     => evtfifo_underflow,
+        prog_full     => err_evtfifo_near_full,
+        rd_data_count => evtfifo_data_cnt_o
     );
 
     evtfifo_empty_o <= evtfifo_empty;
@@ -292,6 +325,32 @@ begin
             end if;
         end if;
     end process;
+
+    -- InFIFO write rate counter
+    i_infifo_write_rate : entity work.rate_counter
+    generic map(
+        g_CLK_FREQUENCY => std_logic_vector(to_unsigned(160_000_000, 32)),
+        g_COUNTER_WIDTH => 15
+    )
+    port map(
+        clk_i   => tk_data_link_i.clk,
+        reset_i => reset_i,
+        en_i    => infifo_wr_en,
+        rate_o  => status_o.infifo_wr_rate
+    );
+
+    -- EvtFIFO write rate counter
+    i_evtfifo_write_rate : entity work.rate_counter
+    generic map(
+        g_CLK_FREQUENCY => std_logic_vector(to_unsigned(160_000_000, 32)),
+        g_COUNTER_WIDTH => 17
+    )
+    port map(
+        clk_i   => tk_data_link_i.clk,
+        reset_i => reset_i,
+        en_i    => evtfifo_wr_en,
+        rate_o  => status_o.evtfifo_wr_rate
+    );
 
     --================================--
     -- Glue input data into VFAT blocks

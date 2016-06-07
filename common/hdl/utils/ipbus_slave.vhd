@@ -23,7 +23,7 @@ entity ipbus_slave is
         g_NUM_REGS             : integer := 32;     -- number of 32bit registers in this slave (use them wisely, don't allocate 100 times more than you need). If there are big gaps in the register addresses, please use individual address mapping.
         g_ADDR_HIGH_BIT        : integer := 5;      -- MSB of the IPbus address that will be mapped to registers
         g_ADDR_LOW_BIT         : integer := 0;      -- LSB of the IPbus address that will be mapped to registers
-        g_USE_INDIVIDUAL_ADDRS : string  := "FALSE" -- when true, we will map the registers to the individual addresses provided in individual_addrs_arr_i(g_ADDR_HIGH_BIT downto g_ADDR_LOW_BIT)
+        g_USE_INDIVIDUAL_ADDRS : boolean := false -- when true, we will map the registers to the individual addresses provided in individual_addrs_arr_i(g_ADDR_HIGH_BIT downto g_ADDR_LOW_BIT)
     );
     port(
         ipb_reset_i            : in  std_logic;                              -- IPbus reset (will reset the register values to the provided defaults)
@@ -101,7 +101,7 @@ begin
                         regs_write_strb <= '0';
                         regs_read_strb  <= '0';
                         ipb_addr_valid <= '0';
-                        if (g_USE_INDIVIDUAL_ADDRS = "TRUE") then
+                        if (g_USE_INDIVIDUAL_ADDRS) then
                             -- individual address matching (NOTE: maybe could be doen more efficiently..)
                             for i in 0 to g_NUM_REGS - 1 loop
                                 if (ipb_mosi_i.ipb_addr(g_ADDR_HIGH_BIT downto g_ADDR_LOW_BIT) = individual_addrs_arr_i(i)(g_ADDR_HIGH_BIT downto g_ADDR_LOW_BIT)) then
