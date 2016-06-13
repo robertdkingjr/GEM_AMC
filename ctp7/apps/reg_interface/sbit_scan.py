@@ -21,12 +21,13 @@ ISHAPER=150
 ISHAPERFEED=100
 ICOMP=75
 
+# Calpulsing Settings
 VTHRESHOLD1=50
 VCAL=190
+INTERVAL = 10 #BX
+NUM_PULSES = 100
 
-OUTPUT_FILE='./results.txt'
-
-pulses = 1
+OUTPUT_FILENAME='results'
 
 class Colors:
     WHITE   = '\033[97m'
@@ -39,15 +40,18 @@ class Colors:
     ENDC    = '\033[0m'
 
 def main():
-    resultFileName = raw_input('Enter result filename (default = ' + OUTPUT_FILE + '): ') or OUTPUT_FILE
-
+    resultFileName = raw_input('Enter result filename (no extention or path) (default = ' + OUTPUT_FILENAME + '): ') or OUTPUT_FILENAME
+    resultFilePath = './'+resultFileName+'.txt'
+    errorsFilePath = './'+resultFileName+'-errors.txt'
     f = open(resultFileName, 'w')
+    f_errors = open(errorsFilePath, 'w')
+    
     parseXML()
 
     if not SINGLEVFAT:
         for vfat in range(0, 24):
-            scan_vfat(vfat, f)
-            map_vfat_sbits(vfat,f)
+            scan_vfat(vfat, f, f_errors)
+            # map_vfat_sbits(vfat,f)
     else:
         vfat_slot = raw_input('Enter VFAT slot: ')
         try:
@@ -77,8 +81,8 @@ def map_vfat_sbits(vfat_slot, outfile):
 
 
     # Check for VFAT present
-    vfat_id1 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH0.GEB.VFATS.VFAT'+vfat_slot+'.ChipID1')))
-    vfat_id2 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH0.GEB.VFATS.VFAT'+vfat_slot+'.ChipID0')))
+    vfat_id1 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+vfat_slot+'.ChipID1')))
+    vfat_id2 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+vfat_slot+'.ChipID0')))
     vfat_id = (vfat_id1 << 8) + vfat_id2
     subheading('VFATID: '+hex(vfat_id))
     if vfat_id == 0:
@@ -165,7 +169,7 @@ def map_vfat_sbits(vfat_slot, outfile):
 
 
 
-def scan_vfat(vfat_slot, outfile):
+def scan_vfat(vfat_slot, outfile, errfile):
     try:
         if int(vfat_slot) > 23 or int(vfat_slot) < 0:
             print 'Invalid VFAT slot!'
@@ -176,14 +180,21 @@ def scan_vfat(vfat_slot, outfile):
    
     REG_PATH = 'GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+str(vfat_slot)+'.'
 
-    subheading('Parsing address table.')
-    parseXML()
     heading('Beginning SBit Scan')
 
+    # Check for correct OH, good connection
+    try:
+        oh_fw = parseInt(readReg(getNode('GEM_AMC.OH.OH'+OH_NUM+'.STATUS.FW')))
+        if oh_fw > 0: continue
+        else:
+            print 'Error: OH FW: ',oh_fw
+    except ValueError as e:
+        print 'Error reading registers: ',e
+        return
 
     # Check for VFAT present
-    vfat_id1 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH0.GEB.VFATS.VFAT'+vfat_slot+'.ChipID1')))
-    vfat_id2 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH0.GEB.VFATS.VFAT'+vfat_slot+'.ChipID0')))
+    vfat_id1 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+vfat_slot+'.ChipID1')))
+    vfat_id2 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+vfat_slot+'.ChipID0')))
     vfat_id = (vfat_id1 << 8) + vfat_id2
     subheading('VFATID: '+hex(vfat_id))
     if vfat_id == 0:
@@ -199,6 +210,12 @@ def scan_vfat(vfat_slot, outfile):
     print 'Unmasking VFAT',vfat_slot
     vmask = (0xffffffff) ^ (0x1 << int(vfat_slot))
     print writeReg(SBitMask,vmask)
+
+    
+    # Clear all channels
+    subheading('Clearing all channels...')
+    for strip in range(1,129):
+        writeReg(getNode(REG_PATH+'VFATChannels.ChanReg'+str(strip)),0)
 
 
     # Set default VFAT values & Threshold,VCal,RunMode
@@ -240,6 +257,10 @@ def scan_vfat(vfat_slot, outfile):
         print Colors.RED
         print 'Trigger Counter Reset did not clear Trigger Counts!',Colors.ENDC
         print 'Triggers:',nSbits,'=',parseInt(nSbits),'\n'
+        outfile.write('Trigger Counter Reset did not clear Trigger Counts!')
+        outfile.write('%s%s = %d' % ('Triggers: ',nSbits,parseInt(nSbits))
+        errfile.write('Trigger Counter Reset did not clear Trigger Counts!')
+        errfile.write('%s%s = %d' % ('Triggers: ',nSbits,parseInt(nSbits))
 
         for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.CLUSTER'):
             if 'r' in str(reg.permission):
@@ -256,31 +277,23 @@ def scan_vfat(vfat_slot, outfile):
     heading('Setting T1 Controller')
     print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MODE'), 0)
     print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TYPE'), 1)
-    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.INTERVAL'), 1000)
-    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.NUMBER'), pulses)
+    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.INTERVAL'), INTERVAL)
+    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.NUMBER'), NUM_PULSES)
 
 
 
     # LOOP
     heading('LOOPING OVER CHANNELS')
-    triggerResults = []
+    triggerAmounts = []          #2D array: [strip, num_triggers]
+    triggerLocations = []        #2D array: [strip, encoded-sbit]
     pads = range(1,2*NUM_PADS+1)
     strips = [8*i for i in pads] #8,16,24,...,128
-    previousStrip = 0
-
-    # Clear all channels
-    subheading('Clearing all channels...')
-    for strip in range(1,129):
-        writeReg(getNode(REG_PATH+'VFATChannels.ChanReg'+str(strip)),0)
-
 
     try:
         for strip in strips:
             subheading('Strip '+str(strip))
 
-            if previousStrip<1 or previousStrip>128: previousStrip=1
             print writeReg(getNode(REG_PATH+'VFATChannels.ChanReg'+str(strip)),64)
-            previousStrip = strip
 
             subheading('Resetting Trigger Counters...')
             print writeReg(TCReset,1)
@@ -301,11 +314,11 @@ def scan_vfat(vfat_slot, outfile):
                 print 'Trigger Counter Reset did not clear Trigger Counts!',Colors.ENDC
                 print 'Triggers:',nSbits,'=',parseInt(nSbits),'\n'
         
-                for reg in getNodesContaining('TRIGGER.OH0.CLUSTER'):
+                for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.CLUSTER'):
                     if 'r' in str(reg.permission):
                         print displayReg(reg),'=',parseInt(str(readReg(reg)))
                 print '\n'
-                for reg in getNodesContaining('TRIGGER.OH0.DEBUG_LAST_CLUSTER'):
+                for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.DEBUG_LAST_CLUSTER'):
                     if 'r' in str(reg.permission):
                         print displayReg(reg,'hexbin')
                 return
@@ -321,16 +334,16 @@ def scan_vfat(vfat_slot, outfile):
             try: 
                 parseInt(nSbits)
                 print 'SBits:',nSbits,'=',parseInt(nSbits)
-            except:
+            except: # bus error
                 print 'SBits:',nSbits
                 nSbits = -1
                 
-            triggerResults.append([strip,parseInt(nSbits)])
+            triggerAmounts.append([strip,parseInt(nSbits)])
             
-            if parseInt(nSbits) != 4*pulses:
-                printRed( 'Strip '+str(strip)+'   Expected:'+str(pulses)+'\t'+'Received:'+str(parseInt(nSbits)) )
+            if parseInt(nSbits) != 4*NUM_PULSES: # Not sure why quadrupled
+                printRed( 'Strip '+str(strip)+'\t Expected:'+str(NUM_PULSES)+'\t Received:'+str(parseInt(nSbits)) )
             else:
-                printCyan( 'Strip '+str(strip)+'   Expected:'+str(pulses)+'\t'+'Received:'+str(parseInt(nSbits)) )
+                printCyan('Strip '+str(strip)+'\t Expected:'+str(NUM_PULSES)+'\t Received:'+str(parseInt(nSbits)) )
     
             # Map Cluster
             if not QUICKTEST:
@@ -352,12 +365,12 @@ def scan_vfat(vfat_slot, outfile):
         heading('Summary')
         subheading('VFAT Slot '+str(vfat_slot)+' ID '+hex(vfat_id))
         outfile.write('VFAT Slot '+str(vfat_slot) + '\n')
-        for result in range(len(triggerResults)):
-            if triggerResults[result][1] != 4*pulses:
-                print Colors.RED+'Strip',triggerResults[result][0],'\t','Expected:',pulses,'Received:',triggerResults[result][1],Colors.ENDC
+        for result in range(len(triggerAmounts)):
+            if triggerAmounts[result][1] != 4*NUM_PULSES:
+                print Colors.RED+'Strip',triggerAmounts[result][0],'\t','Expected:',NUM_PULSES,'Received:',triggerAmounts[result][1],Colors.ENDC
             else:
-                print 'Strip',triggerResults[result][0],'\t','Expected:',pulses,'Received:',triggerResults[result][1]
-            outfile.write('%s%03d%s%s%s %s%s\n' % ('Strip',triggerResults[result][0],'\t','Expected:',pulses,'Received:',triggerResults[result][1]))
+                print 'Strip',triggerAmounts[result][0],'\t','Expected:',NUM_PULSES,'Received:',triggerAmounts[result][1]
+            outfile.write('%s%03d%s%s%s %s%s\n' % ('Strip',triggerAmounts[result][0],'\t','Expected:',NUM_PULSES,'Received:',triggerAmounts[result][1]))
         print '\n\n'
         outfile.write('\n\n')
 
