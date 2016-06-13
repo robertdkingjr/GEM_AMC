@@ -1,6 +1,7 @@
 */*work_dir*/*
 !*.xpr
 !*.xise
+!*.tcl
 */bd/*
 !*/bd/*.bd
 *.swp
