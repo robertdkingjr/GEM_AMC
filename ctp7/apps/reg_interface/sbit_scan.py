@@ -1,4 +1,5 @@
 from rw_reg import *
+from vfat_config import *
 from time import *
 
 QUICKTEST = True
@@ -98,16 +99,8 @@ def map_vfat_sbits(vfat_slot, outfile):
 
     # Set default VFAT values & Threshold,VCal,RunMode
     heading('SET VFAT SETTINGS')
-    print writeReg(getNode(REG_PATH+'ContReg0'),CONTREG0)
-    print writeReg(getNode(REG_PATH+'ContReg1'),CONTREG1)
-    print writeReg(getNode(REG_PATH+'ContReg2'),CONTREG2)
-    print writeReg(getNode(REG_PATH+'ContReg3'),CONTREG3)
-    print writeReg(getNode(REG_PATH+'IPreampIn'),IPREAMPIN)
-    print writeReg(getNode(REG_PATH+'IPreampFeed'),IPREAMPFEED)
-    print writeReg(getNode(REG_PATH+'IPreampOut'),IPREAMPOUT)
-    print writeReg(getNode(REG_PATH+'IShaper'),ISHAPER)
-    print writeReg(getNode(REG_PATH+'IShaperFeed'),ISHAPERFEED)
-    print writeReg(getNode(REG_PATH+'IComp'),ICOMP)
+    vfatWritten = setVFATRunMode(OH_NUM,vfat_slot)
+    if not vfatWritten: printRed("Error Setting Default VFAT Values!")
     print writeReg(getNode(REG_PATH+'VThreshold1'),VTHRESHOLD1)
     print writeReg(getNode(REG_PATH+'VCal'),VCAL)
     print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.CONTROL.TRIGGER'),1)
