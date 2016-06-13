@@ -1,0 +1,14 @@
+perl/Git/I18N.pm
+perl/Git/IndexInfo.pm
+perl/Git.pm
+perl/Git/SVN/Editor.pm
+perl/Git/SVN/Fetcher.pm
+perl/Git/SVN/GlobSpec.pm
+perl/Git/SVN/Log.pm
+perl/Git/SVN/Memoize/YAML.pm
+perl/Git/SVN/Migration.pm
+perl/Git/SVN.pm
+perl/Git/SVN/Prompt.pm
+perl/Git/SVN/Ra.pm
+perl/Git/SVN/Utils.pm
+perl/private-Error.pm
