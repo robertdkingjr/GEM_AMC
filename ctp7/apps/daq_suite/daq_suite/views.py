@@ -25,9 +25,47 @@ def read_gem_system_module(request,module):
   rowcolors = []
   for reg in reglist:
     try: 
-      print "Register %s value %s" %(reg.name,readReg(reg))
-      valuelist.append(readReg(reg))
-      rowcolors.append("info")
+      value = readReg(reg)
+      valuelist.append(value)
+      if (reg.warn_min_value is not None) or (reg.error_min_value is not None):
+        if (reg.warn_min_value is not None) and (reg.error_min_value is not None): 
+          try:
+            ivalue = parseInt(value)
+            iwarn_min = parseInt(reg.warn_min_value) 
+            ierror_min = parseInt(reg.error_min_value) 
+            if ivalue > ierror_min:
+              rowcolors.append("danger")
+            elif ivalue > iwarn_min:
+              rowcolors.append("warning")
+            else: 
+              rowcolors.append("info")
+          except ValueError as ve:
+            rowcolors.append("info")
+    	    print ve
+        elif (reg.error_min_value is not None):
+          try:
+            ivalue = parseInt(value)
+            ierror_min = parseInt(reg.error_min_value) 
+            if ivalue > ierror_min:
+              rowcolors.append("danger")
+            else: 
+              rowcolors.append("info")
+          except ValueError as ve:
+            rowcolors.append("info")
+    	    print ve
+        elif (reg.warn_min_value is not None):
+          try:
+            ivalue = parseInt(value)
+            iwarn_min = parseInt(reg.warn_min_value) 
+            if ivalue > iwarn_min:
+              rowcolors.append("warning")
+            else: 
+              rowcolors.append("info")
+          except ValueError as ve:
+            rowcolors.append("info")
+    	    print ve
+      else:
+        rowcolors.append("info")
     except: 
       print reg
   ziplist = zip(list(reg.name for reg in reglist),valuelist,rowcolors)
