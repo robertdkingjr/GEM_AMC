@@ -2,12 +2,12 @@ from rw_reg import *
 from time import *
 
 QUICKTEST = True
-SINGLEVFAT = True
+SINGLEVFAT = False
 
 SBitMaskAddress = 0x6502c010
 NUM_STRIPS = 128
 NUM_PADS = 8
-OH_NUM = 0
+OH_NUM = 2
 
 #VFAT DEFAULTS
 CONTREG0=55
@@ -81,8 +81,8 @@ def map_vfat_sbits(vfat_slot, outfile):
 
 
     # Check for VFAT present
-    vfat_id1 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+vfat_slot+'.ChipID1')))
-    vfat_id2 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+vfat_slot+'.ChipID0')))
+    vfat_id1 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+str(vfat_slot)+'.ChipID1')))
+    vfat_id2 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+str(vfat_slot)+'.ChipID0')))
     vfat_id = (vfat_id1 << 8) + vfat_id2
     subheading('VFATID: '+hex(vfat_id))
     if vfat_id == 0:
@@ -180,6 +180,7 @@ def scan_vfat(vfat_slot, outfile, errfile):
    
     REG_PATH = 'GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+str(vfat_slot)+'.'
 
+
     heading('Beginning SBit Scan')
 
     # Check for correct OH, good connection
@@ -193,8 +194,8 @@ def scan_vfat(vfat_slot, outfile, errfile):
         return
 
     # Check for VFAT present
-    vfat_id1 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+vfat_slot+'.ChipID1')))
-    vfat_id2 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+vfat_slot+'.ChipID0')))
+    vfat_id1 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+str(vfat_slot)+'.ChipID1')))
+    vfat_id2 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+str(vfat_slot)+'.ChipID0')))
     vfat_id = (vfat_id1 << 8) + vfat_id2
     subheading('VFATID: '+hex(vfat_id))
     if vfat_id == 0:
@@ -235,6 +236,15 @@ def scan_vfat(vfat_slot, outfile, errfile):
     print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.CONTROL.TRIGGER'),1)
 
 
+    # Configure T1 Controller
+    heading('Setting T1 Controller')
+    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MODE'), 0)
+    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TYPE'), 1)
+    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.INTERVAL'), 1000)
+    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.NUMBER'), pulses)
+
+
+
     # Reset Trigger Counters
     heading('Reset trigger counters')
     TCReset = getNode('GEM_AMC.TRIGGER.CTRL.CNT_RESET')
@@ -271,14 +281,6 @@ def scan_vfat(vfat_slot, outfile, errfile):
                 print displayReg(reg,'hexbin')
         return
     else: print 'Trigger Counts clear.'
-
-
-    # Configure T1 Controller
-    heading('Setting T1 Controller')
-    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MODE'), 0)
-    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TYPE'), 1)
-    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.INTERVAL'), INTERVAL)
-    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.NUMBER'), NUM_PULSES)
 
 
 
