@@ -218,6 +218,15 @@ def scan_vfat(vfat_slot, outfile):
     print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.CONTROL.TRIGGER'),1)
 
 
+    # Configure T1 Controller
+    heading('Setting T1 Controller')
+    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MODE'), 0)
+    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TYPE'), 1)
+    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.INTERVAL'), 1000)
+    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.NUMBER'), pulses)
+
+
+
     # Reset Trigger Counters
     heading('Reset trigger counters')
     TCReset = getNode('GEM_AMC.TRIGGER.CTRL.CNT_RESET')
@@ -250,14 +259,6 @@ def scan_vfat(vfat_slot, outfile):
                 print displayReg(reg,'hexbin')
         return
     else: print 'Trigger Counts clear.'
-
-
-    # Configure T1 Controller
-    heading('Setting T1 Controller')
-    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MODE'), 0)
-    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TYPE'), 1)
-    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.INTERVAL'), 1000)
-    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.NUMBER'), pulses)
 
 
 
