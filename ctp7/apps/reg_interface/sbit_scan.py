@@ -2,12 +2,12 @@ from rw_reg import *
 from time import *
 
 QUICKTEST = True
-SINGLEVFAT = True
+SINGLEVFAT = False
 
 SBitMaskAddress = 0x6502c010
 NUM_STRIPS = 128
 NUM_PADS = 8
-OH_NUM = 0
+OH_NUM = 2
 
 #VFAT DEFAULTS
 CONTREG0=55
@@ -77,8 +77,8 @@ def map_vfat_sbits(vfat_slot, outfile):
 
 
     # Check for VFAT present
-    vfat_id1 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH0.GEB.VFATS.VFAT'+vfat_slot+'.ChipID1')))
-    vfat_id2 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH0.GEB.VFATS.VFAT'+vfat_slot+'.ChipID0')))
+    vfat_id1 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+str(vfat_slot)+'.ChipID1')))
+    vfat_id2 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+str(vfat_slot)+'.ChipID0')))
     vfat_id = (vfat_id1 << 8) + vfat_id2
     subheading('VFATID: '+hex(vfat_id))
     if vfat_id == 0:
@@ -176,14 +176,14 @@ def scan_vfat(vfat_slot, outfile):
    
     REG_PATH = 'GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+str(vfat_slot)+'.'
 
-    subheading('Parsing address table.')
-    parseXML()
+    #subheading('Parsing address table.')
+    #parseXML()
     heading('Beginning SBit Scan')
 
 
     # Check for VFAT present
-    vfat_id1 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH0.GEB.VFATS.VFAT'+vfat_slot+'.ChipID1')))
-    vfat_id2 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH0.GEB.VFATS.VFAT'+vfat_slot+'.ChipID0')))
+    vfat_id1 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+str(vfat_slot)+'.ChipID1')))
+    vfat_id2 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+str(vfat_slot)+'.ChipID0')))
     vfat_id = (vfat_id1 << 8) + vfat_id2
     subheading('VFATID: '+hex(vfat_id))
     if vfat_id == 0:
@@ -301,11 +301,11 @@ def scan_vfat(vfat_slot, outfile):
                 print 'Trigger Counter Reset did not clear Trigger Counts!',Colors.ENDC
                 print 'Triggers:',nSbits,'=',parseInt(nSbits),'\n'
         
-                for reg in getNodesContaining('TRIGGER.OH0.CLUSTER'):
+                for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.CLUSTER'):
                     if 'r' in str(reg.permission):
                         print displayReg(reg),'=',parseInt(str(readReg(reg)))
                 print '\n'
-                for reg in getNodesContaining('TRIGGER.OH0.DEBUG_LAST_CLUSTER'):
+                for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.DEBUG_LAST_CLUSTER'):
                     if 'r' in str(reg.permission):
                         print displayReg(reg,'hexbin')
                 return
