@@ -4,7 +4,6 @@ from time import *
 QUICKTEST = True
 SINGLEVFAT = False
 
-SBitMaskAddress = 0x6502c010
 NUM_STRIPS = 128
 NUM_PADS = 8
 OH_NUM = 2
@@ -43,7 +42,7 @@ def main():
     resultFileName = raw_input('Enter result filename (no extention or path) (default = ' + OUTPUT_FILENAME + '): ') or OUTPUT_FILENAME
     resultFilePath = './'+resultFileName+'.txt'
     errorsFilePath = './'+resultFileName+'-errors.txt'
-    f = open(resultFileName, 'w')
+    f = open(resultFilePath, 'w')
     f_errors = open(errorsFilePath, 'w')
     
     parseXML()
@@ -51,7 +50,7 @@ def main():
     if not SINGLEVFAT:
         for vfat in range(0, 24):
             scan_vfat(vfat, f, f_errors)
-            # map_vfat_sbits(vfat,f)
+            map_vfat_sbits(vfat, f, f_errors)
     else:
         vfat_slot = raw_input('Enter VFAT slot: ')
         try:
@@ -66,7 +65,7 @@ def main():
     f.close()
 
 
-def map_vfat_sbits(vfat_slot, outfile):
+def map_vfat_sbits(vfat_slot, outfile, errfile):
 
     try:
         if int(vfat_slot) > 23 or int(vfat_slot) < 0:
@@ -78,6 +77,20 @@ def map_vfat_sbits(vfat_slot, outfile):
 
    
     REG_PATH = 'GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+str(vfat_slot)+'.'
+
+
+    # Check for correct OH, good connection
+    try:
+        oh_fw = parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.STATUS.FW')))
+        print 'OH FW: ',hex(oh_fw)
+        if oh_fw < 1: 
+            print 'Error: OH FW: ',oh_fw
+            return
+    except ValueError as e:
+        printRed('Error connecting to OH'+str(OH_NUM))
+        outfile.write('Error connecting to OH '+str(OH_NUM)+'\n')
+        errfile.write('Error connecting to OH '+str(OH_NUM)+'\n')
+        return
 
 
     # Check for VFAT present
@@ -122,7 +135,7 @@ def map_vfat_sbits(vfat_slot, outfile):
     subheading('Mode: Infinite CalPulses - 10 BX apart')
     print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MODE'), 0)
     print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TYPE'), 1) #CalPulse
-    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.INTERVAL'), 10)
+    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.INTERVAL'), INTERVAL)
     print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.NUMBER'), 0)  #Infinite pulsing
 
 
@@ -138,10 +151,8 @@ def map_vfat_sbits(vfat_slot, outfile):
     subheading('Starting Calpulses (nonstop)')
 
     # Begin CalPulsing
-    print 'T1 Monitor: ',readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))
-    while parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))) != 1:
-        print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TOGGLE'),0xffffffff)
-        
+    T1On()
+         
 
    # try:
     for strip in strips:
@@ -150,24 +161,37 @@ def map_vfat_sbits(vfat_slot, outfile):
         sleep(0.1)
         # Identify SBit
         subheading('Cluster Info')
-        reg = getNode('GEM_AMC.TRIGGER.OH'+str(OH_NUM)+'.DEBUG_LAST_CLUSTER_0')
+        cluster_reg = getNode('GEM_AMC.TRIGGER.OH'+str(OH_NUM)+'.DEBUG_LAST_CLUSTER_0')
         print readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))
+        good_cluster_count = 0
         for i in range(100):
-            value = parseInt(str(readReg(reg)))
-            if value != 2047: 
+            value = parseInt(str(readReg(cluster_reg)))
+            if value != 2047:
+                encodedSlot = cluster_to_vfat(value)
+                encodedSBit = cluster_to_vfat2_sbit(value)
+                encodedSize = cluster_to_size(value)
+                goodCluster = False
+                if encodedSlot == vfat_slot and encodedSBit == (strip-1)//16 and encodedSize == 6: 
+                    good_cluster_count+=1
+                    goodCluster = True
+
+
                 print Colors.CYAN,value, ' = ', '{0:#010x}'.format(value),' = ', '{0:#032b}'.format(value),Colors.ENDC
-                print 'VFAT:',cluster_to_vfat(value),'\t VFAT2 SBit:',cluster_to_vfat2_sbit(value),'\t Size:', cluster_to_size(value),'\n'
+                if goodCluster: print 'VFAT:',cluster_to_vfat(value),'\t VFAT2 SBit:',cluster_to_vfat2_sbit(value),'\t Size:', cluster_to_size(value),'\n'
+                else: printRed('VFAT:'+str(encodedSlot)+'\t VFAT2 SBit:'+str(encodedSBit)+'\t Size:'+str(encodedSize)+'\n')
                 outfile.write('%s%03d%s%d\n' % ('Strip',strip,'\t Cluster: ',value))
                 outfile.write('%d%s%s%s%s\n' % (value, ' = ', '{0:#010x}'.format(value),' = ', '{0:#032b}'.format(value)))
                 outfile.write('%s%d%s%d%s%d%s\n' % ('VFAT:',cluster_to_vfat(value),'\t VFAT2 SBit:',cluster_to_vfat2_sbit(value),'\t Size:', cluster_to_size(value),'\n'))
+        if good_cluster_count==0:
+            printRed('VFAT:'+str(vfat_slot)+'\t Strip:'+str(strip)+'\t No good clusters!')
+            errfile.write('%s %s\t%s %s\t%s\n' % ('VFAT:',str(vfat_slot),'Strip:',str(strip),'No good clusters!'))
         outfile.write('\n')
         # Mask Channel
         print writeReg(getNode(REG_PATH + 'VFATChannels.ChanReg' + str(strip)), 0)
     
     # Stop CalPulses
-    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TOGGLE'),0xffffffff)
-
-
+    T1Off()
+ 
 
 def scan_vfat(vfat_slot, outfile, errfile):
     try:
@@ -185,12 +209,15 @@ def scan_vfat(vfat_slot, outfile, errfile):
 
     # Check for correct OH, good connection
     try:
-        oh_fw = parseInt(readReg(getNode('GEM_AMC.OH.OH'+OH_NUM+'.STATUS.FW')))
-        if oh_fw > 0: continue
-        else:
+        oh_fw = parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.STATUS.FW')))
+        print 'OH FW: ',hex(oh_fw)
+        if oh_fw < 1: 
             print 'Error: OH FW: ',oh_fw
+            return
     except ValueError as e:
-        print 'Error reading registers: ',e
+        printRed('Error connecting to OH'+str(OH_NUM))
+        outfile.write('Error connecting to OH '+str(OH_NUM)+'\n')
+        errfile.write('Error connecting to OH '+str(OH_NUM)+'\n')
         return
 
     # Check for VFAT present
@@ -240,10 +267,13 @@ def scan_vfat(vfat_slot, outfile, errfile):
     heading('Setting T1 Controller')
     print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MODE'), 0)
     print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TYPE'), 1)
-    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.INTERVAL'), 1000)
-    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.NUMBER'), pulses)
+    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.INTERVAL'), INTERVAL)
+    print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.NUMBER'), NUM_PULSES)
 
-
+    # Make sure T1 Controller is OFF
+    T1Off()
+    print 'T1 Monitor: ',readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))
+    
 
     # Reset Trigger Counters
     heading('Reset trigger counters')
@@ -253,7 +283,7 @@ def scan_vfat(vfat_slot, outfile, errfile):
         return
     print writeReg(TCReset,1)
     print writeReg(TCReset,0)
-
+    
 
     # Verify Reset
     subheading('Verifying...')
@@ -267,21 +297,21 @@ def scan_vfat(vfat_slot, outfile, errfile):
         print Colors.RED
         print 'Trigger Counter Reset did not clear Trigger Counts!',Colors.ENDC
         print 'Triggers:',nSbits,'=',parseInt(nSbits),'\n'
-        outfile.write('Trigger Counter Reset did not clear Trigger Counts!')
-        outfile.write('%s%s = %d' % ('Triggers: ',nSbits,parseInt(nSbits))
-        errfile.write('Trigger Counter Reset did not clear Trigger Counts!')
-        errfile.write('%s%s = %d' % ('Triggers: ',nSbits,parseInt(nSbits))
-
-        for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.CLUSTER'):
-            if 'r' in str(reg.permission):
-                print displayReg(reg),'=',parseInt(str(readReg(reg)))
-        print '\n'
-        for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.DEBUG_LAST_CLUSTER'):
-            if 'r' in str(reg.permission):
-                print displayReg(reg,'hexbin')
+        outfile.write('Trigger Counter Reset did not clear Trigger Counts!\n')
+        outfile.write('%s%s = %d' % ('Triggers: ',nSbits,parseInt(nSbits)))
+        errfile.write('Trigger Counter Reset did not clear Trigger Counts!\n')
+        errfile.write('%s%s = %d\n' % ('Triggers: ',nSbits,parseInt(nSbits)))
+        if not QUICKTEST:
+            for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.CLUSTER'):
+                if 'r' in str(reg.permission):
+                    print displayReg(reg),'=',parseInt(str(readReg(reg)))
+            print '\n'
+            for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.DEBUG_LAST_CLUSTER'):
+                if 'r' in str(reg.permission):
+                    print displayReg(reg,'hexbin')
         return
     else: print 'Trigger Counts clear.'
-
+                      
 
 
     # LOOP
@@ -303,7 +333,7 @@ def scan_vfat(vfat_slot, outfile, errfile):
 
 
             subheading('Verifying...')
-            sleep(0.01)
+            sleep(0.1)
             # Read Number of SBits to verify reset
             nSbits = readReg(getNode('GEM_AMC.TRIGGER.OH'+str(OH_NUM)+'.TRIGGER_CNT'))
             try: parseInt(nSbits)
@@ -315,21 +345,23 @@ def scan_vfat(vfat_slot, outfile, errfile):
                 print Colors.RED
                 print 'Trigger Counter Reset did not clear Trigger Counts!',Colors.ENDC
                 print 'Triggers:',nSbits,'=',parseInt(nSbits),'\n'
-        
-                for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.CLUSTER'):
-                    if 'r' in str(reg.permission):
-                        print displayReg(reg),'=',parseInt(str(readReg(reg)))
-                print '\n'
-                for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.DEBUG_LAST_CLUSTER'):
-                    if 'r' in str(reg.permission):
-                        print displayReg(reg,'hexbin')
+                if not QUICKTEST:
+                    for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.CLUSTER'):
+                        if 'r' in str(reg.permission):
+                            print displayReg(reg),'=',parseInt(str(readReg(reg)))
+                    print '\n'
+                    for reg in getNodesContaining('TRIGGER.OH'+str(OH_NUM)+'.DEBUG_LAST_CLUSTER'):
+                        if 'r' in str(reg.permission):
+                            print displayReg(reg,'hexbin')
                 return
             else: print 'Trigger Counts clear.'
 
 
             subheading('Sending Calpulses')
             # Send CalPulses
-            print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TOGGLE'),0xffffffff)
+            T1On()
+                            
+
             sleep(0.1)
             # Verify Triggers
             nSbits = readReg(getNode('GEM_AMC.TRIGGER.OH'+str(OH_NUM)+'.TRIGGER_CNT'))
@@ -375,6 +407,30 @@ def scan_vfat(vfat_slot, outfile, errfile):
             outfile.write('%s%03d%s%s%s %s%s\n' % ('Strip',triggerAmounts[result][0],'\t','Expected:',NUM_PULSES,'Received:',triggerAmounts[result][1]))
         print '\n\n'
         outfile.write('\n\n')
+
+
+#Toggle T1 Controller to ON/OFF
+def T1Off():
+    prevent_infiteloop = 0
+    while parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))) != 0:
+        print 'MONITOR:',readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))
+        prevent_infiteloop += 1
+        print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TOGGLE'),0xffffffff)
+        if prevent_infiteloop > 10: 
+            printRed('T1Controller Error - Will not toggle T1Controller Monitor')
+            return False
+    return True
+def T1On():
+    prevent_infiteloop = 0
+    while parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))) != 1:
+        print 'MONITOR:',readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))
+        sleep(0.1)
+        prevent_infiteloop += 1
+        print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TOGGLE'),0xffffffff)
+        if prevent_infiteloop > 10: 
+            printRed('T1Controller Error - Will not toggle T1Controller Monitor')
+            return False
+    return True
 
 
 
