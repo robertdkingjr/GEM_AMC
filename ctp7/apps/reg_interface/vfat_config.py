@@ -102,8 +102,6 @@ def verifyTCReset(OH_NUM):
     except: return False, nSbits
 
     if parseInt(nSbits) != 0: #Hot channels?
-        print 'Trigger Counter Reset did not clear Trigger Counts!',Colors.ENDC
-        print 'Triggers:',nSbits,'=',parseInt(nSbits),'\n'
         return False, nSbits
 
     else: return True, 0

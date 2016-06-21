@@ -159,7 +159,7 @@ def scan_vfat(vfat_slot, outfile):
     if vfat_hexID == 0 or vfat_hexID == 0xdead:
         printRed('No VFAT detected at this slot! '+str(hex(vfat_hexID)))
         return
-    
+    print 'VFAT ID:',hex(vfat_hexID)
 
     # Mask VFATs
     heading('MASK VFATS')
