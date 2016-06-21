@@ -27,6 +27,7 @@ VCAL=190
 
 OUTPUT_FILE='./results.txt'
 
+INTERVAL = 10
 NUM_PULSES = 1
 
 class Colors:

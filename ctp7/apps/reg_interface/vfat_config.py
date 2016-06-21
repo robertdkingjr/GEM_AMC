@@ -81,7 +81,7 @@ def getVFATID(OH_NUM,vfat_slot):
     vfat_id2 = 0x000000ff & parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+str(vfat_slot)+'.ChipID0')))
     vfat_id = (vfat_id1 << 8) + vfat_id2
     if vfat_id == 0: return 0
-    return hex(vfat_id)
+    return vfat_id
     #except:
      #   return 0xdead
 
