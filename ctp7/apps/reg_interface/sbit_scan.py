@@ -61,7 +61,7 @@ def main():
         except:
             print 'Invalid input!'
             return
-        #scan_vfat(vfat_slot, f)
+        scan_vfat(vfat_slot, f)
         map_vfat_sbits(vfat_slot, f)
     f.close()
 
