@@ -1,5 +1,12 @@
 import xml.etree.ElementTree as xml
 import sys, os, subprocess
+from ctypes import *
+
+print 'Loading shared library: /mnt/persistent/texas/shared_libs/librwreg.so'
+lib = CDLL("/mnt/persistent/texas/shared_libs/librwreg.so")
+rReg = lib.getReg
+wReg = lib.putReg
+
 
 DEBUG = True
 ADDRESS_TABLE_TOP = '/mnt/persistent/texas/gem_amc_top.xml'
@@ -121,7 +128,8 @@ def getRegsContaining(nodeString):
 
 def readAddress(address):
     try: 
-        output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
+        #output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
+        output = rReg(address) 
         value = ''.join(s for s in output if s.isalnum())
     except subprocess.CalledProcessError as e: value = parseError(int(str(e)[-1:]))
     return '{0:#010x}'.format(parseInt(str(value)))
@@ -152,8 +160,9 @@ def readReg(reg):
         return 'No read permission!'
     # mpeek
     try: 
-        output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
-        value = ''.join(s for s in output if s.isalnum())
+        #output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
+        value = rReg(parseInt(address))
+        #value = ''.join(s for s in output if s.isalnum())
     except subprocess.CalledProcessError as e: return parseError(int(str(e)[-1:]))
     # Apply Mask
     if reg.mask is not None:
@@ -172,9 +181,10 @@ def displayReg(reg,option=None):
         return 'No read permission!'
     # mpeek
     try: 
-        output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
-        value = ''.join(s for s in output if s.isalnum())
-    except subprocess.CalledProcessError as e: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+parseError(int(str(e)[-1:]))
+        #output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
+        value = rReg(parseInt(address))
+        #value = ''.join(s for s in output if s.isalnum())
+    except: return "rReg error..."
     # Apply Mask
     if reg.mask is not None:
         shift_amount=0
@@ -213,7 +223,8 @@ def writeReg(reg, value):
     
     # mpoke
     try: 
-        output = subprocess.check_output('mpoke '+str(address)+' '+str(final_value), stderr=subprocess.STDOUT , shell=True)
+        #output = subprocess.check_output('mpoke '+str(address)+' '+str(final_value), stderr=subprocess.STDOUT , shell=True)
+        output = wReg(parseInt(address),parseint(final_value))
         return str('{0:#010x}'.format(final_value)).rstrip('L')+'('+str(value)+')\twritten to '+reg.name
     except subprocess.CalledProcessError as e: return parseError(int(str(e)[-1:]))
     
