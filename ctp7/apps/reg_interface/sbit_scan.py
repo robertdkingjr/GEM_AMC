@@ -4,6 +4,7 @@ from time import *
 
 QUICKTEST = True
 SINGLEVFAT = False
+V2ATEST = False
 
 NUM_STRIPS = 128
 NUM_PADS = 8
@@ -95,16 +96,21 @@ def map_vfat_sbits(vfat_slot, outfile, errfile):
 
 
     # Check for VFAT present
-
     vfat_hexID = getVFATID(OH_NUM,vfat_slot)
     if vfat_hexID == 0 or vfat_hexID == 0xdead:
         printRed('No VFAT detected at this slot! '+str(hex(vfat_hexID)))
         return
 
-    # Mask VFATs
-    heading('MASK VFATS')
-    unmaskVFAT(OH_NUM,vfat_slot)
+    # Clear all channels on all VFATs for V2A testing (no VFAT masking)
+    if V2ATEST:
+        print 'Clearing all channels on all VFATs'
+        clearAllVFATChannels(OH_NUM)
 
+    # Mask VFATs (masking not enabled in v2a FW)
+    if not V2ATEST:
+        heading('MASK VFATS')
+        unmaskVFAT(OH_NUM,vfat_slot)
+    
     # Set default VFAT values & Threshold,VCal,RunMode
     heading('SET VFAT SETTINGS')
     vfatWritten = setVFATRunMode(OH_NUM,vfat_slot)

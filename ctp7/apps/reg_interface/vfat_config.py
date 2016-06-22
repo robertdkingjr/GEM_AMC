@@ -128,9 +128,11 @@ def printClusters(OH_NUM):
         if 'r' in str(reg.permission):
             print displayReg(reg,'hexbin')
 
+
 def clearChannel(OH_NUM,vfat_slot,channel):
     writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+str(vfat_slot)+'.VFATChannels.ChanReg'+str(channel)),0)
 
+#TODO use Broadcast
 def clearAllChannels(OH_NUM,vfat_slot):
     for chan in range(1,129):
         clearChannel(OH_NUM,vfat_slot,chan)
