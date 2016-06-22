@@ -129,7 +129,7 @@ def map_vfat_sbits(vfat_slot, outfile, errfile):
     subheading('Starting Calpulses (nonstop)')
 
     # Begin CalPulsing
-    T1On()
+    T1On(OH_NUM)
          
 
    # try:
@@ -168,7 +168,7 @@ def map_vfat_sbits(vfat_slot, outfile, errfile):
         print writeReg(getNode(REG_PATH + 'VFATChannels.ChanReg' + str(strip)), 0)
     
     # Stop CalPulses
-    T1Off()
+    T1Off(OH_NUM)
  
 
 def scan_vfat(vfat_slot, outfile, errfile):
@@ -212,7 +212,7 @@ def scan_vfat(vfat_slot, outfile, errfile):
     if not isSet: return
 
     # Make sure T1 Controller is OFF
-    T1Off()
+    T1Off(OH_NUM)
     print 'T1 Monitor: ',readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))
     
 
@@ -264,7 +264,7 @@ def scan_vfat(vfat_slot, outfile, errfile):
 
             subheading('Sending Calpulses')
             # Send CalPulses
-            T1On()
+            print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TOGGLE'),0xffffffff)
                             
 
             sleep(0.1)
@@ -308,30 +308,6 @@ def scan_vfat(vfat_slot, outfile, errfile):
             outfile.write('%s%03d%s%s%s %s%s\n' % ('Strip',ScanResults[result][0],'\t','Expected:',NUM_PULSES,'Received:',ScanResults[result][1]))
         print '\n\n'
         outfile.write('\n\n')
-
-
-#Toggle T1 Controller to ON/OFF
-def T1Off():
-    prevent_infiteloop = 0
-    while parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))) != 0:
-        print 'MONITOR:',readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))
-        prevent_infiteloop += 1
-        print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TOGGLE'),0xffffffff)
-        if prevent_infiteloop > 10: 
-            printRed('T1Controller Error - Will not toggle T1Controller Monitor')
-            return False
-    return True
-def T1On():
-    prevent_infiteloop = 0
-    while parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))) != 1:
-        print 'MONITOR:',readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))
-        sleep(0.1)
-        prevent_infiteloop += 1
-        print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TOGGLE'),0xffffffff)
-        if prevent_infiteloop > 10: 
-            printRed('T1Controller Error - Will not toggle T1Controller Monitor')
-            return False
-    return True
 
 
 

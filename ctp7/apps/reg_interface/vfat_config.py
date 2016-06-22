@@ -142,3 +142,29 @@ def clearAllVFATChannels(OH_NUM):
 
 def activateChannel(OH_NUM,vfat_slot,channel):
     writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.GEB.VFATS.VFAT'+str(vfat_slot)+'.VFATChannels.ChanReg'+str(channel)),64)
+
+
+
+#Toggle T1 Controller to ON/OFF
+def T1Off(OH_NUM):
+    prevent_infiteloop = 0
+    while parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))) != 0:
+        print 'MONITOR:',readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))
+        prevent_infiteloop += 1
+        print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TOGGLE'),0xffffffff)
+        if prevent_infiteloop > 10: 
+            printRed('T1Controller Error - Will not toggle T1Controller Monitor')
+            return False
+    return True
+
+def T1On(OH_NUM):
+    prevent_infiteloop = 0
+    while parseInt(readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))) != 1:
+        print 'MONITOR:',readReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.MONITOR'))
+        prevent_infiteloop += 1
+        print writeReg(getNode('GEM_AMC.OH.OH'+str(OH_NUM)+'.T1Controller.TOGGLE'),0xffffffff)
+        if prevent_infiteloop > 10: 
+            printRed('T1Controller Error - Will not toggle T1Controller Monitor')
+            return False
+    return True
+
