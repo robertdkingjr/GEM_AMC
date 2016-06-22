@@ -95,8 +95,14 @@ architecture gem_amc_arch of gem_amc is
     signal sbit_clusters_arr        : t_oh_sbits_arr(g_NUM_OF_OHs - 1 downto 0);
     signal sbit_links_status_arr    : t_oh_sbit_links_arr(g_NUM_OF_OHs - 1 downto 0);
     
+    --== OH link status ==--
+    signal oh_link_status_arr       : t_oh_link_status_arr(g_NUM_OF_OHs - 1 downto 0);
+
     --== Other ==--
     signal ipb_miso_arr     : ipb_rbus_array(g_NUM_IPB_SLAVES - 1 downto 0) := (others => (ipb_rdata => (others => '0'), ipb_ack => '0', ipb_err => '0'));
+
+    signal debug_clk_reset  : std_logic;
+    signal debug_clk_cnt_arr: t_std32_array(g_NUM_OF_OHs - 1 downto 0);
 
 begin
 
@@ -148,11 +154,11 @@ begin
     -- Optohybrids  
     --================================--
     
-    i_optohybrids : for i in 0 to CFG_NUM_OF_OHs - 1 generate
+    i_optohybrids : for i in 0 to g_NUM_OF_OHs - 1 generate
 
         i_optohybrid_single : entity work.optohybrid
             generic map(
-                g_DEBUG         => "FALSE"
+                g_DEBUG         => "TRUE"
             )
             port map(
                 reset_i                 => reset,
@@ -170,10 +176,16 @@ begin
 
                 tk_data_link_o          => tk_data_links(i),
 
-                ipb_reset_i             => ipb_reset,
-                ipb_clk_i               => ipb_clk_i,
-                ipb_reg_miso_o          => ipb_miso_arr(C_IPB_SLV.oh_reg(i)),
-                ipb_reg_mosi_i          => ipb_mosi_arr_i(C_IPB_SLV.oh_reg(i))
+                oh_reg_ipb_reset_i      => ipb_reset,
+                oh_reg_ipb_clk_i        => ipb_clk_i,
+                oh_reg_ipb_reg_miso_o   => ipb_miso_arr(C_IPB_SLV.oh_reg(i)),
+                oh_reg_ipb_reg_mosi_i   => ipb_mosi_arr_i(C_IPB_SLV.oh_reg(i)),
+
+                link_status_o           => oh_link_status_arr(i),
+
+                debug_reset_cnt_i => debug_clk_reset,
+                debug_clk_cnt_o => debug_clk_cnt_arr(i)
+
             );    
     
     end generate;
@@ -200,7 +212,7 @@ begin
         );
 
     --================================--
-    -- Trigger  
+    -- DAQ  
     --================================--
 
     i_daq : entity work.daq
@@ -244,20 +256,21 @@ begin
     -- Counters --
     --==========--
 
---    ipbus_counters_inst : entity work.ipbus_counters
---        port map(
---            ipb_clk_i      => ipb_clk_i,
---            gtx_clk_i      => gtx_usr_clk,
---            ttc_clk_i      => ttc_clk,
---            reset_i        => reset_i,
---            ipb_mosi_i     => ipb_mosi_i(ipb_counters),
---            ipb_miso_o     => ipb_miso(ipb_counters),
---            ipb_i          => ipb_mosi_i,
---            ipb_o          => ipb_miso,
---            vfat2_t1_i     => vfat2_t1,
---            gtx_tk_error_i => gtx_tk_error,
---            gtx_tr_error_i => gtx_tr_error,
---            gtx_evt_rcvd_i => gtx_evt_rcvd
---        );
+    i_oh_link_registers : entity work.oh_link_regs
+        generic map(
+            g_NUM_OF_OHs => g_NUM_OF_OHs
+        )
+        port map(
+            reset_i              => reset,
+            clk_i                => ttc_clocks.clk_160,
+            oh_link_status_arr_i => oh_link_status_arr,
+            ipb_reset_i          => ipb_reset_i,
+            ipb_clk_i            => ipb_clk_i,
+            ipb_miso_o           => ipb_miso_arr(C_IPB_SLV.oh_links),
+            ipb_mosi_i           => ipb_mosi_arr_i(C_IPB_SLV.oh_links),
 
+            debug_clk_cnt_arr_i  => debug_clk_cnt_arr,
+            debug_clk_reset_o    => debug_clk_reset
+        );
+    
 end gem_amc_arch;

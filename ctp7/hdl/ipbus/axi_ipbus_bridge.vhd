@@ -149,7 +149,7 @@ architecture arch_imp of axi_ipbus_bridge is
 	---- IPBus
 	--------------------------------------------------
 
-  constant ipb_timeout      : unsigned(23 downto 0) := x"002710"; -- 10000 clock cycles (totally arbitrary.. if everything is fine, it takes about 60 clock cycles to complete the transaction)
+  constant ipb_timeout      : unsigned(23 downto 0) := x"027100"; -- 10000 clock cycles (totally arbitrary.. if everything is fine, it takes about 60 clock cycles to complete the transaction)
   signal ipb_clk            : std_logic;
   signal ipb_state          : t_axi_ipb_state;
   signal ipb_timer          : unsigned(23 downto 0) := (others => '0');

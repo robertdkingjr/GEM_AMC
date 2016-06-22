@@ -6,6 +6,8 @@ import textwrap as tw
 ADDRESS_TABLE_TOP = './address_table/gem_amc_top.xml'
 CONSTANTS_FILE = '../common/hdl/pkg/registers.vhd'
 BASH_STATUS_SCRIPT_FILE ='./ctp7_bash_scripts/generated/ctp7_status.sh'
+BASH_REG_READ_SCRIPT_FILE='./ctp7_bash_scripts/generated/reg_read.sh'
+UHAL_ADDRESS_TABLE_FILE='./address_table/uhal_gem_amc_address_table.xml'
 
 TOP_NODE_NAME = 'GEM_AMC'
 VHDL_REG_CONSTANT_PREFIX = 'REG_'
@@ -135,6 +137,8 @@ def main():
             updateModuleFile(module)
 
     writeStatusBashScript(modules, BASH_STATUS_SCRIPT_FILE)
+    writeRegReadBashScript(modules, BASH_REG_READ_SCRIPT_FILE)
+    writeUHalAddressTable(modules, UHAL_ADDRESS_TABLE_FILE)
 
 def findRegisters(node, baseName, baseAddress, modules, currentModule, vars, isGenerated):
     if (isGenerated == None or isGenerated == False) and node.get('generate') is not None and node.get('generate') == 'true':
@@ -427,7 +431,7 @@ def writeStatusBashScript(modules, filename):
     f.write('#!/bin/sh\n\n')
     f.write('MODULE=$1\n')
 
-    f.write('if [ -z "$INTERVAL" ]; then\n')
+    f.write('if [ -z "$MODULE" ]; then\n')
     f.write('    echo "Usage: this_script.sh <module_name>"\n')
     f.write('    echo "Available modules:"\n')
     for module in modules:
@@ -444,6 +448,61 @@ def writeStatusBashScript(modules, filename):
                 else:
                     f.write("    printf '" + reg.name.ljust(45) + " = 0x%x\\n' $(( (`mpeek " + hex(AXI_IPB_BASE_ADDRESS + ((module.baseAddress + reg.address) << 2)) + "` & " + hexPadded32(reg.mask) + ") >> " + str(reg.lsb) + " ))\n")
         f.write('fi\n\n')
+
+    f.close()
+
+def writeUHalAddressTable(modules, filename):
+    print('Writing uHAL address table XML')
+
+    top = xml.Element('node', {'id': 'top'})
+
+    for module in modules:
+        modNameSplit = module.name.split('.')
+        modNode = xml.SubElement(top, 'node')
+        modNode.set('id', modNameSplit[len(modNameSplit) - 1])
+        modNode.set('address', hexPadded32(module.baseAddress))
+        for reg in module.regs:
+            if (reg.mask is not None):
+                regNode = xml.SubElement(modNode, 'node')
+                regName = reg.name.replace(module.name + '.', '')
+                regNode.set('id', regName)
+                regNode.set('address', hexPadded32(reg.address))
+                regNode.set('permission', reg.permission)
+                regNode.set('mask', hexPadded32(reg.mask))
+
+    tree = xml.ElementTree(top)
+    tree.write(filename)
+    #xml.dump(top)
+
+
+# prints out bash script to read registers matching an expression
+def writeRegReadBashScript(modules, filename):
+    print('Writing CTP7 reg read bash script')
+
+    f = open(filename, 'w')
+
+    f.write('#!/bin/sh\n\n')
+    f.write('REQUEST=$1\n\n')
+    f.write('set -- ')
+
+    for module in modules:
+        for reg in module.regs:
+            if 'r' in reg.permission:
+                if reg.mask == 0xffffffff:
+                    f.write('\\\n    "' + reg.name + ":`mpeek " + hex(AXI_IPB_BASE_ADDRESS + ((module.baseAddress + reg.address) << 2)) + "`\"")
+#                    f.write('\\\n    "' + reg.name + ":`echo " + hex(AXI_IPB_BASE_ADDRESS + ((module.baseAddress + reg.address) << 2)) + "`\"")
+                else:
+                    f.write('\\\n    "' + reg.name + ":$(( (`mpeek " + hex(AXI_IPB_BASE_ADDRESS + ((module.baseAddress + reg.address) << 2)) + "` & " + hexPadded32(reg.mask) + ") >> " + str(reg.lsb) + " ))\"")
+#                    f.write('\\\n    "' + reg.name + ":`echo " + hex(AXI_IPB_BASE_ADDRESS + ((module.baseAddress + reg.address) << 2)) + "`\"")
+
+    f.write('\n\n')
+    f.write('for reg; do\n')
+    f.write('  KEY=${reg%%:*}\n')
+    f.write('  case $KEY in\n')
+    f.write("     *$REQUEST*) printf '%s            = 0x%x\\n' $KEY ${reg#*:};;\n")
+    f.write('  esac\n')
+    f.write('done\n')
+    f.close()
 
 # returns the number of required 32 bit registers for this module -- basically it counts the number of registers with different addresses
 def getNumRequiredRegs32(module):
