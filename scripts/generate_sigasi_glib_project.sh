@@ -17,7 +17,7 @@ mkdir $SIGASI_PRJ_DIR
 SCRIPTS_DIR=`pwd`
 cd $SIGASI_PRJ_DIR
 
-python $SIGASI_PRJ_CREATOR_DIR/convertXilinxISEToSigasiProject.py gem_glib $SCRIPTS_DIR/../glib/work_dir/gem_glib.xpr
+python $SIGASI_PRJ_CREATOR_DIR/convertXilinxISEToSigasiProject.py gem_glib $SCRIPTS_DIR/../glib/work_dir/gem_glib.xise
 
 #remove all IP files
 sed -i "/\/ip\//d" .library_mapping.xml
