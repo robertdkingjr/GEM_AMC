@@ -72,6 +72,12 @@ class Prompt(Cmd):
         for reg in getNodesContaining('STATUS.FW'):
             if 'r' in str(reg.permission): print hex(reg.real_address),reg.permission,'\t',tabPad(reg.name,4),readReg(reg)
 
+    def do_fw(self, args):
+        """Quick read of all FW-related registers"""
+        for reg in getNodesContaining('STATUS.FW'):
+            if 'r' in str(reg.permission): print hex(reg.real_address),reg.permission,'\t',tabPad(reg.name,4),readReg(reg)
+
+
     def do_readKW(self, args):
         """Read all registers containing KeyWord. USAGE: readKW <KeyWord>"""
         if getNodesContaining(args) is not None and args!='':
@@ -83,6 +89,17 @@ class Prompt(Cmd):
                 else: print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7) #,'No read permission!' 
         else: print args,'not found!'
 
+
+    def do_kw(self, args):
+        """Read all registers containing KeyWord. USAGE: readKW <KeyWord>"""
+        if getNodesContaining(args) is not None and args!='':
+            for reg in getNodesContaining(args):
+                address = reg.real_address
+                if 'r' in str(reg.permission):
+                    print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7),readReg(reg)
+                elif reg.isModule: print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7) #,'Module!'
+                else: print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7) #,'No read permission!' 
+        else: print args,'not found!'
 
 
     def do_readAll(self, args):
@@ -126,6 +143,12 @@ class Prompt(Cmd):
             print mpoke(arglist[0],arglist[1])
         else: print "Incorrect number of arguments!"
 
+    def do_debug(self,args):
+        """Quick read of SBit Clusters"""
+        for reg in getNodesContaining('OH'+args+'.DEBUG_LAST'):
+            if 'r' in str(reg.permission): print hex(reg.real_address),reg.permission,'\t',tabPad(reg.name,4),readReg(reg)
+
+    
 
 if __name__ == '__main__':
     try:
