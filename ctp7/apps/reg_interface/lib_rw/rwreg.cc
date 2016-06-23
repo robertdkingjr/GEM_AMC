@@ -18,6 +18,7 @@ DLLEXPORT unsigned int getReg(unsigned int address) {
   memsvc_handle_t memHandle;
   if(memsvc_open(&memHandle) != 0) {
     perror("Memory service connect failed");
+    printf("Error here, exiting to 1")
     exit(1);
   }
   unsigned int readBuffer;

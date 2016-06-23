@@ -161,9 +161,17 @@ def readReg(reg):
     # mpeek
     try: 
         #output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
+        print 'before'
         value = rReg(parseInt(address))
+        print 'after'
         #value = ''.join(s for s in output if s.isalnum())
-    except subprocess.CalledProcessError as e: return parseError(int(str(e)[-1:]))
+    except:
+        return 'Error of the Bus'
+
+    print 'DEBUG:',value
+    if str(value)=='Bus Error':
+        return 0xbeefdead
+        #return parseError(int(str(e)[-1:]))
     # Apply Mask
     if reg.mask is not None:
         shift_amount=0
@@ -224,7 +232,7 @@ def writeReg(reg, value):
     # mpoke
     try: 
         #output = subprocess.check_output('mpoke '+str(address)+' '+str(final_value), stderr=subprocess.STDOUT , shell=True)
-        output = wReg(parseInt(address),parseint(final_value))
+        output = wReg(parseInt(address),parseInt(final_value))
         return str('{0:#010x}'.format(final_value)).rstrip('L')+'('+str(value)+')\twritten to '+reg.name
     except subprocess.CalledProcessError as e: return parseError(int(str(e)[-1:]))
     
