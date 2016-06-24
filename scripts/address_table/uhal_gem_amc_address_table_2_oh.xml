@@ -764,7 +764,7 @@
           <node id="MONITOR" address="0x0000000e" permission="rw" mask="0x0000000f"/>
           <node id="RESET" address="0x0000000f" permission="rw" mask="0xffffffff"/>
         </node>
-        <node id="ADC" address="0x08000000" >
+        <node id="ADC" address="0x00008000" >
           <node id="ADC0" address="0x00000000" permission="r" />
           <node id="ADC1" address="0x00000001" permission="r" />
           <node id="ADC2" address="0x00000002" permission="r" />
@@ -782,7 +782,7 @@
           <node id="ADC14" address="0x0000000e" permission="r" />
           <node id="ADC15" address="0x0000000f" permission="r" />
         </node>
-        <node id="ScanController" address="0x02000000" >
+        <node id="ScanController" address="0x00002000" >
           <node id="THLAT" address="0x00000000" permission="rw" >
             <node id="START" address="0x00000000" permission="w" mask="0x00000001"/>
             <node id="MODE" address="0x00000001" permission="rw" mask="0x0000000f"/>
@@ -796,7 +796,7 @@
             <node id="MONITOR" address="0x00000009" permission="rw" mask="0x00000003"/>
             <node id="RESET" address="0x0000000a" permission="rw" mask="0xffffffff"/>
           </node>
-          <node id="DAC" address="0x02000000" permission="rw" >
+          <node id="DAC" address="0x00002000" permission="rw" >
             <node id="START" address="0x00000000" permission="w" mask="0x00000001"/>
             <node id="MODE" address="0x00000001" permission="rw" mask="0x0000000f"/>
             <node id="CHIP" address="0x00000002" permission="rw" mask="0x0000001f"/>
@@ -5140,7 +5140,7 @@
           <node id="MONITOR" address="0x0000000e" permission="rw" mask="0x0000000f"/>
           <node id="RESET" address="0x0000000f" permission="rw" mask="0xffffffff"/>
         </node>
-        <node id="ADC" address="0x08000000" >
+        <node id="ADC" address="0x00008000" >
           <node id="ADC0" address="0x00000000" permission="r" />
           <node id="ADC1" address="0x00000001" permission="r" />
           <node id="ADC2" address="0x00000002" permission="r" />
@@ -5158,7 +5158,7 @@
           <node id="ADC14" address="0x0000000e" permission="r" />
           <node id="ADC15" address="0x0000000f" permission="r" />
         </node>
-        <node id="ScanController" address="0x02000000" >
+        <node id="ScanController" address="0x00002000" >
           <node id="THLAT" address="0x00000000" permission="rw" >
             <node id="START" address="0x00000000" permission="w" mask="0x00000001"/>
             <node id="MODE" address="0x00000001" permission="rw" mask="0x0000000f"/>
@@ -5172,7 +5172,7 @@
             <node id="MONITOR" address="0x00000009" permission="rw" mask="0x00000003"/>
             <node id="RESET" address="0x0000000a" permission="rw" mask="0xffffffff"/>
           </node>
-          <node id="DAC" address="0x02000000" permission="rw" >
+          <node id="DAC" address="0x00002000" permission="rw" >
             <node id="START" address="0x00000000" permission="w" mask="0x00000001"/>
             <node id="MODE" address="0x00000001" permission="rw" mask="0x0000000f"/>
             <node id="CHIP" address="0x00000002" permission="rw" mask="0x0000001f"/>

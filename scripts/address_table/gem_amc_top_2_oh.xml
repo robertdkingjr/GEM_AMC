@@ -1201,7 +1201,7 @@
                 <node id="RESET"    address="0xF"  mask="0xffffffff"  permission="rw" description="T1 controller reset"/>
             </node> <!-- end of T1CONTROLLER -->
 
-            <node id="ADC"  address="0x8000000" description="ADC provided on the OptoHybrid">
+            <node id="ADC"  address="0x8000" description="ADC provided on the OptoHybrid">
                 <node id="ADC0"  address="0x0"  permission="r"
                       description="Returns the value from the ADC for channel 0"/>
                 <node id="ADC1"  address="0x1"  permission="r"
@@ -1236,7 +1236,7 @@
                       description="Returns the value from the ADC for channel 15"/>            
             </node>
 
-            <node id="ScanController"  address="0x2000000" description="Module to perform threshold and latency scans in the firmware">
+            <node id="ScanController"  address="0x2000" description="Module to perform threshold and latency scans in the firmware">
                 <node id="THLAT"  address="0x0000000"  permission="rw"
                       description="Control the onboard threshold/latency scan routine">
                   <node id="START"  address="0x0"  mask="0x1"  permission="w"
@@ -1283,7 +1283,7 @@
                         description="Local reset of the module"/>
                 </node>
 
-                <node id="DAC"    address="0x2000000"  permission="rw"
+                <node id="DAC"    address="0x2000"  permission="rw"
                       description="Control the onboard DAC scan routine">
                   <node id="START"    address="0x0"  mask="0x1"  permission="w"
                         description="Start the specified scan routine
