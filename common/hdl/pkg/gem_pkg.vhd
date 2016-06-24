@@ -139,6 +139,8 @@ package gem_pkg is
     type t_daqlink_to_daq is record
         ready           : std_logic;
         almost_full     : std_logic;
+        disperr_cnt     : std_logic_vector(15 downto 0);
+        notintable_cnt  : std_logic_vector(15 downto 0);
     end record;
 
     --====================--

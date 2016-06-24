@@ -345,6 +345,7 @@ begin
         )
         port map(
             reset_i                 => '0',
+            reset_pwrup_o           => open,
             
             clk_40_ttc_p_i          => clk_40_ttc_p_i,
             clk_40_ttc_n_i          => clk_40_ttc_n_i,

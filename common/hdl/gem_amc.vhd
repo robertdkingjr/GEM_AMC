@@ -33,6 +33,7 @@ entity gem_amc is
     );
     port(
         reset_i                 : in   std_logic;
+        reset_pwrup_o           : out  std_logic;
 
         -- TTC
         clk_40_ttc_p_i          : in  std_logic;      -- TTC backplane clock signals
@@ -190,6 +191,7 @@ begin
     -- Power-on reset  
     --================================--
     
+    reset_pwrup_o <= reset_pwrup;
     reset <= reset_i or reset_pwrup; -- TODO: Add a global reset from IPbus
     ipb_reset <= ipb_reset_i or reset_pwrup;
     ttc_clocks_o <= ttc_clocks; 

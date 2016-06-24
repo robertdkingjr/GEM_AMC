@@ -24,7 +24,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
 
-use work.gth_pkg.all;
+--use work.gth_pkg.all;
 use work.ttc_pkg.all;
 use work.gem_pkg.all;
 use work.ipbus.all;

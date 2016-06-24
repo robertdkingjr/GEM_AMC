@@ -314,7 +314,9 @@ begin
 
     daq_ready <= daqlink_to_daq_i.ready;
     daq_almost_full <= daqlink_to_daq_i.almost_full;
-
+    daq_disper_err_cnt <= daqlink_to_daq_i.disperr_cnt;
+    daq_notintable_err_cnt <= daqlink_to_daq_i.notintable_cnt;
+    
     --================================--
     -- Resets
     --================================--
