@@ -167,9 +167,11 @@ def readReg(reg):
         #value = ''.join(s for s in output if s.isalnum())
     except:
         return 'Error of the Bus'
+    finally:
+        print 'Made it here.'
 
     print 'DEBUG:',value
-    if str(value)=='Bus Error':
+    if str(value)=='Bus error':
         return 0xbeefdead
         #return parseError(int(str(e)[-1:]))
     # Apply Mask
@@ -264,7 +266,7 @@ def parseError(e):
     if e==1:
         return "Failed to parse address"
     if e==2:
-        return "Bus error"
+        return "My Bus error"
     else:
         return "Unknown error: "+str(e)
 
