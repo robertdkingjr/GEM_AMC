@@ -245,7 +245,8 @@ architecture user_logic_arch of user_logic is
             
     -------------------------- IPBus --------------------------    
     
-    signal ipb_miso             : ipb_rbus_array(0 to number_of_ipb_slaves - 1);
+    signal ipb_miso             : ipb_rbus_array(number_of_ipb_slaves - 1 downto 0);
+    signal ipb_mosi             : ipb_wbus_array(number_of_ipb_slaves - 1 downto 0);
     
 begin
     
@@ -255,8 +256,6 @@ begin
 
     ip_addr_o <= x"c0a800a" & amc_slot_i;  -- 192.168.0.[160:175]
     mac_addr_o <= x"080030F100a" & amc_slot_i;  -- 08:00:30:F1:00:0[A0:AF] 
-    
-    ipb_miso_o <= ipb_miso;
     
     --=========--
     --== GTX ==--
@@ -310,6 +309,7 @@ begin
             ERR_DISPER_COUNT       => daqlink_to_daq.disperr_cnt,
             ERR_NOT_IN_TABLE_COUNT => daqlink_to_daq.notintable_cnt,
             BC0_IN                 => daq_to_daqlink.ttc_bc0,
+            RESYNC_IN              => '0', -- TODO to be implemented
             CLK125_IN              => user_clk125_i
         );
     
@@ -370,8 +370,8 @@ begin
             
             ipb_reset_i            => reset_i,
             ipb_clk_i              => ipb_clk_i,
-            ipb_miso_arr_o         => ipb_miso_o,
-            ipb_mosi_arr_i         => ipb_mosi_i,
+            ipb_miso_arr_o         => ipb_miso,
+            ipb_mosi_arr_i         => ipb_mosi,
             
             led_l1a_o              => user_v6_led_o(2),
             led_trigger_o          => user_v6_led_o(1),
@@ -409,5 +409,14 @@ begin
         gt_gbt_tx2_clk_arr(i)    <= '0';
 
     end generate; 
+
+    --===================--
+    --== IPBus mapping ==--
+    --===================--
+    g_ipb_map : for i in 0 to number_of_ipb_slaves - 1 generate
+        ipb_miso_o(i) <= ipb_miso(i);
+        ipb_mosi(i)   <= ipb_mosi_i(i);
+    end generate;
+
               
 end user_logic_arch;

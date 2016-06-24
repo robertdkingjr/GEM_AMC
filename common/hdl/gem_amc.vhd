@@ -504,21 +504,21 @@ begin
         gbt_rx_word_clk_ready <= (others => '1');
         gbt_mgt_rx_ready_arr <= (others => '1');
     
-        i_ila_gbt : component ila_gbt
-            port map(
-                clk     => ttc_clocks.clk_40,
-                probe0  => gbt_tx_data_arr(0),
-                probe1  => gbt_rx_data_arr(0),
-                probe2  => gbt_tx_gearbox_aligned_arr(0 downto 0),
-                probe3  => gbt_tx_gearbox_align_done_arr(0 downto 0),
-                probe4  => gbt_rx_frame_clk_ready(0 downto 0),
-                probe5  => gbt_rx_word_clk_ready(0 downto 0),
-                probe6  => gbt_rx_ready(0 downto 0),
-                probe7  => gbt_rx_header(0 downto 0),
-                probe8  => gbt_rx_header_locked(0 downto 0),
-                probe9  => gbt_rx_valid_arr(0 downto 0),
-                probe10 => gbt_rx_bitslip_nbr(0)
-            );
+--        i_ila_gbt : component ila_gbt
+--            port map(
+--                clk     => ttc_clocks.clk_40,
+--                probe0  => gbt_tx_data_arr(0),
+--                probe1  => gbt_rx_data_arr(0),
+--                probe2  => gbt_tx_gearbox_aligned_arr(0 downto 0),
+--                probe3  => gbt_tx_gearbox_align_done_arr(0 downto 0),
+--                probe4  => gbt_rx_frame_clk_ready(0 downto 0),
+--                probe5  => gbt_rx_word_clk_ready(0 downto 0),
+--                probe6  => gbt_rx_ready(0 downto 0),
+--                probe7  => gbt_rx_header(0 downto 0),
+--                probe8  => gbt_rx_header_locked(0 downto 0),
+--                probe9  => gbt_rx_valid_arr(0 downto 0),
+--                probe10 => gbt_rx_bitslip_nbr(0)
+--            );
         
     end generate g_gbt;
           
