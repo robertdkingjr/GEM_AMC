@@ -1103,7 +1103,7 @@
                   
                   <node id="OUTPUT"  address="0x5"  permission="rw"
                     description="Control on the OptoHybrid related to the SBits sent out">
-                    <node id="SBits"  address="0x0"  permission="rw"
+                    <node id="SBITS"  address="0x0"  permission="rw"
                           description="Select the SBit sources to send out (30 bits, maximum 6 may be set high)"/>
                   </node>
                   

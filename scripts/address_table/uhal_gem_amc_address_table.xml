@@ -934,7 +934,7 @@
             <node id="REF_CLK" address="0x00000000" permission="rw" mask="0x00000003"/>
           </node>
           <node id="OUTPUT" address="0x00000005" permission="rw" >
-            <node id="SBits" address="0x00000000" permission="rw" />
+            <node id="SBITS" address="0x00000000" permission="rw" />
           </node>
           <node id="THROTTLE" address="0x00000006" permission="rw" mask="0xffffffff"/>
           <node id="ZS" address="0x00000007" permission="rw" mask="0x00000001"/>
@@ -5310,7 +5310,7 @@
             <node id="REF_CLK" address="0x00000000" permission="rw" mask="0x00000003"/>
           </node>
           <node id="OUTPUT" address="0x00000005" permission="rw" >
-            <node id="SBits" address="0x00000000" permission="rw" />
+            <node id="SBITS" address="0x00000000" permission="rw" />
           </node>
           <node id="THROTTLE" address="0x00000006" permission="rw" mask="0xffffffff"/>
           <node id="ZS" address="0x00000007" permission="rw" mask="0x00000001"/>
@@ -9686,7 +9686,7 @@
             <node id="REF_CLK" address="0x00000000" permission="rw" mask="0x00000003"/>
           </node>
           <node id="OUTPUT" address="0x00000005" permission="rw" >
-            <node id="SBits" address="0x00000000" permission="rw" />
+            <node id="SBITS" address="0x00000000" permission="rw" />
           </node>
           <node id="THROTTLE" address="0x00000006" permission="rw" mask="0xffffffff"/>
           <node id="ZS" address="0x00000007" permission="rw" mask="0x00000001"/>
@@ -14062,7 +14062,7 @@
             <node id="REF_CLK" address="0x00000000" permission="rw" mask="0x00000003"/>
           </node>
           <node id="OUTPUT" address="0x00000005" permission="rw" >
-            <node id="SBits" address="0x00000000" permission="rw" />
+            <node id="SBITS" address="0x00000000" permission="rw" />
           </node>
           <node id="THROTTLE" address="0x00000006" permission="rw" mask="0xffffffff"/>
           <node id="ZS" address="0x00000007" permission="rw" mask="0x00000001"/>
