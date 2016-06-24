@@ -2,8 +2,9 @@ __author__ = 'evka'
 
 import xml.etree.ElementTree as xml
 import textwrap as tw
+import rw_reg
 
-ADDRESS_TABLE_TOP = './address_table/gem_amc_top.xml'
+ADDRESS_TABLE_TOP = './address_table/gem_amc_top_2_oh.xml'
 CONSTANTS_FILE = '../common/hdl/pkg/registers.vhd'
 BASH_STATUS_SCRIPT_FILE ='./ctp7_bash_scripts/generated/ctp7_status.sh'
 BASH_REG_READ_SCRIPT_FILE='./ctp7_bash_scripts/generated/reg_read.sh'
@@ -454,26 +455,40 @@ def writeStatusBashScript(modules, filename):
 def writeUHalAddressTable(modules, filename):
     print('Writing uHAL address table XML')
 
-    top = xml.Element('node', {'id': 'top'})
+    rw_reg.parseXML(ADDRESS_TABLE_TOP)
+    top = rw_reg.getNode('GEM_AMC')
+    f = open(filename, 'w')
+    f.write('<?xml version="1.0" encoding="ISO-8859-1"?>\n')
+    f.write('<node id="top">\n')
+    printNodeToUHALFile(top, f, 1, 0, None)
+    f.write('</node>\n')
+    f.close()
 
-    for module in modules:
-        modNameSplit = module.name.split('.')
-        modNode = xml.SubElement(top, 'node')
-        modNode.set('id', modNameSplit[len(modNameSplit) - 1])
-        modNode.set('address', hexPadded32(module.baseAddress))
-        for reg in module.regs:
-            if (reg.mask is not None):
-                regNode = xml.SubElement(modNode, 'node')
-                regName = reg.name.replace(module.name + '.', '')
-                regNode.set('id', regName)
-                regNode.set('address', hexPadded32(reg.address))
-                regNode.set('permission', reg.permission)
-                regNode.set('mask', hexPadded32(reg.mask))
+def printNodeToUHALFile(node, file, level, baseAddress, baseName):
+    for i in range(level):
+        file.write('  ')
+    name = node.name
+    if baseName is not None:
+        name = name.replace(baseName + ".", "")
+    file.write('<node id="%s" ' % name)
+    if node.address is not None:
+        file.write('address="%s" ' % hexPadded32(node.address - baseAddress))
+    if node.permission is not None:
+        file.write('permission="%s" ' % node.permission)
+    if node.mask is not None:
+        file.write('mask="%s"' % hexPadded32(node.mask))
+    if node.mode is not None:
+        file.write('mode="%s"' % node.mode)
 
-    tree = xml.ElementTree(top)
-    tree.write(filename)
-    #xml.dump(top)
-
+    if len(node.children) > 0:
+        file.write('>\n')
+        for child in node.children:
+            printNodeToUHALFile(child, file, level + 1, node.address, node.name)
+        for i in range(level):
+            file.write('  ')
+        file.write('</node>\n')
+    else:
+        file.write('/>\n')
 
 # prints out bash script to read registers matching an expression
 def writeRegReadBashScript(modules, filename):
