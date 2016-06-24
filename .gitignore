@@ -14,7 +14,10 @@
 /glib/ip/*
 !*.xcix
 !*.xci
-!*.xco
+!glib/ip/*.xco
+!glib/ip/*.cgp
+!glib/ip/*.vhd
+!glib/ip/*.ngc
 
 zamiacad
 sigasi

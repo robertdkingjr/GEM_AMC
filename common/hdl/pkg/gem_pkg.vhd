@@ -10,10 +10,10 @@ package gem_pkg is
     --==  Firmware version  ==--
     --========================-- 
 
-    constant C_FIRMWARE_DATE    : std_logic_vector(31 downto 0) := x"20160526";
+    constant C_FIRMWARE_DATE    : std_logic_vector(31 downto 0) := x"20160623";
     constant C_FIRMWARE_MAJOR   : integer range 0 to 255        := 1;
-    constant C_FIRMWARE_MINOR   : integer range 0 to 255        := 3;
-    constant C_FIRMWARE_BUILD   : integer range 0 to 255        := 7;
+    constant C_FIRMWARE_MINOR   : integer range 0 to 255        := 4;
+    constant C_FIRMWARE_BUILD   : integer range 0 to 255        := 0;
 
     --======================--
     --==      General     ==--
@@ -139,6 +139,8 @@ package gem_pkg is
     type t_daqlink_to_daq is record
         ready           : std_logic;
         almost_full     : std_logic;
+        disperr_cnt     : std_logic_vector(15 downto 0);
+        notintable_cnt  : std_logic_vector(15 downto 0);
     end record;
 
     --====================--

@@ -17,6 +17,10 @@ use work.ipbus.all;
 use work.user_package.all;
 use work.user_version_package.all;
 
+--! GEM packages
+use work.gem_pkg.all;
+use work.gem_board_config_package.all;
+
 entity user_logic is
 port(
     --================================--
@@ -201,42 +205,48 @@ end user_logic;
                             
 architecture user_logic_arch of user_logic is        
 
-    --== GTX signals ==--
-    
-    signal gtx_usr_clk      : std_logic;
-    signal gtx_tk_error     : std_logic_vector(1 downto 0);
-    signal gtx_tr_error     : std_logic_vector(1 downto 0);
-    signal gtx_evt_rcvd     : std_logic_vector(1 downto 0);
-    signal rx_polarity      : std_logic_vector(3 downto 0);
-    signal tx_polarity      : std_logic_vector(3 downto 0);
+    signal reset_pwrup          : std_logic;
 
-    --== TTC signals ==--
+    -------------------------- GTH ---------------------------------
+    signal clk_gtx_tx_arr       : std_logic_vector(g_NUM_OF_GTX - 1 downto 0);
+    signal clk_gtx_rx_arr       : std_logic_vector(g_NUM_OF_GTX - 1 downto 0);
+    signal gtx_tx_data_arr      : t_gt_8b10b_tx_data_arr(g_NUM_OF_GTX - 1 downto 0);
+    signal gtx_rx_data_arr      : t_gt_8b10b_rx_data_arr(g_NUM_OF_GTX - 1 downto 0);
 
-    signal ttc_ready    : std_logic;
-    signal ttc_clk      : std_logic;
-    signal ttc_l1a      : std_logic;
-    signal ttc_bc0      : std_logic;
-    signal ttc_ec0      : std_logic;
-    signal ttc_calpulse : std_logic;
-    signal ttc_resync   : std_logic;
+    signal gtx_common_clk       : std_logic;
+
+    -------------------- GTHs mapped to GEM links ---------------------------------
     
-    signal ttc_bx_id    : std_logic_vector(11 downto 0);
-    signal ttc_orbit_id : std_logic_vector(15 downto 0);
-    signal ttc_l1a_id   : std_logic_vector(23 downto 0);
+    -- 8b10b DAQ + Control GTX / GTH links (3.2Gbs, 16bit @ 160MHz w/ 8b10b encoding)
+    signal gem_gt_8b10b_rx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_8b10b_tx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_8b10b_rx_data_arr : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_8b10b_tx_data_arr : t_gt_8b10b_tx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
+
+    -- Trigger RX GTX / GTH links (3.2Gbs, 16bit @ 160MHz w/ 8b10b encoding)
+    signal gem_gt_trig0_rx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_trig0_rx_data_arr : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_trig1_rx_clk_arr  : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_trig1_rx_data_arr : t_gt_8b10b_rx_data_arr(CFG_NUM_OF_OHs - 1 downto 0);
     
-    signal vfat2_t1     : t1_t;
+    -- GBT GTX/GTH links (4.8Gbs, 40bit @ 120MHz w/o 8b10b encoding)
+    signal gem_gt_gbt_rx_links_arr  : t_gbt_mgt_rx_links_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gem_gt_gbt_tx_links_arr  : t_gbt_mgt_tx_links_arr(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gth_gbt_common_rxusrclk  : std_logic;
+    signal gt_gbt_tx0_clk_arr       : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gt_gbt_tx1_clk_arr       : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+    signal gt_gbt_tx2_clk_arr       : std_logic_vector(CFG_NUM_OF_OHs - 1 downto 0);
+        
+    -------------------------- DAQLink ---------------------------------
+    signal daq_clk_bufg         : std_logic;
+    signal daq_clk_locked       : std_logic;
+    signal daq_to_daqlink       : t_daq_to_daqlink;
+    signal daqlink_to_daq       : t_daqlink_to_daq;
+            
+    -------------------------- IPBus --------------------------    
     
-    --== IPBus buffer for counting ==--    
-    
-    signal ipb_miso     : ipb_rbus_array(0 to number_of_ipb_slaves - 1);
-    
-    --== DAQ signals ==--    
-    
-    signal tk_data_links        : data_link_array_t(0 to number_of_optohybrids - 1);
-    signal trig_data_links      : trig_link_array_t(0 to number_of_optohybrids - 1);
-    
-    signal sbit_rate            : unsigned(31 downto 0) := (others => '0');
-    signal sbit_count           : unsigned(31 downto 0) := (others => '0');
+    signal ipb_miso             : ipb_rbus_array(number_of_ipb_slaves - 1 downto 0);
+    signal ipb_mosi             : ipb_wbus_array(number_of_ipb_slaves - 1 downto 0);
     
 begin
     
@@ -247,214 +257,166 @@ begin
     ip_addr_o <= x"c0a800a" & amc_slot_i;  -- 192.168.0.[160:175]
     mac_addr_o <= x"080030F100a" & amc_slot_i;  -- 08:00:30:F1:00:0[A0:AF] 
     
-    --ip_addr_o <= x"898A73B9"; -- 137.138.115.185
-    --mac_addr_o <= x"080030F100A1"; -- 08:00:30:F1:00:A1 
-
-    
---    ipb_miso_o <= ipb_miso;
-    
     --=========--
     --== GTX ==--
     --=========--
     
---	gtx_inst : entity work.gtx 
---    port map(
---		mgt_refclk_n_i  => cdce_out1_n,
---		mgt_refclk_p_i  => cdce_out1_p,
---        ipb_clk_i       => ipb_clk_i,
---		reset_i         => reset_i,
---        gtx_ipb_mosi_i  => ipb_mosi_i(ipb_gtx_forward_0 to ipb_gtx_forward_1),
---        gtx_ipb_miso_o  => ipb_miso(ipb_gtx_forward_0 to ipb_gtx_forward_1), 
---        evt_ipb_mosi_i  => ipb_mosi_i(ipb_evt_data_0 to ipb_evt_data_1),
---        evt_ipb_miso_o  => ipb_miso(ipb_evt_data_0 to ipb_evt_data_1), 
---        gtx_usr_clk_o   => gtx_usr_clk,
---        tk_error_o      => gtx_tk_error,
---        tr_error_o      => gtx_tr_error,
---        evt_rcvd_o      => gtx_evt_rcvd,
---        vfat2_t1_i      => vfat2_t1,
---		rx_n_i          => sfp_rx_n(1 to 4),
---		rx_p_i          => sfp_rx_p(1 to 4),
---		tx_n_o          => sfp_tx_n(1 to 4),
---		tx_p_o          => sfp_tx_p(1 to 4),
---        tk_data_links_o => tk_data_links,
---        trig_data_links_o => trig_data_links,
---        rx_polarity_i   => rx_polarity,
---        tx_polarity_i   => tx_polarity
---	);
+    i_gtx : entity work.gtx_wrapper
+        port map(
+            mgt_refclk_n_i => cdce_out1_n,
+            mgt_refclk_p_i => cdce_out1_p,
+            ref_clk_i      => ipb_clk_i,
+            reset_i        => reset_i,
+            usr_clk_o      => gtx_common_clk,
+            tx_data_i      => gtx_tx_data_arr(3 downto 0),
+            rx_data_o      => gtx_rx_data_arr(3 downto 0),
+            rx_n_i         => sfp_rx_n(1 to 4),
+            rx_p_i         => sfp_rx_p(1 to 4),
+            tx_n_o         => sfp_tx_n(1 to 4),
+            tx_p_o         => sfp_tx_p(1 to 4),
+            rx_polarity_i  => (others => '0'), --TODO: hook up RX polarity switch
+            tx_polarity_i  => (others => '0')  --TODO: hook up TX polarity switch
+        );
+
+    -- TODO: remove this hack once we start using GTXs with no buffers
+    g_gtx_common_clk : for i in 0 to g_NUM_OF_GTX - 1 generate
+        clk_gtx_tx_arr(i) <= gtx_common_clk;
+        clk_gtx_rx_arr(i) <= gtx_common_clk;
+    end generate;
+
+    --=============--
+    --== DAQLink ==--
+    --=============--
     
-    --================================--
-    -- TTC signal handling 	
-    --================================--
+    i_daqlink : entity work.daqlink_wrapper
+        port map(
+            RESET_IN               => reset_pwrup,
+            MGT_REF_CLK_IN         => clk125_2_i,
+            GTX_TXN_OUT            => amc_port_tx_n(1),
+            GTX_TXP_OUT            => amc_port_tx_p(1),
+            GTX_RXN_IN             => amc_port_rx_n(1),
+            GTX_RXP_IN             => amc_port_rx_p(1),
+            DATA_CLK_IN            => daq_clk_bufg,
+            EVENT_DATA_IN          => daq_to_daqlink.event_data,
+            EVENT_DATA_HEADER_IN   => daq_to_daqlink.event_header,
+            EVENT_DATA_TRAILER_IN  => daq_to_daqlink.event_trailer,
+            DATA_WRITE_EN_IN       => daq_to_daqlink.event_valid,
+            READY_OUT              => daqlink_to_daq.ready,
+            ALMOST_FULL_OUT        => daqlink_to_daq.almost_full,
+            TTS_CLK_IN             => daq_to_daqlink.tts_clk,
+            TTS_STATE_IN           => daq_to_daqlink.tts_state,
+            GTX_CLK_OUT            => open,
+            ERR_DISPER_COUNT       => daqlink_to_daq.disperr_cnt,
+            ERR_NOT_IN_TABLE_COUNT => daqlink_to_daq.notintable_cnt,
+            BC0_IN                 => daq_to_daqlink.ttc_bc0,
+            RESYNC_IN              => '0', -- TODO to be implemented
+            CLK125_IN              => user_clk125_i
+        );
     
---    ttc_inst : entity work.ttc_wrapper
---    port map(
---        reset_i         => reset_i,
---        ref_clk_i       => user_clk125_i,
---        ttc_clk_p_i     => xpoint1_clk3_p,
---        ttc_clk_n_i     => xpoint1_clk3_n,
---        ttc_data_p_i    => amc_port_rx_p(3),
---        ttc_data_n_i    => amc_port_rx_n(3),
---        ttc_clk_o       => ttc_clk,
---        ttc_ready_o     => ttc_ready,
---        l1a_o           => ttc_l1a,
---        bc0_o           => ttc_bc0,
---        ec0_o           => ttc_ec0,
---        oc0_o           => open,
---        calpulse_o      => ttc_calpulse,
---        start_o         => open,
---        stop_o          => open,
---        resync_o        => ttc_resync,
---        hard_reset_o    => open,
---        single_err_o    => open,
---        double_err_o    => open,
---        led_l1a_o       => user_v6_led_o(2),
---        led_clk_bc0_o   => open, --user_v6_led_o(1),
---        bx_id_o         => ttc_bx_id,
---        orbit_id_o      => ttc_orbit_id,
---        l1a_id_o        => ttc_l1a_id,
---
---        -- IPbus
---        ipb_clk_i       => ipb_clk_i,
---        ipb_mosi_i      => ipb_mosi_i(ipb_ttc),
---        ipb_miso_o      => ipb_miso(ipb_ttc)
---        
---    );    
-    
---    vfat2_t1.lv1a <= ttc_l1a;
---    --vfat2_t1.resync <= ttc_resync;
---    vfat2_t1.bc0 <= ttc_bc0;
---    vfat2_t1.calpulse <= ttc_calpulse;
---    
---    fpga_clkout_o <= ttc_clk;
+    daq_clocks : entity work.daq_clocks
+        port map
+        (
+            CLK_IN1            => user_clk125_i,
+            CLK_OUT1           => daq_clk_bufg, -- 25MHz
+            CLK_OUT2           => open, -- 250MHz, not used
+            RESET              => reset_i,
+            LOCKED             => daq_clk_locked
+        );
+
+    --===================--
+    --== GEM AMC Logic ==--
+    --===================--
+          
+    i_gem_amc : entity work.gem_amc
+        generic map(
+            g_NUM_OF_OHs     => CFG_NUM_OF_OHs,
+            g_USE_GBT        => CFG_USE_GBT,
+            g_USE_3x_GBTs    => CFG_USE_3x_GBTs,
+            g_USE_TRIG_LINKS => CFG_USE_TRIG_LINKS,
+            g_NUM_IPB_SLAVES => number_of_ipb_slaves,
+            g_DAQ_CLK_FREQ   => 25_000_000
+        )
+        port map(
+            -- Resets
+            reset_i                => reset_i,
+            reset_pwrup_o          => reset_pwrup,
+            
+            -- TTC
+            clk_40_ttc_p_i         => xpoint1_clk3_p,
+            clk_40_ttc_n_i         => xpoint1_clk3_n,
+            ttc_data_p_i           => amc_port_rx_p(3),
+            ttc_data_n_i           => amc_port_rx_n(3),
+            ttc_clocks_o           => open,
+            
+            -- 8b10b links
+            gt_8b10b_rx_clk_arr_i  => gem_gt_8b10b_rx_clk_arr,
+            gt_8b10b_tx_clk_arr_i  => gem_gt_8b10b_tx_clk_arr,
+            gt_8b10b_rx_data_arr_i => gem_gt_8b10b_rx_data_arr,
+            gt_8b10b_tx_data_arr_o => gem_gt_8b10b_tx_data_arr,
+            
+            -- Trigger links
+            gt_trig0_rx_clk_arr_i  => gem_gt_trig0_rx_clk_arr,
+            gt_trig0_rx_data_arr_i => gem_gt_trig0_rx_data_arr,
+            gt_trig1_rx_clk_arr_i  => gem_gt_trig1_rx_clk_arr,
+            gt_trig1_rx_data_arr_i => gem_gt_trig1_rx_data_arr,
+            
+            -- GBT (not used right now, need GBT MGTs)
+            gt_gbt_rx_common_clk_i => '0',
+            gt_gbt_rx_links_arr_i  => gem_gt_gbt_rx_links_arr,
+            gt_gbt_tx_links_arr_o  => gem_gt_gbt_tx_links_arr,
+            gt_gbt_tx0_clk_arr_i   => gt_gbt_tx0_clk_arr,
+            gt_gbt_tx1_clk_arr_i   => gt_gbt_tx1_clk_arr,
+            gt_gbt_tx2_clk_arr_i   => gt_gbt_tx2_clk_arr,
+            
+            ipb_reset_i            => reset_i,
+            ipb_clk_i              => ipb_clk_i,
+            ipb_miso_arr_o         => ipb_miso,
+            ipb_mosi_arr_i         => ipb_mosi,
+            
+            led_l1a_o              => user_v6_led_o(2),
+            led_trigger_o          => user_v6_led_o(1),
+            
+            daq_data_clk_i         => daq_clk_bufg,
+            daq_data_clk_locked_i  => daq_clk_locked,
+            daq_to_daqlink_o       => daq_to_daqlink,
+            daqlink_to_daq_i       => daqlink_to_daq,
+            board_id_i             => x"00" & sn
+        );
+         
+    -- GTH mapping to GEM links
+    g_gem_links : for i in 0 to CFG_NUM_OF_OHs - 1 generate
+        gem_gt_8b10b_rx_clk_arr(i)  <= clk_gtx_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).track_8b10b_link);
+        gem_gt_8b10b_tx_clk_arr(i)  <= clk_gtx_tx_arr(CFG_OH_LINK_CONFIG_ARR(i).track_8b10b_link);
+        gem_gt_8b10b_rx_data_arr(i) <= gtx_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).track_8b10b_link);
+        gtx_tx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).track_8b10b_link) <= gem_gt_8b10b_tx_data_arr(i);
         
-    --==========--
-    --    DAQ   --
-    --==========--
-    
---    daq : entity work.daq
---    port map
---    (
---        -- Reset
---        reset_i                     => reset_i,
---        resync_i                    => ttc_resync,
---        
---        -- Clocks
---        mgt_ref_clk125_i            => clk125_2_i,
---        clk125_i                    => user_clk125_i,
---        ipb_clk_i                   => ipb_clk_i,
---
---        -- Pins
---        daq_gtx_tx_pin_p            => amc_port_tx_p(1),
---        daq_gtx_tx_pin_n            => amc_port_tx_n(1),
---        daq_gtx_rx_pin_p            => amc_port_rx_p(1),
---        daq_gtx_rx_pin_n            => amc_port_rx_n(1),
---
---        -- TTC
---        ttc_ready_i                 => ttc_ready,
---        ttc_clk_i                   => ttc_clk,
---        ttc_l1a_i                   => ttc_l1a,
---        ttc_bc0_i                   => ttc_bc0,
---        ttc_ec0_i                   => ttc_ec0,
---        ttc_bx_id_i                 => ttc_bx_id,
---        ttc_orbit_id_i              => ttc_orbit_id,
---        ttc_l1a_id_i                => ttc_l1a_id,
---
---        -- Track data
---        tk_data_links_i             => tk_data_links,
---        trig_data_links_i           => trig_data_links,
---        sbit_rate_i                 => sbit_rate,
---        
---        -- IPbus
---        ipb_mosi_i                  => ipb_mosi_i(ipb_daq),
---        ipb_miso_o                  => ipb_miso(ipb_daq), 
---
---        -- Other
---        board_sn_i                  => sn
---    );
-    
-    -- blink an LED whenever we have at least one valid SBit cluster
-    -- also count the rate of the sbits
---    process(tk_data_links(0).clk)
---        variable sbit_led_countdown  : integer := 0;
---        variable sbit_rate_countdown : integer := 0;
---        variable valid_sbit : std_logic;
---        variable cluster_count : std_logic_vector(3 downto 0);
---    begin
---        if (rising_edge(tk_data_links(0).clk)) then
---            
---            -- find valid sbit signal
---            if ((trig_data_links(0).data_en = '1') or (trig_data_links(1).data_en = '1')) then
---                valid_sbit := (not (trig_data_links(0).data(9) and trig_data_links(0).data(10) and trig_data_links(0).data(23) and trig_data_links(0).data(24) and trig_data_links(0).data(37) and trig_data_links(0).data(38) and trig_data_links(0).data(51) and trig_data_links(0).data(52)))
---                           or (not (trig_data_links(1).data(9) and trig_data_links(1).data(10) and trig_data_links(1).data(23) and trig_data_links(1).data(24) and trig_data_links(1).data(37) and trig_data_links(1).data(38) and trig_data_links(1).data(51) and trig_data_links(1).data(52)));
---            else
---                valid_sbit := '0';
---            end if;
---            
---            -- LED countdown
---            if (valid_sbit = '1') then
---                sbit_led_countdown := 1_600_000;
---            elsif (sbit_led_countdown > 0) then
---                sbit_led_countdown := sbit_led_countdown - 1;
---            else
---                sbit_led_countdown := 0;
---            end if;
---            
---            -- calculate the rate
---            if (sbit_rate_countdown > 0) then
---                if ((valid_sbit = '1') and (sbit_count /= x"ffffffff")) then
---                    sbit_count <= sbit_count + 1;
---                end if;
---                sbit_rate_countdown := sbit_rate_countdown - 1;
---            else
---                sbit_count <= (others => '0');
---                sbit_rate <= sbit_count;
---                sbit_rate_countdown := 160_000_000;
---            end if;
---            
---            -- led state
---            if (sbit_led_countdown > 0) then
---                user_v6_led_o(1) <= '1';
---            else
---                user_v6_led_o(1) <= '0';
---            end if;            
---            
---        end if;
---    end process;
+        gem_gt_trig0_rx_clk_arr(i)  <= clk_gtx_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).trig0_rx_link);
+        gem_gt_trig0_rx_data_arr(i) <= gtx_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).trig0_rx_link);
+        gem_gt_trig1_rx_clk_arr(i)  <= clk_gtx_rx_arr(CFG_OH_LINK_CONFIG_ARR(i).trig1_rx_link);
+        gem_gt_trig1_rx_data_arr(i) <= gtx_rx_data_arr(CFG_OH_LINK_CONFIG_ARR(i).trig1_rx_link);
 
-    --==========--
-    -- Counters --
-    --==========--
+        -- GBT links should be mapped here, using fake loads right now
+        gem_gt_gbt_rx_links_arr(i).rx0clk <= '0';
+        gem_gt_gbt_rx_links_arr(i).rx1clk <= '0';
+        gem_gt_gbt_rx_links_arr(i).rx2clk <= '0';
+        
+        gem_gt_gbt_rx_links_arr(i).rx0data <= (others => '0');
+        gem_gt_gbt_rx_links_arr(i).rx1data <= (others => '0');
+        gem_gt_gbt_rx_links_arr(i).rx2data <= (others => '0');
     
---	ipbus_counters_inst : entity work.ipbus_counters 
---    port map(
---		ipb_clk_i       => ipb_clk_i,
---		gtx_clk_i       => gtx_usr_clk,
---		ttc_clk_i       => ttc_clk,
---		reset_i         => reset_i,
---		ipb_mosi_i      => ipb_mosi_i(ipb_counters),
---		ipb_miso_o      => ipb_miso(ipb_counters),
---		ipb_i           => ipb_mosi_i,
---		ipb_o           => ipb_miso,
---		vfat2_t1_i      => vfat2_t1,
---		gtx_tk_error_i  => gtx_tk_error,
---		gtx_tr_error_i  => gtx_tr_error,
---      gtx_evt_rcvd_i  => gtx_evt_rcvd
---	);
+        gt_gbt_tx0_clk_arr(i)    <= '0';
+        gt_gbt_tx1_clk_arr(i)    <= '0';
+        gt_gbt_tx2_clk_arr(i)    <= '0';
 
-    --==========--
-    -- Control  --
-    --==========--
-    
---    system_control_inst : entity work.control
---    port map(
---        ipb_clk_i           => ipb_clk_i,
---        reset_i             => reset_i,
---    
---        ipb_mosi_i          => ipb_mosi_i(ipb_control),
---        ipb_miso_o          => ipb_miso(ipb_control),
---    
---        tk_rx_polarity_o    => rx_polarity,
---        tk_tx_polarity_o    => tx_polarity
---    );
-    
+    end generate; 
+
+    --===================--
+    --== IPBus mapping ==--
+    --===================--
+    g_ipb_map : for i in 0 to number_of_ipb_slaves - 1 generate
+        ipb_miso_o(i) <= ipb_miso(i);
+        ipb_mosi(i)   <= ipb_mosi_i(i);
+    end generate;
+
+              
 end user_logic_arch;

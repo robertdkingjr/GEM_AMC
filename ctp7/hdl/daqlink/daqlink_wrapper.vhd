@@ -291,9 +291,12 @@ architecture daqlink_wrapper_arch of daqlink_wrapper is
     signal daqlink_TXCHARISK      : std_logic_vector(1 downto 0);
     signal daqlink_TXDATA         : std_logic_vector(15 downto 0);
 
-    signal daqlink_reset          : std_logic := '1';
-    signal daqlink_reset_pwrup    : std_logic := '1';
-
+    signal daqlink_reset                : std_logic := '1';
+    signal daqlink_reset_pwrup          : std_logic := '1';
+    signal reset_cooldown_countdown     : unsigned(27 downto 0);
+    signal gtx_err_disper_count         : std_logic_vector(15 downto 0);
+    signal gtx_err_not_in_table_count   : std_logic_vector(15 downto 0);
+    
 begin
 
     --  Static signal Assigments
@@ -510,5 +513,32 @@ begin
             end if;
         end if;
     end process;
+    
+    -- error counters
+    process(gt0_txusrclk2_i)
+    begin
+        if (rising_edge(gt0_txusrclk2_i)) then
+            if (daqlink_reset = '1') then
+                gtx_err_disper_count <= (others => '0');
+                gtx_err_not_in_table_count <= (others => '0');
+                reset_cooldown_countdown <= x"27bc86a"; -- about 333ms
+            else
+                -- wait for some time after a reset before starting to count gtx errors
+                if (reset_cooldown_countdown > x"0000000") then
+                    reset_cooldown_countdown <= reset_cooldown_countdown - 1;
+                else
+                    if ((gt0_rxdisperr_i(0) or gt0_rxdisperr_i(1)) = '1' and gt0_rxresetdone_i = '1') then
+                        gtx_err_disper_count <= std_logic_vector(unsigned(gtx_err_disper_count) + 1);
+                    end if;
+                    if ((gt0_rxnotintable_i(0) or gt0_rxnotintable_i(1)) = '1' and gt0_rxresetdone_i = '1') then
+                        gtx_err_not_in_table_count <= std_logic_vector(unsigned(gtx_err_not_in_table_count) + 1);
+                    end if;
+                end if;
+            end if;
+        end if;
+    end process;
+    
+    daqlink_to_daq.disperr_cnt <= gtx_err_disper_count;
+    daqlink_to_daq.notintable_cnt <= gtx_err_not_in_table_count;
     
 end daqlink_wrapper_arch;

@@ -16,7 +16,7 @@ use IEEE.NUMERIC_STD.all;
 library UNISIM;
 use UNISIM.VComponents.all;
 
-use work.ctp7_utils_pkg.all;
+--use work.ctp7_utils_pkg.all;
 use work.ttc_pkg.all;
 use work.ipbus.all;
 use work.gem_pkg.all;
@@ -109,7 +109,7 @@ architecture ttc_arch of ttc is
     -- stats
     constant C_NUM_OF_DECODED_TTC_CMDS : integer := 10;
     signal ttc_cmds_arr              : std_logic_vector(C_NUM_OF_DECODED_TTC_CMDS - 1 downto 0);
-    signal ttc_cmds_cnt_arr          : t_slv_arr_32(C_NUM_OF_DECODED_TTC_CMDS - 1 downto 0);
+    signal ttc_cmds_cnt_arr          : t_std32_array(C_NUM_OF_DECODED_TTC_CMDS - 1 downto 0);
     
     signal l1a_rate          : std_logic_vector(31 downto 0); 
 
