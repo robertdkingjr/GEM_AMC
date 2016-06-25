@@ -54,8 +54,8 @@ architecture gem_system_regs_arch of gem_system_regs is
     signal firmware_date            : std_logic_vector(31 downto 0);
     signal num_of_oh                : std_logic_vector(4 downto 0);
     signal board_type               : std_logic_vector(3 downto 0);
-    signal use_gbt                  : std_logic_vector(0 downto 0);
-    signal use_trig_links           : std_logic_vector(0 downto 0);
+    signal use_gbt                  : std_logic;
+    signal use_trig_links           : std_logic;
     
     
     signal gbt_tx_sync_pattern      : std_logic_vector(15 downto 0);
@@ -93,10 +93,10 @@ begin
     version_build <= C_FIRMWARE_BUILD;
 
     --=== board type and configuration parameters ===--
-    board_type        <= CFG_BOARD_TYPE;
-    num_of_oh         <= std_logic_vector(to_unsigned(CFG_NUM_OF_OHs, 5));
-    use_gbt(0)        <= bool_to_std_logic(CFG_USE_GBT);
-    use_trig_links(0) <= bool_to_std_logic(CFG_USE_TRIG_LINKS); 
+    board_type     <= CFG_BOARD_TYPE;
+    num_of_oh      <= std_logic_vector(to_unsigned(CFG_NUM_OF_OHs, 5));
+    use_gbt        <= bool_to_std_logic(CFG_USE_GBT);
+    use_trig_links <= bool_to_std_logic(CFG_USE_TRIG_LINKS); 
     
     --=== version and date === --
     -- TODO: remove legacy firmware date and version once the software is ready
@@ -161,9 +161,13 @@ begin
     regs_read_arr(0)(REG_GEM_SYSTEM_TK_LINK_RX_POLARITY_MSB downto REG_GEM_SYSTEM_TK_LINK_RX_POLARITY_LSB) <= tk_rx_polarity;
     regs_read_arr(1)(REG_GEM_SYSTEM_TK_LINK_TX_POLARITY_MSB downto REG_GEM_SYSTEM_TK_LINK_TX_POLARITY_LSB) <= tk_tx_polarity;
     regs_read_arr(2)(REG_GEM_SYSTEM_BOARD_ID_MSB downto REG_GEM_SYSTEM_BOARD_ID_LSB) <= board_id;
+    regs_read_arr(2)(REG_GEM_SYSTEM_BOARD_TYPE_MSB downto REG_GEM_SYSTEM_BOARD_TYPE_LSB) <= board_type;
     regs_read_arr(3)(REG_GEM_SYSTEM_RELEASE_BUILD_MSB downto REG_GEM_SYSTEM_RELEASE_BUILD_LSB) <= std_logic_vector(to_unsigned(version_build, 8));
     regs_read_arr(3)(REG_GEM_SYSTEM_RELEASE_MINOR_MSB downto REG_GEM_SYSTEM_RELEASE_MINOR_LSB) <= std_logic_vector(to_unsigned(version_minor, 8));
     regs_read_arr(3)(REG_GEM_SYSTEM_RELEASE_MAJOR_MSB downto REG_GEM_SYSTEM_RELEASE_MAJOR_LSB) <= std_logic_vector(to_unsigned(version_major, 8));
+    regs_read_arr(4)(REG_GEM_SYSTEM_CONFIG_NUM_OF_OH_MSB downto REG_GEM_SYSTEM_CONFIG_NUM_OF_OH_LSB) <= num_of_oh;
+    regs_read_arr(4)(REG_GEM_SYSTEM_CONFIG_USE_GBT_BIT) <= use_gbt;
+    regs_read_arr(4)(REG_GEM_SYSTEM_CONFIG_USE_TRIG_LINKS_BIT) <= use_trig_links;
     regs_read_arr(4)(REG_GEM_SYSTEM_RELEASE_DATE_MSB downto REG_GEM_SYSTEM_RELEASE_DATE_LSB) <= firmware_date;
     regs_read_arr(5)(REG_GEM_SYSTEM_GBT_TX_SYNC_PATTERN_MSB downto REG_GEM_SYSTEM_GBT_TX_SYNC_PATTERN_LSB) <= gbt_tx_sync_pattern;
     regs_read_arr(6)(REG_GEM_SYSTEM_GBT_RX_SYNC_PATTERN_MSB downto REG_GEM_SYSTEM_GBT_RX_SYNC_PATTERN_LSB) <= gbt_rx_sync_pattern;
