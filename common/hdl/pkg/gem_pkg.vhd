@@ -22,6 +22,7 @@ package gem_pkg is
     constant C_LED_PULSE_LENGTH_TTC_CLK : std_logic_vector(20 downto 0) := std_logic_vector(to_unsigned(1_600_000, 21));
 
     function count_ones(s : std_logic_vector) return integer;
+    function bool_to_std_logic(L : BOOLEAN) return std_logic;
 
     --======================--
     --== Config Constants ==--
@@ -281,5 +282,14 @@ package body gem_pkg is
 
         return temp;
     end function count_ones;
+
+    function bool_to_std_logic(L : BOOLEAN) return std_logic is
+    begin
+        if L then
+            return ('1');
+        else
+            return ('0');
+        end if;
+    end function bool_to_std_logic;
     
 end gem_pkg;

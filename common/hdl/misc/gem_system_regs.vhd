@@ -15,6 +15,7 @@ use work.ipbus.all;
 use work.gem_pkg.all;
 use work.registers.all;
 use work.ttc_pkg.all;
+use work.gem_board_config_package.all;
 
 entity gem_system_regs is
 port(
@@ -51,6 +52,11 @@ architecture gem_system_regs_arch of gem_system_regs is
     signal version_minor            : integer range 0 to 255; 
     signal version_build            : integer range 0 to 255;
     signal firmware_date            : std_logic_vector(31 downto 0);
+    signal num_of_oh                : std_logic_vector(4 downto 0);
+    signal board_type               : std_logic_vector(3 downto 0);
+    signal use_gbt                  : std_logic_vector(0 downto 0);
+    signal use_trig_links           : std_logic_vector(0 downto 0);
+    
     
     signal gbt_tx_sync_pattern      : std_logic_vector(15 downto 0);
     signal gbt_rx_sync_pattern      : std_logic_vector(31 downto 0);
@@ -86,6 +92,12 @@ begin
     version_minor <= C_FIRMWARE_MINOR;
     version_build <= C_FIRMWARE_BUILD;
 
+    --=== board type and configuration parameters ===--
+    board_type        <= CFG_BOARD_TYPE;
+    num_of_oh         <= std_logic_vector(to_unsigned(CFG_NUM_OF_OHs, 5));
+    use_gbt(0)        <= bool_to_std_logic(CFG_USE_GBT);
+    use_trig_links(0) <= bool_to_std_logic(CFG_USE_TRIG_LINKS); 
+    
     --=== version and date === --
     -- TODO: remove legacy firmware date and version once the software is ready
     legacy_board_id      <= c_legacy_board_id;

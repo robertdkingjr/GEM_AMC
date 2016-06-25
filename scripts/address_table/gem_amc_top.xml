@@ -251,6 +251,10 @@
         <node id="BOARD_ID" address="0x2" mask="0x0000ffff" permission="rw"
               description="Board ID that gets embedded in the AMC13 header"
               fw_signal="board_id" fw_default="0xbeef"/>
+        <node id="BOARD_TYPE" address="0x2" mask="0x000f0000" permission="r"
+              description="Board type: 0 means GLIB, 1 means CTP7"
+              fw_signal="board_type"/>
+              
         <node id="RELEASE" address="0x3">
             <node id="MAJOR" address="0x0" mask="0x00ff0000" permission="r"
                   description="Firmware release major version"
@@ -265,6 +269,18 @@
                   description="Firmware release date (read as hex)"
                   fw_signal="firmware_date"/>
         </node>      
+        
+        <node id="CONFIG" address="0x4">
+            <node id="NUM_OF_OH" address="0x0" mask="0x0000001f" permission="r"
+                  description="Number of supported optohybrids"
+                  fw_signal="num_of_oh"/>
+            <node id="USE_GBT" address="0x0" mask="0x00000100" permission="r"
+                  description="If 1 then this firmware is using GBT links to communicate with optohybrids, if 0 then 8b10b links are used"
+                  fw_signal="use_gbt"/>
+            <node id="USE_TRIG_LINKS" address="0x0" mask="0x00000200" permission="r"
+                  description="If 1 then this firmware supports trigger links, if 0 then trigger links are disabled"
+                  fw_signal="use_trig_links"/>
+        </node>
 
         <node id="GBT" address="0x100">
             <node id="TX_SYNC_PATTERN" address="0x0" mask="0x0000ffff" permission="rw"

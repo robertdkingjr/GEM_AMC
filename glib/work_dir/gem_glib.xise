@@ -561,10 +561,6 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="180"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="11"/>
     </file>
-    <file xil_pn:name="../hdl/pkg/gem_glib_config_pkg.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="181"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
-    </file>
     <file xil_pn:name="../../common/hdl/utils/gt_rx_link_ila_wrapper.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="182"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
