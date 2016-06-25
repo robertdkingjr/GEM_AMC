@@ -270,7 +270,7 @@
                   fw_signal="firmware_date"/>
         </node>      
         
-        <node id="CONFIG" address="0x4">
+        <node id="CONFIG" address="0x5">
             <node id="NUM_OF_OH" address="0x0" mask="0x0000001f" permission="r"
                   description="Number of supported optohybrids"
                   fw_signal="num_of_oh"/>

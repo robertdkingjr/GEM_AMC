@@ -232,7 +232,7 @@
         <node id="BUILD" address="0x00000000" permission="r" mask="0x000000ff"/>
         <node id="DATE" address="0x00000001" permission="r" mask="0xffffffff"/>
       </node>
-      <node id="CONFIG" address="0x00000004" >
+      <node id="CONFIG" address="0x00000005" >
         <node id="NUM_OF_OH" address="0x00000000" permission="r" mask="0x0000001f"/>
         <node id="USE_GBT" address="0x00000000" permission="r" mask="0x00000100"/>
         <node id="USE_TRIG_LINKS" address="0x00000000" permission="r" mask="0x00000200"/>
