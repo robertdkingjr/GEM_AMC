@@ -170,3 +170,32 @@ def T1On(OH_NUM):
             return False
     return True
 
+
+
+def cluster_to_vfat (cluster): 
+    vfat_mapping =  [ 0, 8, 16, 1, 9, 17, 2, 10, 18, 3, 11, 19, 4, 12, 20, 5, 13, 21, 6, 14, 22, 7, 15, 23]
+    address = cluster & 0x7ff
+    if (address > 1535): 
+        vfat_id = -1
+    else: 
+        natural_fat_id = (address)//64
+        vfat_id = vfat_mapping[natural_fat_id]
+    return vfat_id
+
+def cluster_to_vfat2_sbit (cluster):
+    address = cluster & 0x7ff
+    if (address > 1535): 
+        vfat2_sbit = -1
+    else: 
+        vfat3_sbit = (cluster&0x3f)
+        vfat2_sbit = vfat3_sbit//8
+    return vfat2_sbit
+
+def cluster_to_size (cluster): 
+    address = cluster & 0x7ff
+    if (address > 1535): 
+        size = -1
+    else: 
+        size = (cluster>>11)&0x7; 
+    return size
+

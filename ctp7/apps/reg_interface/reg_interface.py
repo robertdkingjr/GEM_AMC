@@ -1,13 +1,27 @@
 from cmd import Cmd
 import sys, os, subprocess
 from rw_reg import *
+from vfat_config import *
 
 MAX_OH_NUM = 3
 
 
 class Prompt(Cmd):
 
-
+    def do_sbittranslate(self, args):
+        """Decode SBit Cluster. USAGE: sbittranslate <SBIT CLUSTER>"""
+        arglist = args.split()
+        if len(arglist)==1:
+            try: cluster = parseInt(args)
+            except: 
+                print 'Invalid cluster.'
+                return
+            print 'VFAT:',cluster_to_vfat(cluster)
+            print 'SBit:',cluster_to_vfat2_sbit(cluster)
+            print 'Size:',cluster_to_size(cluster)
+        else: print 'Incorrect number of arguments.'
+                                          
+        
     def do_test(self, args):
         print 'Test here!'
         print 'args:',args
@@ -249,7 +263,13 @@ class Prompt(Cmd):
         arglist = args.split()
         if len(arglist)==1:
             for reg in getNodesContaining('OH'+str(args)+'.DEBUG_LAST'):
-                if 'r' in str(reg.permission): print hex(reg.real_address),reg.permission,'\t',tabPad(reg.name,4),readReg(reg)
+                try: cluster = parseInt(readReg(reg))
+                except: cluster = 0
+                if cluster == 2047:
+                    if 'r' in str(reg.permission): print hex(reg.real_address),reg.permission,'\t',tabPad(reg.name,4),readReg(reg),'(None)'
+                else:
+                    if 'r' in str(reg.permission): print hex(reg.real_address),reg.permission,'\t',tabPad(reg.name,4),readReg(reg),'(VFAT:',cluster_to_vfat(cluster),'SBit:',cluster_to_vfat2_sbit(cluster),'Size:',cluster_to_size(cluster),')'
+
         else: print "Incorrect number of arguments!"
 
 
