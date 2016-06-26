@@ -161,19 +161,13 @@ def readReg(reg):
     # mpeek
     try: 
         #output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
-        print 'before'
         value = rReg(parseInt(address))
-        print 'after'
         #value = ''.join(s for s in output if s.isalnum())
     except:
         return 'Error of the Bus'
-    finally:
-        print 'Made it here.'
 
     print 'DEBUG:',value
-    if str(value)=='Bus error':
-        return 0xbeefdead
-        #return parseError(int(str(e)[-1:]))
+
     # Apply Mask
     if reg.mask is not None:
         shift_amount=0
@@ -204,6 +198,8 @@ def displayReg(reg,option=None):
         final_value = (parseInt(str(reg.mask))&parseInt(value)) >> shift_amount
     else: final_value = value
     final_int =  parseInt(str(final_value))
+    if final_int == 0xffffffff:
+        final_int = 0xdeadbeef
 
     if option=='hexbin': return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)+' = '+'{0:032b}'.format(final_int)
     else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)
