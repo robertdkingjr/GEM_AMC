@@ -166,7 +166,7 @@ def readReg(reg):
     except:
         return 'Error of the Bus'
 
-    print 'DEBUG:',value
+    # print 'DEBUG:',value
 
     # Apply Mask
     if reg.mask is not None:
@@ -198,8 +198,8 @@ def displayReg(reg,option=None):
         final_value = (parseInt(str(reg.mask))&parseInt(value)) >> shift_amount
     else: final_value = value
     final_int =  parseInt(str(final_value))
-    if final_int == 0xffffffff:
-        final_int = 0xdeadbeef
+    # if final_int == 0xffffffff:
+    #     final_int = 0xbabecafe
 
     if option=='hexbin': return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)+' = '+'{0:032b}'.format(final_int)
     else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)

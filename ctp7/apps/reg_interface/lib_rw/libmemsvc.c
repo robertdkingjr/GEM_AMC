@@ -8,7 +8,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-
+#include <signal.h>
+#include <setjmp.h>
 
 #include "libmemsvc.h"
 
@@ -415,13 +416,21 @@ static int range_check(struct memsvc_handle *svc, struct memsvc_range *range, ui
 	return 0;
 }
 
+static sigjmp_buf sj_env;
+
+static void sigbushdl (int sig, siginfo_t *sigingo, void *ptr)
+{
+  /* do something */
+  /* printf("Le Bus Error\n"); */
+  siglongjmp (sj_env, 1);
+}
+
+
 int memsvc_read(memsvc_handle_t svc, uint32_t addr, uint32_t words, uint32_t *data)
 {
 	if (memsvc_validate(svc, 1) < 0)
 		return -1;
-
 	struct memsvc_range *range = find_range(svc, addr, 0, 1);
-
 	if (!range) {
 		char buf[32];
 		snprintf(buf, 32, "Invalid address: 0x%08x", addr);
@@ -438,12 +447,32 @@ int memsvc_read(memsvc_handle_t svc, uint32_t addr, uint32_t words, uint32_t *da
 	}
 	if (range_check(svc, range, addr, words) < 0)
 		return -1;
+        if (!range->start)
+          return -1;
 
-	for (int i = 0; i < words; i++)
-		data[i] = REG32(range->map, addr - range->start);
+        /* Attempting to catch Bus Errors  */
+        struct sigaction act;
+        memset(&act,0,sizeof(act));
+        act.sa_sigaction = &sigbushdl;
+        act.sa_flags = SA_SIGINFO;
+        if (sigaction(SIGBUS, &act, 0) < 0) {
+          perror("sigaction");
+          return -1;
+        }
 
-	return 0;
+        
+        for (int i = 0; i < words; i++) {
+          data[i] = REG32(range->map, addr - range->start);
+        }
+
+        /* Jump to here to avoid Bus Error */
+        if (sigsetjmp(sj_env, 1)) {
+          return -1;
+        }
+
+        return 0;
 }
+
 
 int memsvc_write(memsvc_handle_t svc, uint32_t addr, uint32_t words, const uint32_t *data)
 {

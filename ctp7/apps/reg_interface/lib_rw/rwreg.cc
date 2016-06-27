@@ -14,41 +14,51 @@ using namespace std;
 
 #define DLLEXPORT extern "C"
 
-DLLEXPORT unsigned int getReg(unsigned int address) {
-  printf("Beginning");
-  memsvc_handle_t memHandle;
-  bool connected = true;
-  if(memsvc_open(&memHandle) != 0) {
-    //printf("Memory service connect failed");
-    //printf("Error here, exiting to 1");
-    //exit(1);
-    connected = false;
-    return 0xdeadbeef;
-  }
-  return 0xbeefface;
-  printf("Middle");
+
+bool getData(memsvc_handle_t memHandle,
+             unsigned int address,
+             unsigned int numberOfValues,
+             unsigned int *buffer) {
+  int wordsToGo = numberOfValues;
+  int wordsDone = 0;
   unsigned int readBuffer;
-  if(connected) {
-    if(memsvc_read(memHandle, address, 1, &readBuffer) != 0) {
-// #ifdef EMBED
-//     printf("Memory access failed: %s\n",memsvc_get_last_error(memHandle));
-// #endif
-      printf("Error with memsvc_read");
-      return 2;
+
+  while(wordsToGo > 0) {
+    int words = 1;
+    if(memsvc_read(memHandle, address+wordsDone*4, words, &readBuffer) != 0) {
+      return false;
     }
+
+    buffer[wordsDone] = readBuffer;
+    wordsToGo -= words;
+    wordsDone += words;
   }
-  printf("Almost End");
-  if(connected) {
+  return true;
+}
+
+DLLEXPORT unsigned long getReg(unsigned int address) {
+  memsvc_handle_t memHandle;
+  if(memsvc_open(&memHandle) != 0) {
+    printf("Error 1: %s\t",memsvc_get_last_error(memHandle));
+    return 0xfefe;
+  }
+  unsigned int buffer;
+  if(getData(memHandle, address, 1, &buffer)) {
     if(memsvc_close(&memHandle) != 0) {
-    // perror("Memory service close failed");
-      return 3;
+      printf("Error 2: %s\t",memsvc_get_last_error(memHandle));
+      return 0xcafe;
     }
+    return buffer;
   }
-  printf("End");
-  if (connected)
-    return readBuffer;
-  else 
-    return 0xdeaddead;
+  else {
+    if(memsvc_close(&memHandle) != 0) {
+      printf("Error 3: %s\t",memsvc_get_last_error(memHandle));
+      return 0xcafe;
+    }
+
+    // Return on Bus Error...?
+    return 0xdeddead;
+  }
 }
 
 DLLEXPORT unsigned int putReg(unsigned int address, unsigned int value) {

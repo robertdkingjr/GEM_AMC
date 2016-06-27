@@ -12,7 +12,7 @@ all: build
 build: $(APP)
 
 $(APP):$(APP_OBJS)
-	$(CXX) -std=c++0x $(LDFLAGS) -shared -o $@.so $(APP_OBJS) 
+	$(CXX) -std=c++0x $(LDFLAGS) -fnon-call-exceptions -shared -o $@.so $(APP_OBJS) 
 	#$(APP_OBJS) $(LDLIBS) -lmemsvc -nostartfiles
 
 %.o: %.c
