@@ -129,11 +129,7 @@ def getRegsContaining(nodeString):
 
 
 def readAddress(address):
-    try: 
-        #output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
-        output = rReg(address) 
-        value = ''.join(s for s in output if s.isalnum())
-    except subprocess.CalledProcessError as e: value = parseError(int(str(e)[-1:]))
+    output = rReg(address) 
     return '{0:#010x}'.format(parseInt(str(value)))
 
 def readRawAddress(raw_address):
