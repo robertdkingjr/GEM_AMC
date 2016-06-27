@@ -5,6 +5,7 @@ from ctypes import *
 print 'Loading shared library: /mnt/persistent/texas/shared_libs/librwreg.so'
 lib = CDLL("/mnt/persistent/texas/shared_libs/librwreg.so")
 rReg = lib.getReg
+rReg.restype = c_uint
 wReg = lib.putReg
 
 
@@ -188,7 +189,8 @@ def displayReg(reg,option=None):
         #output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
         value = rReg(parseInt(address))
         #value = ''.join(s for s in output if s.isalnum())
-    except: return "rReg error..."
+    except KeyboardInterrupt: 
+        exit
     # Apply Mask
     if reg.mask is not None:
         shift_amount=0

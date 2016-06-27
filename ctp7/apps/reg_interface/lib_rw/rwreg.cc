@@ -57,7 +57,7 @@ DLLEXPORT unsigned long getReg(unsigned int address) {
     }
 
     // Return on Bus Error...?
-    return 0xdeddead;
+    return 0xdeaddead;
   }
 }
 
