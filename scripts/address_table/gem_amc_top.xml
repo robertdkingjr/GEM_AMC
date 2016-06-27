@@ -251,6 +251,10 @@
         <node id="BOARD_ID" address="0x2" mask="0x0000ffff" permission="rw"
               description="Board ID that gets embedded in the AMC13 header"
               fw_signal="board_id" fw_default="0xbeef"/>
+        <node id="BOARD_TYPE" address="0x2" mask="0x000f0000" permission="r"
+              description="Board type: 0 means GLIB, 1 means CTP7"
+              fw_signal="board_type"/>
+              
         <node id="RELEASE" address="0x3">
             <node id="MAJOR" address="0x0" mask="0x00ff0000" permission="r"
                   description="Firmware release major version"
@@ -265,6 +269,18 @@
                   description="Firmware release date (read as hex)"
                   fw_signal="firmware_date"/>
         </node>      
+        
+        <node id="CONFIG" address="0x5">
+            <node id="NUM_OF_OH" address="0x0" mask="0x0000001f" permission="r"
+                  description="Number of supported optohybrids"
+                  fw_signal="num_of_oh"/>
+            <node id="USE_GBT" address="0x0" mask="0x00000100" permission="r"
+                  description="If 1 then this firmware is using GBT links to communicate with optohybrids, if 0 then 8b10b links are used"
+                  fw_signal="use_gbt"/>
+            <node id="USE_TRIG_LINKS" address="0x0" mask="0x00000200" permission="r"
+                  description="If 1 then this firmware supports trigger links, if 0 then trigger links are disabled"
+                  fw_signal="use_trig_links"/>
+        </node>
 
         <node id="GBT" address="0x100">
             <node id="TX_SYNC_PATTERN" address="0x0" mask="0x0000ffff" permission="rw"
@@ -1103,7 +1119,7 @@
                   
                   <node id="OUTPUT"  address="0x5"  permission="rw"
                     description="Control on the OptoHybrid related to the SBits sent out">
-                    <node id="SBits"  address="0x0"  permission="rw"
+                    <node id="SBITS"  address="0x0"  permission="rw"
                           description="Select the SBit sources to send out (30 bits, maximum 6 may be set high)"/>
                   </node>
                   
@@ -1201,7 +1217,7 @@
                 <node id="RESET"    address="0xF"  mask="0xffffffff"  permission="rw" description="T1 controller reset"/>
             </node> <!-- end of T1CONTROLLER -->
 
-            <node id="ADC"  address="0x8000000" description="ADC provided on the OptoHybrid">
+            <node id="ADC"  address="0x8000" description="ADC provided on the OptoHybrid">
                 <node id="ADC0"  address="0x0"  permission="r"
                       description="Returns the value from the ADC for channel 0"/>
                 <node id="ADC1"  address="0x1"  permission="r"
@@ -1236,7 +1252,7 @@
                       description="Returns the value from the ADC for channel 15"/>            
             </node>
 
-            <node id="ScanController"  address="0x2000000" description="Module to perform threshold and latency scans in the firmware">
+            <node id="ScanController"  address="0x2000" description="Module to perform threshold and latency scans in the firmware">
                 <node id="THLAT"  address="0x0000000"  permission="rw"
                       description="Control the onboard threshold/latency scan routine">
                   <node id="START"  address="0x0"  mask="0x1"  permission="w"
@@ -1283,7 +1299,7 @@
                         description="Local reset of the module"/>
                 </node>
 
-                <node id="DAC"    address="0x2000000"  permission="rw"
+                <node id="DAC"    address="0x2000"  permission="rw"
                       description="Control the onboard DAC scan routine">
                   <node id="START"    address="0x0"  mask="0x1"  permission="w"
                         description="Start the specified scan routine

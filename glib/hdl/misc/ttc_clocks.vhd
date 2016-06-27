@@ -89,7 +89,7 @@ begin
      STARTUP_WAIT         => false,
      DIVCLK_DIVIDE        => 1,
      CLKFBOUT_MULT_F      => 24.000,
-     CLKFBOUT_PHASE       => 45.000,
+     CLKFBOUT_PHASE       => 135.000,
      CLKFBOUT_USE_FINE_PS => true,
      CLKOUT0_DIVIDE_F     => 24.000,
      CLKOUT0_PHASE        => 0.000,

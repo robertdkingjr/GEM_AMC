@@ -498,7 +498,7 @@ package registers is
     -- This module is controlling GEM AMC System wide settings
     --============================================================================
 
-    constant REG_GEM_SYSTEM_NUM_REGS : integer := 11;
+    constant REG_GEM_SYSTEM_NUM_REGS : integer := 12;
     constant REG_GEM_SYSTEM_ADDRESS_MSB : integer := 16;
     constant REG_GEM_SYSTEM_ADDRESS_LSB : integer := 0;
     constant REG_GEM_SYSTEM_TK_LINK_RX_POLARITY_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0000";
@@ -516,6 +516,10 @@ package registers is
     constant REG_GEM_SYSTEM_BOARD_ID_LSB     : integer := 0;
     constant REG_GEM_SYSTEM_BOARD_ID_DEFAULT : std_logic_vector(15 downto 0) := x"beef";
 
+    constant REG_GEM_SYSTEM_BOARD_TYPE_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0002";
+    constant REG_GEM_SYSTEM_BOARD_TYPE_MSB    : integer := 19;
+    constant REG_GEM_SYSTEM_BOARD_TYPE_LSB     : integer := 16;
+
     constant REG_GEM_SYSTEM_RELEASE_BUILD_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0003";
     constant REG_GEM_SYSTEM_RELEASE_BUILD_MSB    : integer := 7;
     constant REG_GEM_SYSTEM_RELEASE_BUILD_LSB     : integer := 0;
@@ -531,6 +535,16 @@ package registers is
     constant REG_GEM_SYSTEM_RELEASE_DATE_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0004";
     constant REG_GEM_SYSTEM_RELEASE_DATE_MSB    : integer := 31;
     constant REG_GEM_SYSTEM_RELEASE_DATE_LSB     : integer := 0;
+
+    constant REG_GEM_SYSTEM_CONFIG_NUM_OF_OH_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0005";
+    constant REG_GEM_SYSTEM_CONFIG_NUM_OF_OH_MSB    : integer := 4;
+    constant REG_GEM_SYSTEM_CONFIG_NUM_OF_OH_LSB     : integer := 0;
+
+    constant REG_GEM_SYSTEM_CONFIG_USE_GBT_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0005";
+    constant REG_GEM_SYSTEM_CONFIG_USE_GBT_BIT    : integer := 8;
+
+    constant REG_GEM_SYSTEM_CONFIG_USE_TRIG_LINKS_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0005";
+    constant REG_GEM_SYSTEM_CONFIG_USE_TRIG_LINKS_BIT    : integer := 9;
 
     constant REG_GEM_SYSTEM_GBT_TX_SYNC_PATTERN_ADDR    : std_logic_vector(16 downto 0) := '0' & x"0100";
     constant REG_GEM_SYSTEM_GBT_TX_SYNC_PATTERN_MSB    : integer := 15;

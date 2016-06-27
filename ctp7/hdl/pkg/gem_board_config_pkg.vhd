@@ -19,6 +19,8 @@ use IEEE.STD_LOGIC_1164.all;
 --============================================================================
 package gem_board_config_package is
 
+    constant CFG_BOARD_TYPE     : std_logic_vector(3 downto 0) := x"1"; 
+
     constant CFG_USE_GBT        : boolean := false;  -- if this is true, GBT links will be used for communicationa with OH, if false 3.2Gbs 8b10b links will be used instead (remember to instanciate the correct links!)
     constant CFG_USE_3x_GBTs    : boolean := false;  -- if this is true, each OH will use 3 GBT links - this will be default in the future with OH v3, but for now it's a good test
     constant CFG_USE_TRIG_LINKS : boolean := true; -- this should be TRUE by default, but could be set to false for tests or quicker compilation if not needed
