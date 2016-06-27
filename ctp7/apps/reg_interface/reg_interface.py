@@ -30,7 +30,7 @@ class Prompt(Cmd):
         """ Begin command by selecting OH, followed by command. USAGE oh <number> <command> """
         arglist = args.split()
         if len(arglist)<1: print 'Too few arguments.'
-        if len(arglist)==1:
+        elif len(arglist)==1:
             if not arglist[0].isdigit():
                 print 'Invalid OH number:',arglist[0]
                 return
@@ -259,7 +259,7 @@ class Prompt(Cmd):
         else: print "Incorrect number of arguments!"
 
     def do_debug(self,args):
-        """Quick read of SBit Clusters. USAGE: debug <OH_number>"""
+        """Quick read of SBit Clusters. USAGE: debug <OH_NUM>"""
         arglist = args.split()
         if len(arglist)==1:
             for reg in getNodesContaining('OH'+str(args)+'.DEBUG_LAST'):
@@ -274,7 +274,7 @@ class Prompt(Cmd):
 
 
     def do_v2a(self,args):
-        """Configure recovered clock for OHv2a"""
+        """Configure recovered clock for OHv2a. USAGE v2a <OH_NUM>"""
         arglist = args.split()
         if len(arglist)==1:
             if not args.isdigit() or int(args)<0 or int(args)>2: 
