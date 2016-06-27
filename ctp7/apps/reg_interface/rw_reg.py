@@ -6,7 +6,7 @@ print 'Loading shared library: /mnt/persistent/texas/shared_libs/librwreg.so'
 lib = CDLL("/mnt/persistent/texas/shared_libs/librwreg.so")
 rReg = lib.getReg
 rReg.restype = c_uint
-rReg.argtypes=[c_uint,c_ulong,c_ulonglong]
+rReg.argtypes=[c_uint]
 wReg = lib.putReg
 
 
@@ -160,14 +160,7 @@ def readReg(reg):
     address = reg.real_address
     if 'r' not in reg.permission:
         return 'No read permission!'
-    # mpeek
-    try: 
-        #output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
-        value = rReg(parseInt(address))
-        #value = ''.join(s for s in output if s.isalnum())
-    except:
-        return 'Error of the Bus'
-    # Apply Mask
+    value = rReg(parseInt(address))
     if reg.mask is not None:
         shift_amount=0
         for bit in reversed('{0:b}'.format(reg.mask)):
@@ -203,7 +196,7 @@ def displayReg(reg,option=None):
 
     if option=='hexbin': return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)+' = '+'{0:032b}'.format(final_int)
     else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)
-
+    
 def writeReg(reg, value):
     try: address = reg.real_address
     except:

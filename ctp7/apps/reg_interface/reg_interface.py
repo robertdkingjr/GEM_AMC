@@ -133,5 +133,5 @@ if __name__ == '__main__':
         prompt = Prompt()
         prompt.prompt = 'CTP7 > '
         prompt.cmdloop('Starting CTP7 Register Command Line Interface.')
-    except:
+    except KeyboardInterrupt:
         print '\n'
