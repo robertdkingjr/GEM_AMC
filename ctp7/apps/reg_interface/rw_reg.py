@@ -8,7 +8,7 @@ rReg = lib.getReg
 rReg.restype = c_uint
 rReg.argtypes=[c_uint]
 wReg = lib.putReg
-
+wReg.argtypes=[c_uint,c_uint]
 
 DEBUG = True
 ADDRESS_TABLE_TOP = '/mnt/persistent/texas/gem_amc_top.xml'
@@ -193,13 +193,9 @@ def displayReg(reg,option=None):
     else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)
         
 def writeReg(reg, value):
-    try: address = reg.real_address
-    except:
-        print 'Reg',reg,'not a Node'
-        return
+    address = reg.real_address
     if 'w' not in reg.permission:
         return 'No write permission!'
-
     # Apply Mask if applicable
     if reg.mask is not None:
         shift_amount=0
@@ -211,19 +207,12 @@ def writeReg(reg, value):
         else: 
             initial_value = readReg(reg)
             try: initial_value = parseInt(initial_value) 
-            except: return 'Error reading initial value: '+str(initial_value)
+            except ValueError: return 'Error reading initial value: '+str(initial_value)
             final_value = (shifted_value & reg.mask) | (initial_value & ~reg.mask)
     else: final_value = value
+    output = wReg(parseInt(address),parseInt(final_value))
+    return str('{0:#010x}'.format(final_value)).rstrip('L')+'('+str(value)+')\twritten to '+reg.name
     
-    # mpoke
-    try: 
-        #output = subprocess.check_output('mpoke '+str(address)+' '+str(final_value), stderr=subprocess.STDOUT , shell=True)
-        output = wReg(parseInt(address),parseInt(final_value))
-        return str('{0:#010x}'.format(final_value)).rstrip('L')+'('+str(value)+')\twritten to '+reg.name
-    except subprocess.CalledProcessError as e: return parseError(int(str(e)[-1:]))
-    
-
-
 def isValid(address):
     try: subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
     except subprocess.CalledProcessError as e: return False
