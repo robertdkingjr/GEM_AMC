@@ -2,6 +2,7 @@
 #define CTP7_hh
 
 #include <vector>
+#include "libmemsvc.h"
 
 // This class defines interface to CTP7
 // The idea is to keep this pure virtual and enable client/server communication
