@@ -14,6 +14,9 @@ class Node:
     mask = 0x0
     isModule = False
     parent = None
+    level = 0
+    warn_min_value = None
+    error_min_value = None
 
     def __init__(self):
         self.children = []
@@ -33,7 +36,7 @@ class Node:
         print 'Parent:',self.parent.name
 
 def main():
-    configure()
+    parseXML()
     print 'Example:'
     random_node = nodes[76]
     #print str(random_node.__class__.__name__)
@@ -44,6 +47,7 @@ def main():
     print len(kids), kids.name
 
 def parseXML():
+    print 'Parsing',ADDRESS_TABLE_TOP,'...'
     tree = xml.parse(ADDRESS_TABLE_TOP)
     root = tree.getroot()[0]
     vars = {}
@@ -60,11 +64,9 @@ def makeTree(node,baseName,baseAddress,nodes,parentNode,vars,isGenerated):
             #print('generate base_addr = ' + hex(baseAddress + generateAddressStep * i) + ' for node ' + node.get('id'))
             makeTree(node, baseName, baseAddress + generateAddressStep * i, nodes, parentNode, vars, True)
         return
-
     newNode = Node()
     name = baseName
-    if baseName != '':
-        name += '.'
+    if baseName != '': name += '.'
     name += node.get('id')
     name = substituteVars(name, vars)
     newNode.name = name
@@ -75,18 +77,18 @@ def makeTree(node,baseName,baseAddress,nodes,parentNode,vars,isGenerated):
         address = baseAddress + parseInt(node.get('address'))
     newNode.address = address
     newNode.real_address = (address<<2)+0x64000000
-
-
     newNode.permission = node.get('permission')
     newNode.mask = parseInt(node.get('mask'))
-
     newNode.isModule = node.get('fw_is_module') is not None and node.get('fw_is_module') == 'true'
-    
+    if node.get('sw_monitor_warn_min_threshold') is not None:
+        newNode.warn_min_value = node.get('sw_monitor_warn_min_threshold') 
+    if node.get('sw_monitor_error_min_threshold') is not None:
+        newNode.error_min_value = node.get('sw_monitor_error_min_threshold') 
     nodes.append(newNode)
     if parentNode is not None:
         parentNode.addChild(newNode)
         newNode.parent = parentNode
-
+        newNode.level = parentNode.level+1
     for child in node:
         makeTree(child,name,address,nodes,newNode,vars,False)
 
@@ -105,36 +107,49 @@ def getNode(nodeName):
 def getNodeFromAddress(nodeAddress):
     return next((node for node in nodes if node.real_address == nodeAddress),None)
 
-
 def getNodesContaining(nodeString):
     nodelist = [node for node in nodes if nodeString in node.name]
     if len(nodelist): return nodelist
     else: return None
 
+#returns *readable* registers
 def getRegsContaining(nodeString):
-    nodelist = [node for node in nodes if ((nodeString in node.name) and (node.permission is not None) and ('r' in node.permission))]
+    nodelist = [node for node in nodes if nodeString in node.name and node.permission is not None and 'r' in node.permission]
     if len(nodelist): return nodelist
     else: return None
 
 
 def readAddress(address):
     try: 
-        output = subprocess.check_output('mpeek '+str(hex(address)), stderr=subprocess.STDOUT , shell=True)
+        output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
         value = ''.join(s for s in output if s.isalnum())
     except subprocess.CalledProcessError as e: value = parseError(int(str(e)[-1:]))
     return '{0:#010x}'.format(parseInt(str(value)))
 
 def readRawAddress(raw_address):
-    address = raw_address
-    address = address << 2
-    address = address + 0x64000000
-    return readAddress(address)
+    try: 
+        address = (parseInt(raw_address) << 2)+0x64000000
+        return readAddress(address)
+    except:
+        return 'Error reading address. (rw_reg)'
+
+def mpeek(address):
+    try: 
+        output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
+        value = ''.join(s for s in output if s.isalnum())
+    except subprocess.CalledProcessError as e: value = parseError(int(str(e)[-1:]))
+    return value
+
+def mpoke(address,value):
+    try: output = subprocess.check_output('mpoke '+str(address)+' '+str(value), stderr=subprocess.STDOUT , shell=True)
+    except subprocess.CalledProcessError as e: return parseError(int(str(e)[-1:]))
+    return 'Done.'
+
 
 def readReg(reg):
     address = reg.real_address
     if 'r' not in reg.permission:
         return 'No read permission!'
-
     # mpeek
     try: 
         output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
@@ -151,6 +166,28 @@ def readReg(reg):
     final_int =  parseInt(str(final_value))
     return '{0:#010x}'.format(final_int)
 
+def displayReg(reg,option=None):
+    address = reg.real_address
+    if 'r' not in reg.permission:
+        return 'No read permission!'
+    # mpeek
+    try: 
+        output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
+        value = ''.join(s for s in output if s.isalnum())
+    except subprocess.CalledProcessError as e: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+parseError(int(str(e)[-1:]))
+    # Apply Mask
+    if reg.mask is not None:
+        shift_amount=0
+        for bit in reversed('{0:b}'.format(reg.mask)):
+            if bit=='0': shift_amount+=1
+            else: break
+        final_value = (parseInt(str(reg.mask))&parseInt(value)) >> shift_amount
+    else: final_value = value
+    final_int =  parseInt(str(final_value))
+
+    if option=='hexbin': return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)+' = '+'{0:032b}'.format(final_int)
+    else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)
+
 def writeReg(reg, value):
     try: address = reg.real_address
     except:
@@ -159,39 +196,50 @@ def writeReg(reg, value):
     if 'w' not in reg.permission:
         return 'No write permission!'
 
-    # Apply Mask
+    # Apply Mask if applicable
     if reg.mask is not None:
         shift_amount=0
         for bit in reversed('{0:b}'.format(reg.mask)):
             if bit=='0': shift_amount+=1
             else: break
-        #if DEBUG: print 'shift_amount:',shift_amount
         shifted_value = value << shift_amount
-        #if DEBUG: print 'shifted_value:','{0:#010x}'.format(shifted_value)
-        if 'r' not in reg.permission:
-            if DEBUG: print 'No read permission.'
-            final_value = shifted_value
+        if 'r' not in reg.permission: final_value = shifted_value
         else: 
             initial_value = readReg(reg)
             try: initial_value = parseInt(initial_value) 
-            except: return 'Error reading initial value: '+initial_value
+            except: return 'Error reading initial value: '+str(initial_value)
             final_value = (shifted_value & reg.mask) | (initial_value & ~reg.mask)
     else: final_value = value
     
-    print 'Writing:',hex(final_value),'to',reg.name
-
     # mpoke
     try: 
         output = subprocess.check_output('mpoke '+str(address)+' '+str(final_value), stderr=subprocess.STDOUT , shell=True)
-        return '{0:#010x}'.format(final_value)+' written to register.'
+        return str('{0:#010x}'.format(final_value)).rstrip('L')+'('+str(value)+')\twritten to '+reg.name
     except subprocess.CalledProcessError as e: return parseError(int(str(e)[-1:]))
     
 
 
 def isValid(address):
-    try: subprocess.check_output('mpeek '+str(hex(address)), stderr=subprocess.STDOUT , shell=True)
+    try: subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
     except subprocess.CalledProcessError as e: return False
     return True
+
+
+def completeReg(string):
+    possibleNodes = [] 
+    completions = []
+    currentLevel = len([c for c in string if c=='.'])
+  
+    possibleNodes = [node for node in nodes if node.name.startswith(string) and node.level == currentLevel]
+    if len(possibleNodes)==1:
+        if possibleNodes[0].children == []: return [possibleNodes[0].name]
+        for n in possibleNodes[0].children:
+            completions.append(n.name)
+    else:
+        for n in possibleNodes:
+            completions.append(n.name)
+    return completions
+
 
 def parseError(e):
     if e==1:
@@ -201,10 +249,11 @@ def parseError(e):
     else:
         return "Unknown error: "+str(e)
 
-def parseInt(string):
-    if string is None:
+def parseInt(s):
+    if s is None:
         return None
-    elif string.startswith('0x'):
+    string = str(s)
+    if string.startswith('0x'):
         return int(string, 16)
     elif string.startswith('0b'):
         return int(string, 2)

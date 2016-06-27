@@ -14,7 +14,7 @@
   
   
   <!-- Bootstrap Core CSS -->
-  <link  rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+  <link  rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
   
   <!-- Custom CSS -->
   <link href="{% static 'css/portfolio-item.css' %}" rel="stylesheet">
@@ -27,13 +27,23 @@
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
   <![endif]-->
 
+<style media="screen" type="text/css">
+.progress {
+    margin-bottom: 0 !important;
+}
+.table {
+    margin-bottom: 0 !important;
+}
+</style>
 </head>
 
 <body>
 {% block nav %}
 {% include 'nav.html' %}
 {% endblock %}
-
+{% if main %}
+{% include "system_overview.html" %}
+{% endif %}
 {% block module %}
 {% endblock %}
  <!-- jQuery -->
