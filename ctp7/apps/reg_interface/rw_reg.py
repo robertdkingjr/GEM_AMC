@@ -6,6 +6,7 @@ print 'Loading shared library: /mnt/persistent/texas/shared_libs/librwreg.so'
 lib = CDLL("/mnt/persistent/texas/shared_libs/librwreg.so")
 rReg = lib.getReg
 rReg.restype = c_uint
+rReg.argtypes=[c_uint,c_ulong,c_ulonglong]
 wReg = lib.putReg
 
 
@@ -78,8 +79,8 @@ def makeTree(node,baseName,baseAddress,nodes,parentNode,vars,isGenerated):
     name += node.get('id')
     name = substituteVars(name, vars)
     newNode.name = name
-    #print len(nodes), name
-    #print newNode.name
+    # print len(nodes), name
+    # print newNode.name
     address = baseAddress
     if node.get('address') is not None:
         address = baseAddress + parseInt(node.get('address'))
@@ -166,9 +167,6 @@ def readReg(reg):
         #value = ''.join(s for s in output if s.isalnum())
     except:
         return 'Error of the Bus'
-
-    # print 'DEBUG:',value
-
     # Apply Mask
     if reg.mask is not None:
         shift_amount=0
