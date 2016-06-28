@@ -20,3 +20,8 @@ sigasi
 scratch
 
 .idea
+
+*.pyc
+*.jou
+*.log
+*.txt

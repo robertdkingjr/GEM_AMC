@@ -8,6 +8,20 @@ MAX_OH_NUM = 3
 
 class Prompt(Cmd):
 
+    def do_outputnode(self, args):
+        """Output properies of node matching name"""
+        arglist = args.split()
+        if len(arglist)==1:
+            node = getNode(args)
+            if node is not None:
+                print node.output()
+            else:
+                print 'Node not found:',args
+
+        else: print 'Incorrect number of arguments.' 
+                
+
+
     def do_sbittranslate(self, args):
         """Decode SBit Cluster. USAGE: sbittranslate <SBIT CLUSTER>"""
         arglist = args.split()
@@ -21,7 +35,6 @@ class Prompt(Cmd):
             print 'Size:',cluster_to_size(cluster)
         else: print 'Incorrect number of arguments.'
                                           
-        
     def do_test(self, args):
         print 'Test here!'
         print 'args:',args

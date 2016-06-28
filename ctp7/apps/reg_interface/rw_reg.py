@@ -38,9 +38,10 @@ class Node:
 
     def output(self):
         print 'Name:',self.name
-        print 'Address:','{0:#010x}'.format(self.address)
+        print 'XML Address:','{0:#010x}'.format(self.address)
+        print 'Real Address:','{0:#010x}'.format(self.real_address)
         print 'Permission:',self.permission
-        print 'Mask:','{0:#010x}'.format(self.mask)
+        print 'Mask:',self.mask
         print 'Module:',self.isModule
         print 'Parent:',self.parent.name
 
@@ -173,7 +174,9 @@ def displayReg(reg,option=None):
     address = reg.real_address
     if 'r' not in reg.permission:
         return 'No read permission!'
+    print 'before rReg'
     value = rReg(parseInt(address))
+    print 'after rReg'
     if parseInt(value) == 0xdeaddead:
         if option=='hexbin': return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'Bus Error'
         else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'Bus Error'
