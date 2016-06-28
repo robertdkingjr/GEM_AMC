@@ -16,6 +16,7 @@ nodes = []
 
 class Node:
     name = ''
+    description = ''
     vhdlname = ''
     address = 0x0
     real_address = 0x0
@@ -38,6 +39,7 @@ class Node:
 
     def output(self):
         print 'Name:',self.name
+        print 'Description:',self.description
         print 'Address:','{0:#010x}'.format(self.address)
         print 'Permission:',self.permission
         print 'Mask:','{0:#010x}'.format(self.mask)
@@ -70,7 +72,6 @@ def makeTree(node,baseName,baseAddress,nodes,parentNode,vars,isGenerated):
         generateIdxVar = node.get('generate_idx_var')
         for i in range(0, generateSize):
             vars[generateIdxVar] = i
-            #print('generate base_addr = ' + hex(baseAddress + generateAddressStep * i) + ' for node ' + node.get('id'))
             makeTree(node, baseName, baseAddress + generateAddressStep * i, nodes, parentNode, vars, True)
         return
     newNode = Node()
@@ -79,8 +80,8 @@ def makeTree(node,baseName,baseAddress,nodes,parentNode,vars,isGenerated):
     name += node.get('id')
     name = substituteVars(name, vars)
     newNode.name = name
-    # print len(nodes), name
-    # print newNode.name
+    if node.get('description') is not None:
+        newNode.description = node.get('description')
     address = baseAddress
     if node.get('address') is not None:
         address = baseAddress + parseInt(node.get('address'))
