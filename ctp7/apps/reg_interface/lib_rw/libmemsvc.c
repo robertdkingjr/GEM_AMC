@@ -421,7 +421,7 @@ static sigjmp_buf sj_env;
 static void sigbushdl (int sig, siginfo_t *siginfo, void *ptr)
 {
   /* do something */
-  printf("SIGBUS handled. jumping to return\n");
+  /* printf("SIGBUS handled. jumping to return\n"); */
   siglongjmp (sj_env, 1);
 }
 
@@ -462,7 +462,7 @@ int memsvc_read(memsvc_handle_t svc, uint32_t addr, uint32_t words, uint32_t *da
   
   /* Jump to here to avoid Bus Error */
   if (sigsetjmp(sj_env, 1)) {
-    printf("completed jump. returning\n");
+    /* printf("completed jump. returning\n"); */
     return -1;
   }
   else {
