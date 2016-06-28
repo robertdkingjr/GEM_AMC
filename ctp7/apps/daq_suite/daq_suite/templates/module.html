@@ -10,12 +10,10 @@
 	<td>{{z.3}}</td>
 	<td>
 		{% if 'w' in z.3 %}
-		<form action="/monitoring/{{module}}/" method="post">
+		<form class="form-inline" action="/monitoring/{{module}}/" method="post">
 		{% csrf_token %}
-		<div class="input-append">
-		<input type="text" name="{{z.0}}"/>
-		<button class="btn" type="submit" id="{{z.0}}" name="update" value="{{z.0}}">Set</button>
-		</div>
+		<input type="text" class="input-xs" name="{{z.0}}"/>
+		<button class="btn btn-primary btn-xs" type="submit" id="{{z.0}}" name="update" value="{{z.0}}">Set</button>
 		</form>
 		{% endif %}
 	</td>
