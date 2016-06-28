@@ -3,31 +3,46 @@ from django.template import Template, Context
 from django.shortcuts import render
 from rw_reg import *
 from helper_main import *
+import threading
+import Queue
+
 
 def hello(request):
   reg=getNode("GEM_AMC.GEM_SYSTEM.BOARD_ID")
   print reg
   return HttpResponse('Board ID %s'%(readReg(reg)))
 
-def main(request):
-  return render(request,'main.html',{'main':True,
-                                     'ttclist':getTTCmain(),
-                                     'triggerlist':getTRIGGERmain(),
-                                     'triggerohlist':getTRIGGEROHmain(),
-                                     'killmask':getKILLMASKmain(),
-                                     'daqlist':getDAQmain(),
-                                     'iemask':getIEMASKmain(),
-                                     'daqohlist':getDAQOHmain(),
-                                     'ohlist':getOHmain()})
+ttclist=[]
+triggerlist=[]
+triggerohlist=[]
+killmask=[]
+daqlist=[]
+iemask=[]
+daqohlist=[]
+ohlist=[]
 
-def read_fw(request):
-  parseXML()
-  reg=getNode("GEM_AMC.GEM_SYSTEM.BOARD_ID")
-  print reg
-  return HttpResponse('Board ID %s'%(readReg(reg)))
+event=threading.Event()
+lock = threading.Lock()
 
-def read_gem_system_module(request,module):
-  print 'in read_gem_system_module:',module.upper()
+def updateMain():
+  global ttclist
+  global triggerlist
+  global triggerohlist
+  global killmask
+  global daqlist
+  global iemask
+  global daqohlist
+  global ohlist
+  ttclist=getTTCmain()
+  triggerlist=getTRIGGERmain()
+  triggerohlist=getTRIGGEROHmain()
+  killmask=getKILLMASKmain()
+  daqlist=getDAQmain()
+  iemask=getIEMASKmain()
+  daqohlist=getDAQOHmain()
+  ohlist=getOHmain()
+
+def updateModule(request, module, q):
   if request.method=="POST":
     if "update" in request.POST:
        regname = 'GEM_AMC.'+module.upper()+'.'+request.POST['update']
@@ -45,10 +60,7 @@ def read_gem_system_module(request,module):
    
   valuelist = []
   rowcolors = []
-  print 'looping through regs in reglist...'
-  print 'length:',len(reglist)
   for reg in reglist:
-    print 'reg:',reg.name
     try: 
       value = readReg(reg)
       valuelist.append(value)
@@ -119,4 +131,50 @@ def read_gem_system_module(request,module):
       print reg
   forename = "GEM_AMC."+module
   ziplist = zip(list(reg.name[len(forename)+1:] for reg in reglist),valuelist,rowcolors, list(reg.permission for reg in reglist))
-  return render(request,'module.html',{'module':module,'ziplist':ziplist})
+  q.put(ziplist)
+
+t1 = threading.Thread(target=updateMain)
+t2 = threading.Thread(target=updateModule)
+
+def main(request):
+  global ttclist
+  global triggerlist
+  global triggerohlist
+  global killmask
+  global daqlist
+  global iemask
+  global daqohlist
+  global ohlist
+  global t1
+  global lock
+  with lock:
+    t1=threading.Thread(target=updateMain)
+    t1.start()
+    t1.join()
+
+  return render(request,'main.html',{'main':True,
+                                     'ttclist':ttclist,
+                                     'triggerlist':triggerlist,
+                                     'triggerohlist':triggerohlist,
+                                     'killmask':killmask,
+                                     'daqlist':daqlist,
+                                     'iemask':iemask,
+                                     'daqohlist':daqohlist,
+                                     'ohlist':ohlist})
+
+def read_fw(request):
+  parseXML()
+  reg=getNode("GEM_AMC.GEM_SYSTEM.BOARD_ID")
+  print reg
+  return HttpResponse('Board ID %s'%(readReg(reg)))
+
+def read_gem_system_module(request,module):
+  global t1
+  global lock
+  q = Queue.Queue()
+  with lock:
+    t1=threading.Thread(target=updateModule, args=[request, module, q])
+    t1.start()
+    t1.join()
+  return render(request,'module.html',{'module':module,'ziplist':q.get()})
+

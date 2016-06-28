@@ -16,6 +16,7 @@ nodes = []
 
 class Node:
     name = ''
+    description = ''
     vhdlname = ''
     address = 0x0
     real_address = 0x0
@@ -38,6 +39,7 @@ class Node:
 
     def output(self):
         print 'Name:',self.name
+        print 'Description:',self.description
         print 'XML Address:','{0:#010x}'.format(self.address)
         print 'Real Address:','{0:#010x}'.format(self.real_address)
         print 'Permission:',self.permission
@@ -71,7 +73,6 @@ def makeTree(node,baseName,baseAddress,nodes,parentNode,vars,isGenerated):
         generateIdxVar = node.get('generate_idx_var')
         for i in range(0, generateSize):
             vars[generateIdxVar] = i
-            #print('generate base_addr = ' + hex(baseAddress + generateAddressStep * i) + ' for node ' + node.get('id'))
             makeTree(node, baseName, baseAddress + generateAddressStep * i, nodes, parentNode, vars, True)
         return
     newNode = Node()
@@ -80,8 +81,8 @@ def makeTree(node,baseName,baseAddress,nodes,parentNode,vars,isGenerated):
     name += node.get('id')
     name = substituteVars(name, vars)
     newNode.name = name
-    # print len(nodes), name
-    # print newNode.name
+    if node.get('description') is not None:
+        newNode.description = node.get('description')
     address = baseAddress
     if node.get('address') is not None:
         address = baseAddress + parseInt(node.get('address'))
@@ -174,9 +175,7 @@ def displayReg(reg,option=None):
     address = reg.real_address
     if 'r' not in reg.permission:
         return 'No read permission!'
-    print 'before rReg'
     value = rReg(parseInt(address))
-    print 'after rReg'
     if parseInt(value) == 0xdeaddead:
         if option=='hexbin': return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'Bus Error'
         else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'Bus Error'

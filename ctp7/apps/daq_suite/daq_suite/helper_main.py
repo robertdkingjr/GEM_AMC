@@ -2,7 +2,6 @@ from rw_reg import *
 NOH=4
 
 def getTTCmain():
-  print 'in TTCmain'
   values=[]
   namelist=['MMCM_LOCKED','TTC_SINGLE_ERROR_CNT','BC0_LOCKED','L1A_ID','L1A_RATE']
   displaystring=[]
@@ -31,7 +30,6 @@ def getTTCmain():
   return zip(namelist,displaystring) 
  
 def getTRIGGERmain():
-  print 'in TRIGGERmain'
   values=[]
   namelist=['OR_TRIGGER_RATE',]
   displaystring=[]
@@ -53,7 +51,6 @@ def getTRIGGERmain():
   return zip(namelist,displaystring) 
  
 def getKILLMASKmain():
-  print 'in KILLMASKmain'
   killmask=[]
   reg = getNode('GEM_AMC.TRIGGER.CTRL.OH_KILL_MASK')
   value='{0:012b}'.format(int(readReg(reg),16))
@@ -65,7 +62,6 @@ def getKILLMASKmain():
   return killmask
 
 def getTRIGGEROHmain():
-  print 'in TRIGGEROHmain'
   displaystring=[]
   namelist=[]
   nextstr = ''
@@ -86,7 +82,6 @@ def getTRIGGEROHmain():
   return zip(namelist,displaystring) 
 
 def getDAQmain():
-  print 'in DAQmain'
   namelist=['DAQ_ENABLE',
             'DAQ_LINK_READY',
             'DAQ_LINK_AFULL',
@@ -136,7 +131,6 @@ def getDAQmain():
   return zip(namelist,displaystring) 
 
 def getIEMASKmain():
-  print 'in IEMASKmain'
   iemask=[]
   reg = getNode('GEM_AMC.DAQ.CONTROL.INPUT_ENABLE_MASK')
   value='{0:012b}'.format(int(readReg(reg),16))
@@ -148,7 +142,6 @@ def getIEMASKmain():
   return iemask
 
 def getDAQOHmain():
-  print 'in DAQOHmain'
   displaystring=[]
   namelist=[]
   nextstr = ''
@@ -176,7 +169,6 @@ def getDAQOHmain():
   return zip(namelist,displaystring) 
 
 def getOHmain():
-  print 'in OHmain'
   displaystring=[]
   namelist=[]
   nextstr = ''
