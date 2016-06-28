@@ -9,6 +9,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="">
   <meta name="author" content="">
+  {% if main %}
+  <meta http-equiv="refresh" content="5" >
+  {% endif %}
   
   <title>CTP7</title>
   
@@ -30,9 +33,27 @@
 <style media="screen" type="text/css">
 .progress {
     margin-bottom: 0 !important;
+    background-color: #aaa;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+.progress.vertical {
+    position: relative;
+    width: 20px;
+    background-color: #aaa;
+    min-height: 120px;
+    float: left;
+    margin-right: 20px;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    border: none;
 }
 .table {
     margin-bottom: 0 !important;
+}
+.full-width {
+    display:block;
 }
 </style>
 </head>

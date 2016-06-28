@@ -1,5 +1,14 @@
 import xml.etree.ElementTree as xml
 import sys, os, subprocess
+from ctypes import *
+
+print 'Loading shared library: /mnt/persistent/texas/shared_libs/librwreg.so'
+lib = CDLL("/mnt/persistent/texas/shared_libs/librwreg.so")
+rReg = lib.getReg
+rReg.restype = c_uint
+rReg.argtypes=[c_uint]
+wReg = lib.putReg
+wReg.argtypes=[c_uint,c_uint]
 
 DEBUG = True
 ADDRESS_TABLE_TOP = '/mnt/persistent/texas/gem_amc_top.xml'
@@ -70,8 +79,8 @@ def makeTree(node,baseName,baseAddress,nodes,parentNode,vars,isGenerated):
     name += node.get('id')
     name = substituteVars(name, vars)
     newNode.name = name
-    #print len(nodes), name
-    #print newNode.name
+    # print len(nodes), name
+    # print newNode.name
     address = baseAddress
     if node.get('address') is not None:
         address = baseAddress + parseInt(node.get('address'))
@@ -121,7 +130,8 @@ def getRegsContaining(nodeString):
 
 def readAddress(address):
     try: 
-        output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
+        #output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
+        output = rReg(address) 
         value = ''.join(s for s in output if s.isalnum())
     except subprocess.CalledProcessError as e: value = parseError(int(str(e)[-1:]))
     return '{0:#010x}'.format(parseInt(str(value)))
@@ -150,12 +160,12 @@ def readReg(reg):
     address = reg.real_address
     if 'r' not in reg.permission:
         return 'No read permission!'
-    # mpeek
-    try: 
-        output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
-        value = ''.join(s for s in output if s.isalnum())
-    except subprocess.CalledProcessError as e: return parseError(int(str(e)[-1:]))
-    # Apply Mask
+    try:
+        value = rReg(parseInt(address))
+    except:
+        return 'Cannot read register' 
+    if parseInt(value) == 0xdeaddead:
+        return 'Bus Error'
     if reg.mask is not None:
         shift_amount=0
         for bit in reversed('{0:b}'.format(reg.mask)):
@@ -170,12 +180,10 @@ def displayReg(reg,option=None):
     address = reg.real_address
     if 'r' not in reg.permission:
         return 'No read permission!'
-    # mpeek
-    try: 
-        output = subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
-        value = ''.join(s for s in output if s.isalnum())
-    except subprocess.CalledProcessError as e: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+parseError(int(str(e)[-1:]))
-    # Apply Mask
+    value = rReg(parseInt(address))
+    if parseInt(value) == 0xdeaddead:
+        if option=='hexbin': return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'Bus Error'
+        else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'Bus Error'
     if reg.mask is not None:
         shift_amount=0
         for bit in reversed('{0:b}'.format(reg.mask)):
@@ -183,19 +191,14 @@ def displayReg(reg,option=None):
             else: break
         final_value = (parseInt(str(reg.mask))&parseInt(value)) >> shift_amount
     else: final_value = value
-    final_int =  parseInt(str(final_value))
-
+    final_int =  parseInt(final_value)
     if option=='hexbin': return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)+' = '+'{0:032b}'.format(final_int)
     else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)
-
+        
 def writeReg(reg, value):
-    try: address = reg.real_address
-    except:
-        print 'Reg',reg,'not a Node'
-        return
+    address = reg.real_address
     if 'w' not in reg.permission:
         return 'No write permission!'
-
     # Apply Mask if applicable
     if reg.mask is not None:
         shift_amount=0
@@ -207,18 +210,12 @@ def writeReg(reg, value):
         else: 
             initial_value = readReg(reg)
             try: initial_value = parseInt(initial_value) 
-            except: return 'Error reading initial value: '+str(initial_value)
+            except ValueError: return 'Error reading initial value: '+str(initial_value)
             final_value = (shifted_value & reg.mask) | (initial_value & ~reg.mask)
     else: final_value = value
+    output = wReg(parseInt(address),parseInt(final_value))
+    return str('{0:#010x}'.format(final_value)).rstrip('L')+'('+str(value)+')\twritten to '+reg.name
     
-    # mpoke
-    try: 
-        output = subprocess.check_output('mpoke '+str(address)+' '+str(final_value), stderr=subprocess.STDOUT , shell=True)
-        return str('{0:#010x}'.format(final_value)).rstrip('L')+'('+str(value)+')\twritten to '+reg.name
-    except subprocess.CalledProcessError as e: return parseError(int(str(e)[-1:]))
-    
-
-
 def isValid(address):
     try: subprocess.check_output('mpeek '+str(address), stderr=subprocess.STDOUT , shell=True)
     except subprocess.CalledProcessError as e: return False
@@ -245,7 +242,7 @@ def parseError(e):
     if e==1:
         return "Failed to parse address"
     if e==2:
-        return "Bus error"
+        return "My Bus error"
     else:
         return "Unknown error: "+str(e)
 

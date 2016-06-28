@@ -2,44 +2,23 @@ from django.http import HttpResponse
 from django.template import Template, Context
 from django.shortcuts import render
 from rw_reg import *
+from helper_main import *
 
 def hello(request):
   reg=getNode("GEM_AMC.GEM_SYSTEM.BOARD_ID")
   print reg
   return HttpResponse('Board ID %s'%(readReg(reg)))
 
-def getTTCmain():
-  values=[]
-  namelist=['MMCM_LOCKED','TTC_SINGLE_ERROR_CNT','BC0_LOCKED','L1A_ID','L1A_RATE']
-  displaystring=[]
-  reg = getNode('GEM_AMC.TTC.STATUS.MMCM_LOCKED')
-  if readReg(reg):
-    displaystring.append('<span class="label label-success">YES</span>')
-  else:
-    displaystring.append('<span class="label label-danger">NO</span>')
-  reg = getNode('GEM_AMC.TTC.STATUS.TTC_SINGLE_ERROR_CNT')
-  value=int(readReg(reg),16)
-  if value:
-    displaystring.append('<div class="progress"><div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="%s" aria-valuemin="0" aria-valuemax="65535" style="min-width: 3em;">%s</div></div>' % (value,value))
-  else:
-    displaystring.append('<div class="progress"><div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="%s" aria-valuemin="0" aria-valuemax="65535" style="min-width: 3em;">%s</div></div>' % (value,value))
-  reg = getNode('GEM_AMC.TTC.STATUS.BC0.LOCKED')
-  if readReg(reg):
-    displaystring.append('<span class="label label-success">YES</span>')
-  else:
-    displaystring.append('<span class="label label-danger">NO</span>')
-  reg = getNode('GEM_AMC.TTC.L1A_ID')
-  value=int(readReg(reg),16)
-  displaystring.append('<span class="label label-info">%s Hz</span>' % (value))
-  reg = getNode('GEM_AMC.TTC.L1A_RATE')
-  value=int(readReg(reg),16)
-  displaystring.append('<span class="label label-info">%s Hz</span>' % (value))
-
-  return zip(namelist,displaystring) 
-  
-
 def main(request):
-  return render(request,'main.html',{'main':True,'ttclist':getTTCmain()})
+  return render(request,'main.html',{'main':True,
+                                     'ttclist':getTTCmain(),
+                                     'triggerlist':getTRIGGERmain(),
+                                     'triggerohlist':getTRIGGEROHmain(),
+                                     'killmask':getKILLMASKmain(),
+                                     'daqlist':getDAQmain(),
+                                     'iemask':getIEMASKmain(),
+                                     'daqohlist':getDAQOHmain(),
+                                     'ohlist':getOHmain()})
 
 def read_fw(request):
   parseXML()
