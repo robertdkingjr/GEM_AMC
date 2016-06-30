@@ -1,18 +1,25 @@
 import xml.etree.ElementTree as xml
 import sys, os, subprocess
 from ctypes import *
+import uhal
 
-print 'Loading shared library: /mnt/persistent/texas/shared_libs/librwreg.so'
-lib = CDLL("/mnt/persistent/texas/shared_libs/librwreg.so")
-rReg = lib.getReg
-rReg.restype = c_uint
-rReg.argtypes=[c_uint]
-wReg = lib.putReg
-wReg.argtypes=[c_uint,c_uint]
+onGLIB = True
 
+if not onGLIB:
+    print 'Loading shared library: /mnt/persistent/texas/shared_libs/librwreg.so'
+    lib = CDLL("/mnt/persistent/texas/shared_libs/librwreg.so")
+    rReg = lib.getReg
+    rReg.restype = c_uint
+    rReg.argtypes=[c_uint]
+    wReg = lib.putReg
+    wReg.argtypes=[c_uint,c_uint]
+    
 DEBUG = True
 ADDRESS_TABLE_TOP = '/mnt/persistent/texas/gem_amc_top.xml'
 nodes = []
+
+GLIB_ADDRESS_TABLE_NAME = 'glib_address_table.xml'
+
 
 class Node:
     name = ''
@@ -57,6 +64,28 @@ def main():
     kids = []
     getAllChildren(random_node, kids)
     print len(kids), kids.name
+
+def parseGLIB(uTCAslot=12):
+    uTCA = uTCAslot+160
+    ipaddr = '192.168.0.%d'%(uTCA)
+    #address_table = "file://${GEM_ADDRESS_TABLE_PATH}/"+GLIB_ADDRESS_TABLE_NAME
+    #address_table = "file://${BUILD_HOME}/GEM_AMC/scripts/address_table/uhal_gem_amc_address_table.xml"
+    #address_table = "file://${BUILD_HOME}/GEM_AMC/scripts/address_table/gem_amc_top.xml"
+    address_table = "file://${BUILD_HOME}/GEM_AMC/scripts/address_table/uhal_gem_amc_glib.xml"
+    uri = "chtcp-2.0://localhost:10203?target=%s:50001"%(ipaddr)
+    glib = uhal.getDevice( "glib" , uri, address_table )
+    #glib_address_table_path = os.getenv('GEM_ADDRESS_TABLE_PATH')+'/'+GLIB_ADDRESS_TABLE_NAME
+    #glib_address_table_path = os.getenv('BUILD_HOME')+'/GEM_AMC/scripts/address_table/uhal_gem_amc_address_table.xml'
+    #glib_address_table_path = os.getenv('BUILD_HOME')+'/GEM_AMC/scripts/address_table/gem_amc_top.xml'
+    glib_address_table_path = os.getenv('BUILD_HOME')+'/GEM_AMC/scripts/address_table/uhal_gem_amc_glib.xml'
+    print 'Parsing',glib_address_table_path,'...'
+    tree = xml.parse(glib_address_table_path)
+    root = tree.getroot()[0]
+    vars = {}
+    makeTree(root,'',0x0,nodes,None,vars,False)
+
+    return glib
+
 
 def parseXML():
     print 'Parsing',ADDRESS_TABLE_TOP,'...'
@@ -154,42 +183,64 @@ def mpoke(address,value):
     return 'Done.'
 
 
-def readReg(reg):
-    address = reg.real_address
-    if 'r' not in reg.permission:
-        return 'No read permission!'
-    value = rReg(parseInt(address))
-    if parseInt(value) == 0xdeaddead:
-        return 'Bus Error'
-    if reg.mask is not None:
-        shift_amount=0
-        for bit in reversed('{0:b}'.format(reg.mask)):
-            if bit=='0': shift_amount+=1
-            else: break
-        final_value = (parseInt(str(reg.mask))&parseInt(value)) >> shift_amount
-    else: final_value = value
-    final_int =  parseInt(str(final_value))
-    return '{0:#010x}'.format(final_int)
+def readReg(reg, GLIB=None):
 
-def displayReg(reg,option=None):
-    address = reg.real_address
-    if 'r' not in reg.permission:
-        return 'No read permission!'
-    value = rReg(parseInt(address))
-    if parseInt(value) == 0xdeaddead:
-        if option=='hexbin': return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'Bus Error'
-        else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'Bus Error'
-    if reg.mask is not None:
-        shift_amount=0
-        for bit in reversed('{0:b}'.format(reg.mask)):
-            if bit=='0': shift_amount+=1
-            else: break
-        final_value = (parseInt(str(reg.mask))&parseInt(value)) >> shift_amount
-    else: final_value = value
-    final_int =  parseInt(final_value)
-    if option=='hexbin': return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)+' = '+'{0:032b}'.format(final_int)
-    else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)
-        
+    if GLIB is not None:
+        try:
+            value = GLIB.getNode(reg.name).read()
+            GLIB.dispatch()
+            return '{0:#010x}'.format(value)
+        except uhal.exception, e:
+            print reg.name,'uHal Exception:',e
+
+
+    else:
+        address = reg.real_address
+        if 'r' not in reg.permission:
+            return 'No read permission!'
+        value = rReg(parseInt(address))
+        if parseInt(value) == 0xdeaddead:
+            return 'Bus Error'
+        if reg.mask is not None:
+            shift_amount=0
+            for bit in reversed('{0:b}'.format(reg.mask)):
+                if bit=='0': shift_amount+=1
+                else: break
+            final_value = (parseInt(str(reg.mask))&parseInt(value)) >> shift_amount
+        else: final_value = value
+        final_int =  parseInt(str(final_value))
+        return '{0:#010x}'.format(final_int)
+    
+def displayReg(reg,option=None, GLIB=None):
+
+    if GLIB is not None:
+        try:
+            value = GLIB.getNode(reg.name).read()
+            GLIB.dispatch()
+            if value is not None:
+                return hex(reg.address).rstrip('L')+' '+str(reg.permission)+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(value)
+        except uhal.exception, e:
+            print reg.name,'uHal Exception:'#,e
+
+    else:    
+        address = reg.real_address
+        if 'r' not in reg.permission:
+            return 'No read permission!'
+        value = rReg(parseInt(address))
+        if parseInt(value) == 0xdeaddead:
+            if option=='hexbin': return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'Bus Error'
+            else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'Bus Error'
+        if reg.mask is not None:
+            shift_amount=0
+            for bit in reversed('{0:b}'.format(reg.mask)):
+                if bit=='0': shift_amount+=1
+                else: break
+            final_value = (parseInt(str(reg.mask))&parseInt(value)) >> shift_amount
+        else: final_value = value
+        final_int =  parseInt(final_value)
+        if option=='hexbin': return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)+' = '+'{0:032b}'.format(final_int)
+        else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)
+            
 def writeReg(reg, value):
     address = reg.real_address
     if 'w' not in reg.permission:
