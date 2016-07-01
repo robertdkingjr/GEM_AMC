@@ -940,7 +940,15 @@
             <node id="REF_CLK" address="0x00000000" permission="rw" mask="0x00000003"/>
           </node>
           <node id="OUTPUT" address="0x00000005" permission="rw" >
-            <node id="SBITS" address="0x00000000" permission="rw" />
+            <node id="SBITS" address="0x00000000" permission="rw" >
+              <node id="OUT0" address="0x00000000" permission="rw" mask="0x0000001f"/>
+              <node id="OUT1" address="0x00000000" permission="rw" mask="0x000003e0"/>
+              <node id="OUT2" address="0x00000000" permission="rw" mask="0x00007c00"/>
+              <node id="OUT3" address="0x00000000" permission="rw" mask="0x000f8000"/>
+              <node id="OUT4" address="0x00000000" permission="rw" mask="0x001f0000"/>
+              <node id="OUT5" address="0x00000000" permission="rw" mask="0x03e00000"/>
+            </node>
+            <node id="HDMI_SBIT_MODE" address="0x00000003" permission="rw" mask="0x00000003"/>
           </node>
           <node id="THROTTLE" address="0x00000006" permission="rw" mask="0xffffffff"/>
           <node id="ZS" address="0x00000007" permission="rw" mask="0x00000001"/>
@@ -5316,7 +5324,15 @@
             <node id="REF_CLK" address="0x00000000" permission="rw" mask="0x00000003"/>
           </node>
           <node id="OUTPUT" address="0x00000005" permission="rw" >
-            <node id="SBITS" address="0x00000000" permission="rw" />
+            <node id="SBITS" address="0x00000000" permission="rw" >
+              <node id="OUT0" address="0x00000000" permission="rw" mask="0x0000001f"/>
+              <node id="OUT1" address="0x00000000" permission="rw" mask="0x000003e0"/>
+              <node id="OUT2" address="0x00000000" permission="rw" mask="0x00007c00"/>
+              <node id="OUT3" address="0x00000000" permission="rw" mask="0x000f8000"/>
+              <node id="OUT4" address="0x00000000" permission="rw" mask="0x001f0000"/>
+              <node id="OUT5" address="0x00000000" permission="rw" mask="0x03e00000"/>
+            </node>
+            <node id="HDMI_SBIT_MODE" address="0x00000003" permission="rw" mask="0x00000003"/>
           </node>
           <node id="THROTTLE" address="0x00000006" permission="rw" mask="0xffffffff"/>
           <node id="ZS" address="0x00000007" permission="rw" mask="0x00000001"/>
@@ -9692,7 +9708,15 @@
             <node id="REF_CLK" address="0x00000000" permission="rw" mask="0x00000003"/>
           </node>
           <node id="OUTPUT" address="0x00000005" permission="rw" >
-            <node id="SBITS" address="0x00000000" permission="rw" />
+            <node id="SBITS" address="0x00000000" permission="rw" >
+              <node id="OUT0" address="0x00000000" permission="rw" mask="0x0000001f"/>
+              <node id="OUT1" address="0x00000000" permission="rw" mask="0x000003e0"/>
+              <node id="OUT2" address="0x00000000" permission="rw" mask="0x00007c00"/>
+              <node id="OUT3" address="0x00000000" permission="rw" mask="0x000f8000"/>
+              <node id="OUT4" address="0x00000000" permission="rw" mask="0x001f0000"/>
+              <node id="OUT5" address="0x00000000" permission="rw" mask="0x03e00000"/>
+            </node>
+            <node id="HDMI_SBIT_MODE" address="0x00000003" permission="rw" mask="0x00000003"/>
           </node>
           <node id="THROTTLE" address="0x00000006" permission="rw" mask="0xffffffff"/>
           <node id="ZS" address="0x00000007" permission="rw" mask="0x00000001"/>
@@ -14068,7 +14092,15 @@
             <node id="REF_CLK" address="0x00000000" permission="rw" mask="0x00000003"/>
           </node>
           <node id="OUTPUT" address="0x00000005" permission="rw" >
-            <node id="SBITS" address="0x00000000" permission="rw" />
+            <node id="SBITS" address="0x00000000" permission="rw" >
+              <node id="OUT0" address="0x00000000" permission="rw" mask="0x0000001f"/>
+              <node id="OUT1" address="0x00000000" permission="rw" mask="0x000003e0"/>
+              <node id="OUT2" address="0x00000000" permission="rw" mask="0x00007c00"/>
+              <node id="OUT3" address="0x00000000" permission="rw" mask="0x000f8000"/>
+              <node id="OUT4" address="0x00000000" permission="rw" mask="0x001f0000"/>
+              <node id="OUT5" address="0x00000000" permission="rw" mask="0x03e00000"/>
+            </node>
+            <node id="HDMI_SBIT_MODE" address="0x00000003" permission="rw" mask="0x00000003"/>
           </node>
           <node id="THROTTLE" address="0x00000006" permission="rw" mask="0xffffffff"/>
           <node id="ZS" address="0x00000007" permission="rw" mask="0x00000001"/>
@@ -18067,6 +18099,8 @@
         <node id="FW_DATE" address="0x0000c000" permission="r" mask="0xffffffff"/>
       </node>
     </node>
+  </node>
+    
     <node id="GLIB_SYSTEM" address="0x00910000" >
       <node id="SYSTEM" address="0x00000000" permission="r" >
         <node id="BOARD_ID" address="0x00000000" >
@@ -18427,5 +18461,4 @@
       <node id="SYSTEM_ID" address="0x00000001" permission="r" mask="0xffffffff"/>
       <node id="FIRMWARE_VERSION" address="0x00000002" permission="r" mask="0xffffffff"/>
     </node>
-  </node>
 </node>
