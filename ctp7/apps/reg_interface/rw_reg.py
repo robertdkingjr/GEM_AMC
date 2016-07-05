@@ -187,12 +187,15 @@ def readReg(reg, GLIB=None):
 
     if GLIB is not None:
         try:
+            if 'OH2' in reg.name or 'OH3' in reg.name:
+                # return 'GLIB only supports OH0,OH1'
+                return
             value = GLIB.getNode(reg.name).read()
             GLIB.dispatch()
             return '{0:#010x}'.format(value)
         except uhal.exception, e:
-            print reg.name,'uHal Exception:',e
-
+            # return str(e)[-28:-1]
+            return str(e)[:-1]
 
     else:
         address = reg.real_address
@@ -215,21 +218,23 @@ def displayReg(reg,option=None, GLIB=None):
 
     if GLIB is not None:
         try:
+            if 'OH2' in reg.name or 'OH3' in reg.name:
+                return
+            address = reg.real_address
             value = GLIB.getNode(reg.name).read()
             GLIB.dispatch()
-            if value is not None:
-                return hex(reg.address).rstrip('L')+' '+str(reg.permission)+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(value)
+            return hex(address).rstrip('L')+' '+str(reg.permission)+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(value)
         except uhal.exception, e:
-            print reg.name,'uHal Exception:'#,e
+            return hex(address).rstrip('L')+' '+str(reg.permission)+'\t'+tabPad(reg.name,7)+str(e)[:-1]
 
     else:    
         address = reg.real_address
-        if 'r' not in reg.permission:
+        if 'r' not in str(reg.permission):
             return 'No read permission!'
         value = rReg(parseInt(address))
         if parseInt(value) == 0xdeaddead:
-            if option=='hexbin': return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'Bus Error'
-            else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'Bus Error'
+            if option=='hexbin': return hex(address).rstrip('L')+' '+str(reg.permission)+'\t'+tabPad(reg.name,7)+'Bus Error'
+            else: return hex(address).rstrip('L')+' '+str(reg.permission)+'\t'+tabPad(reg.name,7)+'Bus Error'
         if reg.mask is not None:
             shift_amount=0
             for bit in reversed('{0:b}'.format(reg.mask)):
@@ -238,8 +243,8 @@ def displayReg(reg,option=None, GLIB=None):
             final_value = (parseInt(str(reg.mask))&parseInt(value)) >> shift_amount
         else: final_value = value
         final_int =  parseInt(final_value)
-        if option=='hexbin': return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)+' = '+'{0:032b}'.format(final_int)
-        else: return hex(address).rstrip('L')+' '+reg.permission+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)
+        if option=='hexbin': return hex(address).rstrip('L')+' '+str(reg.permission)+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)+' = '+'{0:032b}'.format(final_int)
+        else: return hex(address).rstrip('L')+' '+str(reg.permission)+'\t'+tabPad(reg.name,7)+'{0:#010x}'.format(final_int)
             
 def writeReg(reg, value):
     address = reg.real_address
