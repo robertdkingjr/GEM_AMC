@@ -51,6 +51,7 @@ port
   ERR_DISPER_COUNT                : out std_logic_vector(15 downto 0);
   ERR_NOT_IN_TABLE_COUNT          : out std_logic_vector(15 downto 0);
   BC0_IN                          : in std_logic;
+  RESYNC_IN                       : in std_logic;
   CLK125_IN                       : in std_logic
 );
 end daqlink_wrapper;
@@ -150,6 +151,7 @@ component DAQ_Link_V6
            TTSclk                     : in  STD_LOGIC; -- clock source which clocks TTS signals
            TTS                        : in  STD_LOGIC_VECTOR (3 downto 0);
          -- Data port
+           ReSyncAndEmpty             : in  STD_LOGIC;
            EventDataClk               : in  STD_LOGIC;
            EventData_valid            : in  STD_LOGIC; -- used as data write enable
            EventData_header           : in  STD_LOGIC; -- first data word
@@ -427,6 +429,7 @@ begin
            TTSclk                     => TTS_CLK_IN,
            TTS                        => TTS_STATE_IN,
          -- Data port
+           ReSyncAndEmpty             => RESYNC_IN, 
            EventDataClk               => DATA_CLK_IN,
            EventData_valid            => DATA_WRITE_EN_IN,
            EventData_header           => EVENT_DATA_HEADER_IN,

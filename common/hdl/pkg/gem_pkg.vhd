@@ -10,10 +10,10 @@ package gem_pkg is
     --==  Firmware version  ==--
     --========================-- 
 
-    constant C_FIRMWARE_DATE    : std_logic_vector(31 downto 0) := x"20160526";
+    constant C_FIRMWARE_DATE    : std_logic_vector(31 downto 0) := x"20160630";
     constant C_FIRMWARE_MAJOR   : integer range 0 to 255        := 1;
-    constant C_FIRMWARE_MINOR   : integer range 0 to 255        := 3;
-    constant C_FIRMWARE_BUILD   : integer range 0 to 255        := 7;
+    constant C_FIRMWARE_MINOR   : integer range 0 to 255        := 4;
+    constant C_FIRMWARE_BUILD   : integer range 0 to 255        := 3;
 
     --======================--
     --==      General     ==--
@@ -22,6 +22,7 @@ package gem_pkg is
     constant C_LED_PULSE_LENGTH_TTC_CLK : std_logic_vector(20 downto 0) := std_logic_vector(to_unsigned(1_600_000, 21));
 
     function count_ones(s : std_logic_vector) return integer;
+    function bool_to_std_logic(L : BOOLEAN) return std_logic;
 
     --======================--
     --== Config Constants ==--
@@ -139,6 +140,8 @@ package gem_pkg is
     type t_daqlink_to_daq is record
         ready           : std_logic;
         almost_full     : std_logic;
+        disperr_cnt     : std_logic_vector(15 downto 0);
+        notintable_cnt  : std_logic_vector(15 downto 0);
     end record;
 
     --====================--
@@ -279,5 +282,14 @@ package body gem_pkg is
 
         return temp;
     end function count_ones;
+
+    function bool_to_std_logic(L : BOOLEAN) return std_logic is
+    begin
+        if L then
+            return ('1');
+        else
+            return ('0');
+        end if;
+    end function bool_to_std_logic;
     
 end gem_pkg;

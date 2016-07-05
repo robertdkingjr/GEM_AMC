@@ -17,14 +17,20 @@ mkdir $SIGASI_PRJ_DIR
 SCRIPTS_DIR=`pwd`
 cd $SIGASI_PRJ_DIR
 
-python $SIGASI_PRJ_CREATOR_DIR/convertXilinxISEToSigasiProject.py gem_glib $SCRIPTS_DIR/../glib/work_dir/gem_glib.xpr
+python $SIGASI_PRJ_CREATOR_DIR/convertXilinxISEToSigasiProject.py gem_glib $SCRIPTS_DIR/../glib/work_dir/gem_glib.xise
+
+#replace the incorrect sigasi/hdl path with glib/hdl (sigasi/hdl is infered from ../hdl in the xise)
+sed -i 's/sigasi\/hdl/glib/g' .project
+sed -i 's/<name>hdl<\/name>/<name>glib<\/name>/g' .project
+sed -i 's/Location="hdl\//Location="glib\/hdl\//g' .library_mapping.xml
 
 #remove all IP files
 sed -i "/\/ip\//d" .library_mapping.xml
 
-#add unisim libs
-echo "TODO: add Xilinx libraries"
-#sed -i -e "/xmlns:com.sigasi/a"$'\\\n'"  <Mappings Location=\"Common Libraries/unisim\" Library=\"unisim\"/>"$'\n' .library_mapping.xml
-#sed -i -e "/xmlns:com.sigasi/a"$'\\\n'"  <Mappings Location=\"Common Libraries/unisim/secureip\" Library=\"not mapped\"/>"$'\n' .library_mapping.xml
-#sed -i -e "/xmlns:com.sigasi/a"$'\\\n'"  <Mappings Location=\"Common Libraries/unisim/primitive\" Library=\"not mapped\"/>"$'\n' .library_mapping.xml
-#sed -i -e "/<linkedResources>/a"$'\\\n'"		<link>\n			<name>Common Libraries/unisim</name>\n			<type>2</type>\n			<locationURI>SIGASI_TOOLCHAIN_XILINX_VIVADO/ids_lite/ISE/vhdl/src/unisims</locationURI>\n		</link>"$'\n' .project
+#add unisim and unimacro libs
+sed -i -e "/xmlns:com.sigasi/a"$'\\\n'"  <Mappings Location=\"Common Libraries/unisim\" Library=\"unisim\"/>"$'\n' .library_mapping.xml
+sed -i -e "/xmlns:com.sigasi/a"$'\\\n'"  <Mappings Location=\"Common Libraries/unisim/secureip\" Library=\"not mapped\"/>"$'\n' .library_mapping.xml
+sed -i -e "/xmlns:com.sigasi/a"$'\\\n'"  <Mappings Location=\"Common Libraries/unisim/primitive\" Library=\"not mapped\"/>"$'\n' .library_mapping.xml
+sed -i -e "/xmlns:com.sigasi/a"$'\\\n'"  <Mappings Location=\"Common Libraries/unimacro/unimacro_VCOMP.vhd\" Library=\"unimacro\"/>"$'\n' .library_mapping.xml
+sed -i -e "/<linkedResources>/a"$'\\\n'"                <link>\n                        <name>Common Libraries/unisim</name>\n                  <type>2</type>\n                        <locationURI>SIGASI_TOOLCHAIN_XILINX_ISE/vhdl/src/unisims</locationURI>\n               </link>"$'\n' .project
+sed -i -e "/<linkedResources>/a"$'\\\n'"                <link>\n                        <name>Common Libraries/unimacro</name>\n                        <type>2</type>\n                        <locationURI>SIGASI_TOOLCHAIN_XILINX_ISE/vhdl/src/unimacro</locationURI>\n              </link>"$'\n' .project

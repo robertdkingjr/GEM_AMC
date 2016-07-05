@@ -24,7 +24,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
 
-use work.gth_pkg.all;
+--use work.gth_pkg.all;
 use work.ttc_pkg.all;
 use work.gem_pkg.all;
 use work.ipbus.all;
@@ -491,28 +491,28 @@ begin
     --==        Debug           ==--
     --============================--
     
-    gen_debug:
-    if g_DEBUG and not g_USE_GBT generate
-        
-        --debug_tr_tx_link.txcharisk(1 downto 0) <= sync_tk_tx_din(17 downto 16); 
-
-        gt_tx_link_ila_inst : entity work.gt_tx_link_ila_wrapper
-            port map(
-                clk_i => ttc_clk_i.clk_160,
-                kchar_i => sync_tk_tx_din(17 downto 16),
-                data_i => sync_tk_tx_din(15 downto 0)
-            );
-        
-        sync_tk_rx_din <= gth_rx_data_i.rxdisperr(1 downto 0) & gth_rx_data_i.rxnotintable(1 downto 0) & gth_rx_data_i.rxchariscomma(1 downto 0) & gth_rx_data_i.rxcharisk(1 downto 0) & gth_rx_data_i.rxdata(15 downto 0);
-        gt_rx_link_ila_inst : entity work.gt_rx_link_ila_wrapper
-            port map(
-                clk_i => ttc_clk_i.clk_160,
-                kchar_i => sync_tk_rx_dout(17 downto 16),
-                comma_i => sync_tk_rx_dout(19 downto 18),
-                not_in_table_i => sync_tk_rx_dout(21 downto 20),
-                disperr_i => sync_tk_rx_dout(23 downto 22),
-                data_i => sync_tk_rx_dout(15 downto 0)
-            );
-    end generate;     
+--    gen_debug:
+--    if g_DEBUG and not g_USE_GBT generate
+--        
+--        --debug_tr_tx_link.txcharisk(1 downto 0) <= sync_tk_tx_din(17 downto 16); 
+--
+--        gt_tx_link_ila_inst : entity work.gt_tx_link_ila_wrapper
+--            port map(
+--                clk_i => ttc_clk_i.clk_160,
+--                kchar_i => sync_tk_tx_din(17 downto 16),
+--                data_i => sync_tk_tx_din(15 downto 0)
+--            );
+--        
+--        sync_tk_rx_din <= gth_rx_data_i.rxdisperr(1 downto 0) & gth_rx_data_i.rxnotintable(1 downto 0) & gth_rx_data_i.rxchariscomma(1 downto 0) & gth_rx_data_i.rxcharisk(1 downto 0) & gth_rx_data_i.rxdata(15 downto 0);
+--        gt_rx_link_ila_inst : entity work.gt_rx_link_ila_wrapper
+--            port map(
+--                clk_i => ttc_clk_i.clk_160,
+--                kchar_i => sync_tk_rx_dout(17 downto 16),
+--                comma_i => sync_tk_rx_dout(19 downto 18),
+--                not_in_table_i => sync_tk_rx_dout(21 downto 20),
+--                disperr_i => sync_tk_rx_dout(23 downto 22),
+--                data_i => sync_tk_rx_dout(15 downto 0)
+--            );
+--    end generate;     
      
 end optohybrid_arch;
