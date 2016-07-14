@@ -68,16 +68,16 @@ def main():
 def parseGLIB(uTCAslot=12):
     uTCA = uTCAslot+160
     ipaddr = '192.168.0.%d'%(uTCA)
-    #address_table = "file://${GEM_ADDRESS_TABLE_PATH}/"+GLIB_ADDRESS_TABLE_NAME
+    address_table = "file://${GEM_ADDRESS_TABLE_PATH}/"+GLIB_ADDRESS_TABLE_NAME
     #address_table = "file://${BUILD_HOME}/GEM_AMC/scripts/address_table/uhal_gem_amc_address_table.xml"
     #address_table = "file://${BUILD_HOME}/GEM_AMC/scripts/address_table/gem_amc_top.xml"
-    address_table = "file://${BUILD_HOME}/GEM_AMC/scripts/address_table/uhal_gem_amc_glib.xml"
+    #address_table = "file://${BUILD_HOME}/GEM_AMC/scripts/address_table/uhal_gem_amc_glib.xml"
     uri = "chtcp-2.0://localhost:10203?target=%s:50001"%(ipaddr)
     glib = uhal.getDevice( "glib" , uri, address_table )
-    #glib_address_table_path = os.getenv('GEM_ADDRESS_TABLE_PATH')+'/'+GLIB_ADDRESS_TABLE_NAME
+    glib_address_table_path = os.getenv('GEM_ADDRESS_TABLE_PATH')+'/'+GLIB_ADDRESS_TABLE_NAME
     #glib_address_table_path = os.getenv('BUILD_HOME')+'/GEM_AMC/scripts/address_table/uhal_gem_amc_address_table.xml'
     #glib_address_table_path = os.getenv('BUILD_HOME')+'/GEM_AMC/scripts/address_table/gem_amc_top.xml'
-    glib_address_table_path = os.getenv('BUILD_HOME')+'/GEM_AMC/scripts/address_table/uhal_gem_amc_glib.xml'
+    #glib_address_table_path = os.getenv('BUILD_HOME')+'/GEM_AMC/scripts/address_table/uhal_gem_amc_glib.xml'
     print 'Parsing',glib_address_table_path,'...'
     tree = xml.parse(glib_address_table_path)
     root = tree.getroot()[0]

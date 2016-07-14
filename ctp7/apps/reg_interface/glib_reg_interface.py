@@ -361,7 +361,7 @@ def isValidVFAT(vfat):
 
 if __name__ == '__main__':
     try:
-        glib = parseGLIB()
+        glib = parseGLIB(10)
         uhal.setLogLevelTo( uhal.LogLevel.FATAL )
         prompt = Prompt()
         prompt.prompt = 'GLIB > '
