@@ -13,8 +13,8 @@ def main():
     # wReg = lib.putReg
     # wReg.argtypes=[c_uint,c_uint]
 
-    CTP7 = parseCTP7()
-    GLIB = parseGLIB()
+#    CTP7 = parseCTP7()
+    GLIB = parseGLIB(10)
 
 
     ctp7_reg = "GEM_AMC.GEM_SYSTEM.BOARD_ID"
@@ -28,14 +28,14 @@ def main():
     
     # print "Time to read 1000 CTP7 registers: %f seconds"%t
 
-    for i in range(5):
-        t = time.time()
-        for i in range(1000):
-            value = CTP7.getNode(glib_reg).read()
-            CTP7.dispatch()
-        t = time.time() - t
+    # for i in range(5):
+    #     t = time.time()
+    #     for i in range(1000):
+    #         value = CTP7.getNode(glib_reg).read()
+    #         CTP7.dispatch()
+    #     t = time.time() - t
         
-        print "Time to read 1000 GLIB registers: %f seconds"%t
+    #     print "Time to read 1000 GLIB registers: %f seconds"%t
 
 
     for i in range(5):

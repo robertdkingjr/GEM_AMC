@@ -199,6 +199,9 @@ def mpoke(address,value):
     except subprocess.CalledProcessError as e: return parseError(int(str(e)[-1:]))
     return 'Done.'
 
+def quickRead(address):
+    value = rReg(parseInt(address))
+    return value
 
 def readReg(reg, GLIB=None):
 

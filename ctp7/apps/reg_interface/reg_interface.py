@@ -1,5 +1,5 @@
 from cmd import Cmd
-import sys, os, subprocess
+import sys, os, subprocess, time
 from rw_reg import *
 from vfat_config import *
 
@@ -19,7 +19,15 @@ class Prompt(Cmd):
                 print 'Node not found:',args
 
         else: print 'Incorrect number of arguments.' 
-                
+
+    def do_timer(self, args):
+        """ Time 1000 reg reads """
+        t = time.time()
+        for i in range(1000):
+            value = quickRead(0x66400008)
+        t = time.time() - t
+        
+        print "Time to read 1000 CTP7 registers: %f seconds"%t
 
 
     def do_sbittranslate(self, args):

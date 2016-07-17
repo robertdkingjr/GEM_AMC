@@ -1,6 +1,7 @@
 #include <stdio.h>      /* printf */
 #include <time.h>
-#include <librwreg.so>
+#include <rwreg.h>
+#include <string.h>
 
 using namespace std;
 
@@ -8,12 +9,14 @@ int main()
 {
   clock_t t;
   string ctp7_reg = "GEM_AMC.GEM_SYSTEM.BOARD_ID";
+  unsigned int ctp7_address = 0x66400008;
   string oh_reg = "";
   string glib_reg = "GEM_AMC.GEM_SYSTEM.BOARD_ID";
-
+  unsigned int glib_address = 0;
+  
   t = clock();
-  for (i = 0;i<1000;i++) {
-    getReg(ctp7_reg);
+  for (int i = 0;i<1000;i++) {
+    getReg(ctp7_address);
   }
   t = clock() - t;
 
