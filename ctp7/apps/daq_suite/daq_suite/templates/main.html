@@ -9,12 +9,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="">
   <meta name="author" content="">
+  {% if main %}
+  <meta http-equiv="refresh" content="5" >
+  {% else %}
+  <meta http-equiv="refresh" content="13" >
+  {% endif %}
   
   <title>CTP7</title>
   
   
   <!-- Bootstrap Core CSS -->
-  <link  rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+  <link  rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
   
   <!-- Custom CSS -->
   <link href="{% static 'css/portfolio-item.css' %}" rel="stylesheet">
@@ -27,13 +32,48 @@
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
   <![endif]-->
 
+<style media="screen" type="text/css">
+.progress {
+    margin-bottom: 0 !important;
+    background-color: #aaa;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+.progress.vertical {
+    position: relative;
+    width: 20px;
+    background-color: #aaa;
+    min-height: 120px;
+    float: left;
+    margin-right: 20px;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    border: none;
+}
+.table {
+    margin-bottom: 0 !important;
+}
+.full-width {
+    display:block;
+}
+.input-xs {
+    height: 22px;
+    padding: 2px 5px;
+    font-size: 12px;
+    line-height: 1.5; //If Placeholder of the input is moved up, rem/modify this.
+    border-radius: 3px;
+}
+</style>
 </head>
 
 <body>
 {% block nav %}
 {% include 'nav.html' %}
 {% endblock %}
-
+{% if main %}
+{% include "system_overview.html" %}
+{% endif %}
 {% block module %}
 {% endblock %}
  <!-- jQuery -->
