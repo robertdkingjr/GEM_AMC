@@ -17,10 +17,14 @@ from django.conf.urls import url
 from django.contrib import admin
 
 from daq_suite.views import *
+from rw_reg import parseXML
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^hello/', hello),
+    url(r'^main/', main),
     url(r'^read_fw/', read_fw),
-    url(r'^read_gem_system_module/', read_gem_system_module),
+    #url(r'^monitoring/([a-zA-Z]+)/', read_gem_system_module),
+    url(r'^monitoring/(\w.+)/', read_gem_system_module),
 ]
+parseXML()
