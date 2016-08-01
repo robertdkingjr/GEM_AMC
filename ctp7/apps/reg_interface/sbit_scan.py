@@ -208,9 +208,15 @@ def scan_vfat(vfat_slot, outfile, errfile):
         return
     print 'VFAT ID:',hex(vfat_hexID)
 
-    # Mask VFATs
-    heading('MASK VFATS')
-    unmaskVFAT(OH_NUM,vfat_slot)
+    # Clear all channels on all VFATs for V2A testing (no VFAT masking)
+    if V2ATEST:
+        print 'Clearing all channels on all VFATs'
+        clearAllVFATChannels(OH_NUM)
+
+    # Mask VFATs (masking not enabled in v2a FW)
+    if not V2ATEST:
+        heading('MASK VFATS')
+        unmaskVFAT(OH_NUM,vfat_slot)
 
     # Set default VFAT values & Threshold,VCal,RunMode
     heading('SET VFAT SETTINGS')
