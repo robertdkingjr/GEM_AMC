@@ -9,7 +9,7 @@ MAX_OH_NUM = 3
 class Prompt(Cmd):
 
     def do_outputnode(self, args):
-        """Output properies of node matching name"""
+        """Output properies of node matching name. USAGE: outputnode <NAME>"""
         arglist = args.split()
         if len(arglist)==1:
             node = getNode(args)
@@ -23,7 +23,7 @@ class Prompt(Cmd):
 
 
     def do_sbittranslate(self, args):
-        """Decode SBit Cluster. USAGE: sbittranslate <SBIT CLUSTER>"""
+        """Decode SBit Cluster data. USAGE: sbittranslate <SBIT CLUSTER>"""
         arglist = args.split()
         if len(arglist)==1:
             try: cluster = parseInt(args)
@@ -49,8 +49,8 @@ class Prompt(Cmd):
                 return
             elif int(arglist[0])<0 or int(arglist[0])>MAX_OH_NUM: print 'Invalid OH number:',arglist[0]
             else:
-                if getNodesContaining('GEM_AMC.OH.OH'+str(arglist[0])) is not None:
-                    for reg in getNodesContaining('GEM_AMC.OH.OH'+str(arglist[0])):
+                if getNodesContaining('GEM_AMC.OH.OH'+str(arglist[0])+'.') is not None:
+                    for reg in getNodesContaining('GEM_AMC.OH.OH'+str(arglist[0])+'.'):
                         address = reg.real_address
                         if 'r' in str(reg.permission):
                             print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7),readReg(reg)
@@ -69,7 +69,7 @@ class Prompt(Cmd):
             else: print 'No command found:',arglist[1]
 
 
-    def do_daq(self, args):
+    def do_daq(self, args=''):
         """Read all registers in DAQ module. USAGE: daq <optional OH_NUM>"""
         arglist = args.split()
         if len(arglist)==1: 
@@ -78,8 +78,8 @@ class Prompt(Cmd):
                 return
             elif int(arglist[0])<0 or int(arglist[0])>MAX_OH_NUM: print 'Invalid OH number:',arglist[0]
             else:                
-                if getNodesContaining('GEM_AMC.DAQ.OH'+str(arglist[0])) is not None:
-                    for reg in getNodesContaining('GEM_AMC.DAQ.OH'+str(arglist[0])):
+                if getNodesContaining('GEM_AMC.DAQ.OH'+str(arglist[0])+'.') is not None:
+                    for reg in getNodesContaining('GEM_AMC.DAQ.OH'+str(arglist[0])+'.'):
                         address = reg.real_address
                         if 'r' in str(reg.permission):
                             print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7),readReg(reg)
@@ -95,7 +95,7 @@ class Prompt(Cmd):
         
         else: print 'Incorrect usage.'
 
-    def do_gemsystem(self, args):
+    def do_gemsystem(self):
         """Read all registers in GEM_SYSTEM module. USAGE: gemsystem"""
         if args == '':
             if getNodesContaining('GEM_AMC.GEM_SYSTEM') is not None:
@@ -105,17 +105,16 @@ class Prompt(Cmd):
                         print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7),readReg(reg)
             else: print 'Regs not found!'
 
-    def do_ttc(self, args):
+    def do_ttc(self):
         """Read all registers in TTC module. USAGE: ttc"""
-        if args == '':
-            if getNodesContaining('GEM_AMC.TTC') is not None:
-                for reg in getNodesContaining('GEM_AMC.GEM_SYSTEM'):
-                    address = reg.real_address
-                    if 'r' in str(reg.permission):
-                        print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7),readReg(reg)
-            else: print 'Regs not found!'
+        if getNodesContaining('GEM_AMC.TTC') is not None:
+            for reg in getNodesContaining('GEM_AMC.TTC'):
+                address = reg.real_address
+                if 'r' in str(reg.permission):
+                    print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7),readReg(reg)
+        else: print 'Regs not found!'
 
-    def do_trigger(self, args):
+    def do_trigger(self, args=''):
         """Read all registers in TRIGGER module. USAGE: trigger <optional OH_NUM>"""
         arglist = args.split()
         if len(arglist)==1:
@@ -124,8 +123,8 @@ class Prompt(Cmd):
                 return
             elif int(arglist[0])<0 or int(arglist[0])>MAX_OH_NUM: print 'Invalid OH number:',arglist[0]
             else:
-                if getNodesContaining('GEM_AMC.TRIGGER.OH'+str(arglist[0])) is not None:
-                    for reg in getNodesContaining('GEM_AMC.TRIGGER.OH'+str(arglist[0])):
+                if getNodesContaining('GEM_AMC.TRIGGER.OH'+str(arglist[0])+'.') is not None:
+                    for reg in getNodesContaining('GEM_AMC.TRIGGER.OH'+str(arglist[0])+'.'):
                         address = reg.real_address
                         if 'r' in str(reg.permission):
                             print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7),readReg(reg)
@@ -195,12 +194,12 @@ class Prompt(Cmd):
         return completeReg(text)
 
 
-    def do_readFW(self, args):
+    def do_readFW(self):
         """Quick read of all FW-related registers"""
         for reg in getNodesContaining('STATUS.FW'):
             if 'r' in str(reg.permission): print hex(reg.real_address),reg.permission,'\t',tabPad(reg.name,4),readReg(reg)
 
-    def do_fw(self, args):
+    def do_fw(self):
         """Quick read of all FW-related registers"""
         for reg in getNodesContaining('STATUS.FW'):
             if 'r' in str(reg.permission): print hex(reg.real_address),reg.permission,'\t',tabPad(reg.name,4),readReg(reg)
@@ -341,9 +340,14 @@ class Prompt(Cmd):
             print 'Incorrect usage.'
             return
 
-        
+    def execute(self, other_function, args):
+        other_function = 'do_'+other_function
+        call_func = getattr(Prompt,other_function)
+        try:
+            call_func(self,*args)
+        except TypeError:
+            print 'Could not recognize command. See usage in tool.'
 
-        
 def isValidOH(oh):
     if not oh.isdigit(): return False
     if int(oh)<0 or int(oh)>MAX_OH_NUM: return False
@@ -357,10 +361,26 @@ def isValidVFAT(vfat):
 
 
 if __name__ == '__main__':
-    try:
+    from optparse import OptionParser
+    parser = OptionParser()
+    parser.add_option("-e", "--execute", type="str", dest="exe",
+                      help="Function to execute once", metavar="exe", default=None)
+    # parser.add_option("-g", "--gtx", type="int", dest="gtx",
+    #                   help="GTX on the GLIB", metavar="gtx", default=0)
+
+    (options, args) = parser.parse_args()
+    if options.exe:
         parseXML()
-        prompt = Prompt()
-        prompt.prompt = 'CTP7 > '
-        prompt.cmdloop('Starting CTP7 Register Command Line Interface.')
-    except KeyboardInterrupt:
-        print '\n'
+        prompt=Prompt()
+        prompt.execute(options.exe,args)
+        exit
+    else:
+        try:
+            parseXML()
+            prompt = Prompt()
+            prompt.prompt = 'CTP7 > '
+            prompt.cmdloop('Starting CTP7 Register Command Line Interface.')
+        except TypeError:
+            print 'Incorrect usage. See help'
+        except KeyboardInterrupt:
+            print '\n'
