@@ -95,7 +95,7 @@ class Prompt(Cmd):
         
         else: print 'Incorrect usage.'
 
-    def do_gemsystem(self):
+    def do_gemsystem(self, args=None):
         """Read all registers in GEM_SYSTEM module. USAGE: gemsystem"""
         if args == '':
             if getNodesContaining('GEM_AMC.GEM_SYSTEM') is not None:
@@ -105,7 +105,7 @@ class Prompt(Cmd):
                         print hex(address).rstrip('L'),reg.permission,'\t',tabPad(reg.name,7),readReg(reg)
             else: print 'Regs not found!'
 
-    def do_ttc(self):
+    def do_ttc(self, args=None):
         """Read all registers in TTC module. USAGE: ttc"""
         if getNodesContaining('GEM_AMC.TTC') is not None:
             for reg in getNodesContaining('GEM_AMC.TTC'):
@@ -194,12 +194,12 @@ class Prompt(Cmd):
         return completeReg(text)
 
 
-    def do_readFW(self):
+    def do_readFW(self, args=None):
         """Quick read of all FW-related registers"""
         for reg in getNodesContaining('STATUS.FW'):
             if 'r' in str(reg.permission): print hex(reg.real_address),reg.permission,'\t',tabPad(reg.name,4),readReg(reg)
 
-    def do_fw(self):
+    def do_fw(self, args=None):
         """Quick read of all FW-related registers"""
         for reg in getNodesContaining('STATUS.FW'):
             if 'r' in str(reg.permission): print hex(reg.real_address),reg.permission,'\t',tabPad(reg.name,4),readReg(reg)
@@ -381,6 +381,6 @@ if __name__ == '__main__':
             prompt.prompt = 'CTP7 > '
             prompt.cmdloop('Starting CTP7 Register Command Line Interface.')
         except TypeError:
-            print 'Incorrect usage. See help'
+            print '[TypeError] Incorrect usage. See help'
         except KeyboardInterrupt:
             print '\n'
