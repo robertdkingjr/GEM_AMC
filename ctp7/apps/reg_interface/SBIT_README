@@ -1,0 +1,44 @@
+-------====== SBit Scan ======-------
+Robert King - robertdkingjr@tamu.edu 
+Evaldas Juska
+Texas A&M
+=====================================
+
+Summary: 
+This scan tests that each SBit is sent and encoded properly for each VFAT. It turns on a single channel at a time, sends CalPulses, and verifies that the correct number of SBit "triggers" are seen in firmware, and that these SBits are correct by verifying their encoding. It can identify problems with soldering on Panasonic and/or Samtek connectors which transmit SBit signals, VFAT/GEB problems, and firmware bugs
+
+Quick Settings:
+QUICKTEST - suppresses some outputs
+SINGLEVFAT - test one VFAT at a time, versus entire GEB
+V2ATEST - running test through OHv2a
+
+Other Settings:
+VFAT Settings - ex: VThreshold,VCal
+T1 Settings - ex: Number of pulses, Interval between pulses
+
+
+Part 1: "Scan" (on single VFAT)
+Verify that the correct number of SBits are seen from a known number of CalPulses
+
+>Clear all channels. For OHv2a, all channels on all VFATs are manually cleared (takes some time). For OHv2b, the other VFATs are masked with the SBit Mask and all channels on the target VFAT are cleared. 
+>Reset SBit trigger counter and verify it stays null
+>Configure T1 Controller to send set number of CalPulses
+>Loop through channels one at a time (currently every 8th for speed):
+--Turn on channel
+--Verify SBit counters are still null (to identify hot channels)
+--Configure T1 Controller
+--Turn on T1 Controller (send CalPulse(s))
+--Verify SBit counter matches number of pulses sent
+==BUG: Currently counter is always 4 times number of pulses sent
+
+
+Part 2: "Map" (on single VFAT)
+Verify that the SBits received are encoded correctly
+
+>Clear all channels. For OHv2a, all channels on all VFATs are manually cleared (takes some time). For OHv2b, the other VFATs are masked with the SBit Mask and all channels on the target VFAT are cleared. 
+>Configure T1 Controller to send *infinite* CalPulses
+>Loop through channels one at a time (currently every 16th for speed):
+--Turn on channel
+--Attempt (100 times) to read Sbit Cluster Debug register (stores encoded SBit information for single BX when cluster was received)
+--If non-zero (!=0x7ff) SBit cluster is read, verify that it is correct by checking encoded VFAT, SBit Location, and Size values with expected values
+==Caveat: Because the register being read holds information for a very small amount of time, there is often a few SBits read incorrectly due to transition effects. Often a few bits are flipped from the correct (expected) value. This is also why different amounts of clusters are read out by different channels

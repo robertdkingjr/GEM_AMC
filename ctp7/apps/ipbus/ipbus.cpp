@@ -1,4 +1,4 @@
-#define MAX_CLIENTS 1000
+#define MAX_CLIENTS 100000
 //#define IP_ACL_FILE "/mnt/persistent/config/rpcsvc.acl"
 
 #include <arpa/inet.h>
