@@ -246,10 +246,7 @@ class Prompt(Cmd):
             return
         if reg is not None: 
             address = reg.real_address
-            if 'r' in str(reg.permission):
-                print hex(address),'{0:#010x}'.format(reg.mask),reg.permission,'\t',reg.name,'\t',readReg(reg)
-            elif reg.isModule: print 'This is a module!'
-            else: print hex(address),'\t',reg.name,'\t','No read permission!' 
+            print hex(address),'\t',readAddress(address)
         else:
             print args,'not found!' 
 

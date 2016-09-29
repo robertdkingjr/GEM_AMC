@@ -131,7 +131,7 @@ def getRegsContaining(nodeString):
 
 def readAddress(address):
     output = rReg(address) 
-    return '{0:#010x}'.format(parseInt(str(value)))
+    return '{0:#010x}'.format(parseInt(str(output)))
 
 def readRawAddress(raw_address):
     try: 
@@ -200,12 +200,10 @@ def writeReg(reg, value):
             if bit=='0': shift_amount+=1
             else: break
         shifted_value = value << shift_amount
-        if 'r' not in reg.permission: final_value = shifted_value
-        else: 
-            initial_value = readReg(reg)
-            try: initial_value = parseInt(initial_value) 
-            except ValueError: return 'Error reading initial value: '+str(initial_value)
-            final_value = (shifted_value & reg.mask) | (initial_value & ~reg.mask)
+        initial_value = readAddress(address)
+        try: initial_value = parseInt(initial_value) 
+        except ValueError: return 'Error reading initial value: '+str(initial_value)
+        final_value = (shifted_value & reg.mask) | (initial_value & ~reg.mask)
     else: final_value = value
     output = wReg(parseInt(address),parseInt(final_value))
     return str('{0:#010x}'.format(final_value)).rstrip('L')+'('+str(value)+')\twritten to '+reg.name
