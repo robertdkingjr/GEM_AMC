@@ -7,9 +7,15 @@ SINGLEVFAT = False
 SINGLEOH = False
 V2ATEST = False
 
+DO_MAP = False
+DO_SCAN = True
+
 NUM_STRIPS = 128
 NUM_PADS = 8
-OH_NUM = 0
+OH_NUM = 0 #SINGLEOH
+
+MAX_OH_NUM = 5 #Num OH - 1
+NUM_OHs = 6
 
 #VFAT DEFAULTS
 CONTREG0=55
@@ -26,8 +32,8 @@ ICOMP=75
 # Calpulsing Settings
 VTHRESHOLD1=50
 VCAL=190
-INTERVAL = 10 #BX
-NUM_PULSES = 1
+INTERVAL = 100 #BX
+NUM_PULSES = 1000
 OUTPUT_FILENAME='results'
 
 
@@ -51,13 +57,14 @@ def main():
     parseXML()
 
     if not SINGLEOH:
-        for oh in range(0,12):
-            f.write('OptoHybrid:',oh,'\n')
-            f_errors.write('OptoHybrid:',oh,'\n')
+        for oh in range(0,NUM_OHs):
+            f.write('OptoHybrid:%d\n'%(oh))
+            f_errors.write('OptoHybrid:%d\n'%(oh))
+
             if not SINGLEVFAT:
                 for vfat in range(0, 24):
-                    scan_vfat(oh, vfat, f, f_errors)
-                    map_vfat_sbits(oh, vfat, f, f_errors)
+                    if (DO_SCAN): scan_vfat(oh, vfat, f, f_errors)
+                    if (DO_MAP): map_vfat_sbits(oh, vfat, f, f_errors)
             else:
                 vfat_slot = raw_input('Enter VFAT slot: ')
                 try:
@@ -67,15 +74,13 @@ def main():
                 except:
                     print 'Invalid input!'
                     return
-                scan_vfat(vfat_slot, f, f_errors)
-                map_vfat_sbits(vfat_slot, f, f_errors)
-            f.close()
-            f_errors.close()
+                if (DO_SCAN): scan_vfat(vfat_slot, f, f_errors)
+                if (DO_MAP): map_vfat_sbits(vfat_slot, f, f_errors)
     else:
         if not SINGLEVFAT:
             for vfat in range(0, 24):
-                scan_vfat(OH_NUM, vfat, f, f_errors)
-                map_vfat_sbits(OH_NUM, vfat, f, f_errors)
+                if (DO_SCAN): scan_vfat(OH_NUM, vfat, f, f_errors)
+                if (DO_MAP): map_vfat_sbits(OH_NUM, vfat, f, f_errors)
         else:
             vfat_slot = raw_input('Enter VFAT slot: ')
             try:
@@ -85,14 +90,14 @@ def main():
             except:
                 print 'Invalid input!'
                 return
-            scan_vfat(OH_NUM, vfat_slot, f, f_errors)
-            map_vfat_sbits(OH_NUM, vfat_slot, f, f_errors)
-        f.close()
-        f_errors.close()
+            if (DO_SCAN): scan_vfat(OH_NUM, vfat_slot, f, f_errors)
+            if (DO_MAP): map_vfat_sbits(OH_NUM, vfat_slot, f, f_errors)
+
+    f.close()
+    f_errors.close()
     
 
 def map_vfat_sbits(optohybrid,vfat_slot, outfile, errfile):
-
     try:
         if int(vfat_slot) > 23 or int(vfat_slot) < 0:
             print 'Invalid VFAT slot!'
@@ -169,11 +174,11 @@ def map_vfat_sbits(optohybrid,vfat_slot, outfile, errfile):
         sleep(0.1)
         # Identify SBit
         subheading('Cluster Info')
-        cluster_reg = getNode('GEM_AMC.TRIGGER.OH'+str(optohybrid)+'.DEBUG_LAST_CLUSTER_0')
-        print readReg(getNode('GEM_AMC.OH.OH'+str(optohybrid)+'.T1Controller.MONITOR'))
+        cluster_reg = getNode('GEM_AMC.TRIGGER.OH'+str(optohybrid)+'.DEBUG_LAST_CLUSTER_7')
+        print 'T1 Status:',readReg(getNode('GEM_AMC.OH.OH'+str(optohybrid)+'.T1Controller.MONITOR'))
         good_cluster_count = 0
         goodCluster = False
-        for i in range(100):
+        for i in range(10000):
             value = parseInt(str(readReg(cluster_reg)))
             if value != 2047:
                 encodedSlot = cluster_to_vfat(value)
@@ -194,6 +199,7 @@ def map_vfat_sbits(optohybrid,vfat_slot, outfile, errfile):
             printRed('VFAT:'+str(vfat_slot)+'\t Strip:'+str(strip)+'\t No good clusters!')
             errfile.write('%s %s\t%s %s\t%s\n' % ('VFAT:',str(vfat_slot),'Strip:',str(strip),'No good clusters!'))
         outfile.write('\n')
+        errfile.write('\n')
         # Mask Channel
         print writeReg(getNode(REG_PATH + 'VFATChannels.ChanReg' + str(strip)), 0)
     
@@ -304,6 +310,7 @@ def scan_vfat(optohybrid, vfat_slot, outfile, errfile):
                             
 
             sleep(0.1)
+            print 'After sleep... T1 Status:',readReg(getNode('GEM_AMC.OH.OH'+str(optohybrid)+'.T1Controller.MONITOR'))
             # Verify Triggers
             nSbits = readReg(getNode('GEM_AMC.TRIGGER.OH'+str(optohybrid)+'.TRIGGER_CNT'))
             try: 
@@ -316,9 +323,9 @@ def scan_vfat(optohybrid, vfat_slot, outfile, errfile):
             ScanResults.append([strip,parseInt(nSbits)])
 
             if parseInt(nSbits) != 4*NUM_PULSES: # Not sure why quadrupled
-                printRed( 'Strip '+str(strip)+'\t Expected:'+str(NUM_PULSES)+'\t Received:'+str(parseInt(nSbits)) )
+                printRed( 'Strip '+str(strip)+'\t Expected:'+str(4*NUM_PULSES)+'\t Received:'+str(parseInt(nSbits)) )
             else:
-                printCyan('Strip '+str(strip)+'\t Expected:'+str(NUM_PULSES)+'\t Received:'+str(parseInt(nSbits)) )
+                printCyan('Strip '+str(strip)+'\t Expected:'+str(4*NUM_PULSES)+'\t Received:'+str(parseInt(nSbits)) )
 
     
             # Map Cluster
@@ -338,10 +345,11 @@ def scan_vfat(optohybrid, vfat_slot, outfile, errfile):
         outfile.write('VFAT Slot '+str(vfat_slot) + '\n')
         for result in range(len(ScanResults)):
             if ScanResults[result][1] != 4*NUM_PULSES:
-                print Colors.RED+'Strip',ScanResults[result][0],'\t','Expected:',NUM_PULSES,'Received:',ScanResults[result][1],Colors.ENDC
+                print Colors.RED+'Strip',ScanResults[result][0],'\t','Expected:',4*NUM_PULSES,'Received:',ScanResults[result][1],Colors.ENDC
+                errfile.write('%s %d\t%s%03d%s%s%s %s%s\n' % ('VFAT',vfat_slot,'Strip',ScanResults[result][0],'\t','Expected:',4*NUM_PULSES,'Received:',ScanResults[result][1]))
             else:
-                print 'Strip',ScanResults[result][0],'\t','Expected:',NUM_PULSES,'Received:',ScanResults[result][1]
-            outfile.write('%s%03d%s%s%s %s%s\n' % ('Strip',ScanResults[result][0],'\t','Expected:',NUM_PULSES,'Received:',ScanResults[result][1]))
+                print 'Strip',ScanResults[result][0],'\t','Expected:',4*NUM_PULSES,'Received:',ScanResults[result][1]
+            outfile.write('%s%03d%s%s%s %s%s\n' % ('Strip',ScanResults[result][0],'\t','Expected:',4*NUM_PULSES,'Received:',ScanResults[result][1]))
         print '\n\n'
         outfile.write('\n\n')
 
